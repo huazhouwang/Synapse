@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    tools:context="io.whz.androidneuralnetwork.MainActivity">
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/download_mnist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="download"
+        android:textAllCaps="true"
+        />
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/decompress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Decompress"
+        android:textAllCaps="true"
+        />
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/train"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="train"
+        android:textAllCaps="true"
+        />
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/test"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="test"
+        android:textAllCaps="true"
+        />
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/clear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="clear"
+        android:textAllCaps="true"
+        />
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:scaleType="fitXY"
+        />
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</LinearLayout>
