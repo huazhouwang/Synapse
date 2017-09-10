@@ -12,7 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-public class DecompressUtils {
+import io.whz.androidneuralnetwork.pojos.Digit;
+
+public class MNISTUtils {
     private static final int LABEL_MAGIC = 2049;
     private static final int IMAGE_MAGIC = 2051;
     private static final int BATCH_MAGIC = 2052;
@@ -193,5 +195,61 @@ public class DecompressUtils {
         }
 
         return result;
+    }
+
+    public static Digit[] readBatches(File file) {
+        if (!file.exists()) {
+            return null;
+        }
+
+        DataInputStream inputStream = null;
+
+        try {
+            inputStream = new DataInputStream(new FileInputStream(file));
+
+            if (inputStream.readInt() != BATCH_MAGIC) {
+                return null;
+            }
+
+            final int len = inputStream.readInt();
+            final int rows = inputStream.readInt();
+            final int cols = inputStream.readInt();
+
+            final int size = rows * cols;
+            final Digit[] digits = new Digit[len];
+            final byte[] buffer = new byte[size];
+            int curNum;
+
+            for (int i = 0; i < len; ++i) {
+                curNum = inputStream.readInt();
+                inputStream.read(buffer);
+
+                digits[i] = new Digit(curNum, convert(buffer));
+            }
+
+            return digits;
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            return null;
+        } finally {
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static double[] convert(byte[] bytes) {
+        final double[] doubles = new double[bytes.length];
+
+        for (int i = 0, len = bytes.length; i < len; ++i) {
+            doubles[i] = 0xFF & bytes[i];
+        }
+
+        return doubles;
     }
 }

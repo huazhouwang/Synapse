@@ -28,8 +28,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import io.whz.androidneuralnetwork.utils.DecompressUtils;
+import io.whz.androidneuralnetwork.utils.Batches;
 import io.whz.androidneuralnetwork.utils.FileUtils;
+import io.whz.androidneuralnetwork.utils.MNISTUtils;
 import io.whz.androidneuralnetwork.utils.Scheduler;
 
 import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             "Train",
             "Test"
     };
-
+    // TODO: 03/09/2017 改成类似 DataType 形式
     private static final String[] DIRS = {
             "Download",
             "Decompress",
@@ -142,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.train:
+                train();
                 break;
 
             case test:
@@ -157,15 +159,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void train() {
+        final File mnistDir = new File(getOrInitFilesDir(), DIRS[2]);
+
+        Batches batches = new Batches(mnistDir.listFiles());
+        batches.reset();
+
+        for (int i = 0; i < 3000; ++i) {
+            batches.next();
+        }
+    }
+
     private void test() {
         final File mnistDir = new File(getOrInitFilesDir(), DIRS[2]);
 
-        final byte[] bytes = DecompressUtils.test(mnistDir.listFiles()[0]);
+        final int n = mnistDir.listFiles().length;
+        final byte[] bytes = MNISTUtils.test(mnistDir.listFiles()[(int) (Math.random() * n)]);
         final int[] colors = new int[bytes.length];
         int color;
 
         for (int i = 0, len = bytes.length; i < len; ++i) {
-            color = 0xff & bytes[i];
+            color = 0xFF - (0xFF & bytes[i]);
             colors[i] = color << 16 | color << 8 | color | 0xFF000000;
         }
 
@@ -225,14 +239,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             final File sourceImages = new File(downloadDir, mImageFile);
             final File targetImages = new File(decompressDir, mImageFile.substring(0, mImageFile.lastIndexOf('.')) + DECOMPRESSED_IMAGE_SUFFIX);
 
-            if (!(DecompressUtils.gunzip(sourceLabels, targetLabels)
-                    && DecompressUtils.gunzip(sourceImages, targetImages))) {
+            if (!(MNISTUtils.gunzip(sourceLabels, targetLabels)
+                    && MNISTUtils.gunzip(sourceImages, targetImages))) {
                 throw new IllegalStateException();
             }
 
-            final List<Integer> labels = DecompressUtils.parseLabels(targetLabels);
+            final List<Integer> labels = MNISTUtils.parseLabels(targetLabels);
 
-            DecompressUtils.parseImages(targetImages, mnistDir, mType, labels);
+            MNISTUtils.parseImages(targetImages, mnistDir, mType, labels);
         }
     }
 
