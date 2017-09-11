@@ -2,7 +2,6 @@ package io.whz.androidneuralnetwork.utils;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.util.LruCache;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -10,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import Jama.Matrix;
 import io.whz.androidneuralnetwork.App;
 import io.whz.androidneuralnetwork.pojos.Batch;
 import io.whz.androidneuralnetwork.pojos.Digit;
@@ -18,11 +18,11 @@ public class Batches {
     private static final String TAG = App.TAG + "-Batches";
     private static final int DEFAULT_MIN_BATCH = 20;
     private static final int DIGIT_COUNT = 10;
+    private static final int PIXEL_COUNT = 784;
 
     private final int mMiniBatch;
     private final List<File> mBatchFiles = new ArrayList<>();
     private final List<File> mCurFiles = new ArrayList<>();
-    private final LruCache<String, Digit[]> mCache = BatchCache.getInstance();// TODO: 09/09/2017 缓存导致占用内存过高，命中率太低，去除
 
     private Digit[] mCurDigits;
     private int mRemain;
@@ -34,13 +34,14 @@ public class Batches {
     }
 
     public Batches(int miniBatch, @NonNull File... batchFiles) {
-        Preconditions.checkArgument(miniBatch > 0, "MiniBatch must be positive");
+        Preconditions.checkArgument(miniBatch <= 0, "MiniBatch must be positive");
 
         mMiniBatch = miniBatch;
         mBatchFiles.addAll(Arrays.asList(batchFiles));
+        reset();
     }
 
-    public void reset() {
+    private void reset() {
         mCurFiles.clear();
         mCurFiles.addAll(mBatchFiles);
         mCurDigits = null;
@@ -87,24 +88,26 @@ public class Batches {
         }
 
         final int len = digits.size();
-        final double[][] inputs = new double[len][digits.get(0).pixels.length];
-        final double[][] outputs = new double[len][DIGIT_COUNT];
+
+        final Matrix[] inputs = new Matrix[len];
+        final Matrix[] targets = new Matrix[len];
         Digit digit;
 
         for (int i = 0; i < len; ++i) {
             digit = digits.get(i);
-            inputs[i] = digit.pixels;
-            outputs[i] = oneHot(digit.actual);
+
+            inputs[i] = new Matrix(digit.pixels, PIXEL_COUNT);
+            targets[i] = oneHot(digit.actual);
         }
 
-        return new Batch(inputs, outputs);
+        return new Batch(inputs, targets);
     }
 
-    private double[] oneHot(int actual) {
-        final double[] res = new double[DIGIT_COUNT];
-        res[actual] = 1F;
+    private Matrix oneHot(int actual) {
+        final double[] doubles = new double[DIGIT_COUNT];
+        doubles[actual] = 1D;
 
-        return res;
+        return new Matrix(doubles, DIGIT_COUNT);
     }
 
     @Nullable

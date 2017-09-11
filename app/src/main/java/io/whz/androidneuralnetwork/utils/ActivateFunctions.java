@@ -5,11 +5,12 @@ import android.support.annotation.NonNull;
 
 import Jama.Matrix;
 
-public class ActivateFuns {
-    public static void sigmoidSelf(@NonNull Matrix matrix) {
+public class ActivateFunctions {
+    @CheckResult
+    public static Matrix sigmoid(@NonNull Matrix matrix) {
         Preconditions.checkNotNull(matrix);
 
-        final double[][] doubles = matrix.getArray();
+        final double[][] doubles = matrix.getArrayCopy();
 
         for (int i = 0, iLen = doubles.length, jLen = doubles[0].length;
              i < iLen; ++i) {
@@ -18,14 +19,15 @@ public class ActivateFuns {
                 doubles[i][j] = 1D / (1D + Math.exp(cur));
             }
         }
+
+        return new Matrix(doubles);
     }
 
     @CheckResult
     public static Matrix sigmoidPrime(@NonNull Matrix activation) {
         Preconditions.checkNotNull(activation);
 
-        final Matrix prime = activation.copy();
-        final double[][] doubles = prime.getArray();
+        final double[][] doubles = activation.getArrayCopy();
 
         for (int i = 0, iLen = doubles.length, jLen = doubles[0].length;
              i < iLen; ++i) {
@@ -35,6 +37,6 @@ public class ActivateFuns {
             }
         }
 
-        return prime;
+        return new Matrix(doubles);
     }
 }

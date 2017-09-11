@@ -31,6 +31,7 @@ import java.util.Map;
 import io.whz.androidneuralnetwork.utils.Batches;
 import io.whz.androidneuralnetwork.utils.FileUtils;
 import io.whz.androidneuralnetwork.utils.MNISTUtils;
+import io.whz.androidneuralnetwork.utils.NeuralNetwork;
 import io.whz.androidneuralnetwork.utils.Scheduler;
 
 import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
@@ -163,11 +164,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final File mnistDir = new File(getOrInitFilesDir(), DIRS[2]);
 
         Batches batches = new Batches(mnistDir.listFiles());
-        batches.reset();
 
-        for (int i = 0; i < 3000; ++i) {
-            batches.next();
-        }
+        NeuralNetwork network = new NeuralNetwork(30);
+        network.train(1, 3, batches, null);
     }
 
     private void test() {

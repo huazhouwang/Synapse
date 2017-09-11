@@ -3,11 +3,11 @@ package io.whz.androidneuralnetwork.pojos;
 import Jama.Matrix;
 
 public class Batch {
-    public final Matrix input;
-    public final Matrix target;
+    public final Matrix[] inputs;
+    public final Matrix[] targets;
 
-    public Batch(double[][] input, double[][] target) {
-        this.input = new Matrix(input);
-        this.target = new Matrix(target);
+    public Batch(Matrix[] inputs, Matrix[] targets) {
+        this.inputs = inputs;
+        this.targets = targets;
     }
 }

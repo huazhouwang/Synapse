@@ -24,7 +24,7 @@ public class NeuralNetwork {
         Preconditions.checkNotNull(hiddenLayerSizes, "Hidden layers must not be null!");
 
         final int hiddenLen;
-        Preconditions.checkArgument((hiddenLen = hiddenLayerSizes.length) == 0, "Size of Hidden layers must not be zero!");
+        Preconditions.checkArgument((hiddenLen = hiddenLayerSizes.length) != 0, "Size of Hidden layers must not be zero!");
 
         final int[] totalSizes = new int[hiddenLen + 2];
         System.arraycopy(hiddenLayerSizes, 0, totalSizes, 1, hiddenLen);
@@ -40,12 +40,12 @@ public class NeuralNetwork {
         final int len = totalSize.length - 1;
 
         final int[] rows = new int[len];
-        System.arraycopy(totalSize, 0, rows, 0, len);
-
-        final int[] cols = new int[len];
         System.arraycopy(totalSize, 1, rows, 0, len);
 
-        return newRandomMatrix(rows, cols);
+        final int[] cols = new int[len];
+        System.arraycopy(totalSize, 0, cols, 0, len);
+
+        return MatrixUtils.random(rows, cols);
     }
 
     private Matrix[] newBiasesMatrix(int[] totalSize) {
@@ -57,26 +57,13 @@ public class NeuralNetwork {
         final int[] cols = new int[len];
         Arrays.fill(cols, 1);
 
-        return newRandomMatrix(rows, cols);
-    }
-
-    private Matrix[] newRandomMatrix(int[] rows, int[] cols) {
-        final int len;
-        Preconditions.checkArgument((len = rows.length) == cols.length);
-
-        final Matrix[] matrices = new Matrix[len];
-
-        for (int i = 0; i < len; ++i) {
-            matrices[i] = Matrix.random(rows[i], cols[i]);
-        }
-
-        return matrices;
+        return MatrixUtils.random(rows, cols);
     }
 
     public void train(int epochs, double learningRate,
                       @NonNull Batches trainBatch, @Nullable Batches validateBatch) {
         Preconditions.checkArgument(epochs > 0, "Epochs must greater than 0");
-        Preconditions.checkArgument(learningRate > 0F, "Learning rate must greater than 0");
+        Preconditions.checkArgument(learningRate > 0D, "Learning rate must greater than 0");
         Preconditions.checkNotNull(trainBatch);
 
         Scheduler.Secondary.execute(new TrainRunnable(epochs, learningRate, trainBatch,
@@ -109,23 +96,33 @@ public class NeuralNetwork {
                 Log.i(TAG, "Epochs: " + i);
 
                 mTraining.shuffle();
-                updateMiniBatch();
+                sgd();
+
+                if (mValidation != null) {
+                    final double rate = evaluate();
+                    Log.i(TAG, String.format("Epoch %s: %s", i, rate));
+                }
             }
         }
 
-        private void updateMiniBatch() {
-            final Matrix[] batchWeights = MatrixUtils.copyZeroes(mWeights);
-            final Matrix[] batchBiases = MatrixUtils.copyZeroes(mBiases);
-
+        private void sgd() {
             Batch batch;
-            int i = 0;
 
             while ((batch = mTraining.next()) != null) {
-                ++i;
-                sgd(batch.input, batch.target, batchWeights, batchBiases);
+                updateMiniBatch(batch.inputs, batch.targets);
+            }
+        }
+
+        private void updateMiniBatch(Matrix[] inputs, Matrix[] targets) {
+            final Matrix[] batchWeights = MatrixUtils.zerosLike(mWeights);
+            final Matrix[] batchBiases = MatrixUtils.zerosLike(mBiases);
+            final int len = inputs.length;
+
+            for (int i = 0; i < len; ++i) {
+                feed(inputs[i], targets[i], batchWeights, batchBiases);
             }
 
-            update(batchWeights, batchBiases, i);
+            update(batchWeights, batchBiases, len);
         }
 
         private void update(Matrix[] batchWeights, Matrix[] batchBiases, int count) {
@@ -138,42 +135,80 @@ public class NeuralNetwork {
             }
         }
 
-        private void sgd(Matrix input, Matrix target, Matrix[] weights, Matrix[] biases) {
-            final Matrix[] activations = feedForward(input);
+        private void feed(Matrix input, Matrix target, Matrix[] batchWeights, Matrix[] batchBiases) {
+            final Matrix[] activations = forwardPropagation(input);
             final int aLen = activations.length;
-            final int bLen = weights.length;// aLen = bLen + 1
+            final int bLen = batchWeights.length;
 
-            Matrix delta = backPropagation(activations[aLen - 1], target);
-            biases[bLen - 1].plusEquals(delta);
-            weights[bLen - 1].plusEquals(activations[aLen - 2].transpose().times(delta));
+            final Matrix error = activations[aLen - 1].minus(target);
+            Matrix delta = error.arrayTimes(ActivateFunctions.sigmoidPrime(activations[aLen - 1]));
 
-            for (int i = aLen - 2; i >= 0; --i) {
-                Matrix prime = ActivateFuns.sigmoidPrime(activations[i]);
+            batchBiases[bLen - 1].plusEquals(delta);
+            batchWeights[bLen - 1].plusEquals(delta.times(activations[aLen - 2].transpose()));
+
+            for (int i = 2; i < aLen; ++i) {
+                final Matrix prime = ActivateFunctions.sigmoidPrime(activations[aLen - i]);
+                delta = mWeights[bLen - i + 1].transpose()
+                        .times(delta)
+                        .arrayTimes(prime);
+
+                batchBiases[bLen - i].plusEquals(delta);
+                batchWeights[bLen - i].plusEquals(delta.times(activations[aLen - i - 1].transpose()));
             }
         }
 
-        private Matrix backPropagation(Matrix output, Matrix target) {
-            final Matrix error = output.minus(target); // TODO: 10/09/2017 还是 target - output?
-            final Matrix prime = ActivateFuns.sigmoidPrime(output);
-
-            return error.arrayTimes(prime);
-        }
-
-        private Matrix[] feedForward(@NonNull Matrix input) {
+        private Matrix[] forwardPropagation(@NonNull Matrix input) {
             final int len = mWeights.length;
             final Matrix[] activations = new Matrix[len + 1];
             activations[0] = input;
 
             for (int i = 0; i < len; ++i) {
-                final Matrix matrix = activations[i]
-                        .times(mWeights[i])
+                final Matrix matrix = mWeights[i]
+                        .times(activations[i])
                         .plus(mBiases[i]);
 
-                ActivateFuns.sigmoidSelf(matrix);
-                activations[i + 1] = matrix;
+                activations[i + 1] = ActivateFunctions.sigmoid(matrix);
             }
 
             return activations;
+        }
+
+        private Matrix feedForward(@NonNull Matrix input) {
+            final int len = mWeights.length;
+            Matrix res = input;
+
+            for (int i = 0; i < len; ++i) {
+                res = ActivateFunctions.sigmoid(mWeights[i].times(res).plus(mBiases[i]));
+            }
+
+            return res;
+        }
+
+        private double evaluate() {
+            if (mValidation == null) {
+                return 0D;
+            }
+
+            Batch batch;
+            int correct = 0;
+            int total = 0;
+
+            while ((batch = mValidation.next()) != null) {
+                final Matrix[] inputs = batch.inputs;
+                final Matrix[] targets = batch.targets;
+                final int len = inputs.length;
+                total += len;
+
+                for (int i = 0; i < len; ++i) {
+                    final Matrix output = feedForward(inputs[i]);
+
+                    if (MatrixUtils.argmax(output) == MatrixUtils.index(targets[i])) {
+                        ++total;
+                    }
+                }
+            }
+
+            return total != 0 ? correct / total : 0D;
         }
     }
 }
