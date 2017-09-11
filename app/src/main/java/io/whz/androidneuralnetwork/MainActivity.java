@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import Jama.Matrix;
+import io.whz.androidneuralnetwork.pojos.ImageDigit;
 import io.whz.androidneuralnetwork.utils.Batches;
 import io.whz.androidneuralnetwork.utils.FileUtils;
 import io.whz.androidneuralnetwork.utils.MNISTUtils;
@@ -65,8 +67,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DownloadManager mDownloadManager;
     private BroadcastReceiver mReceiver;
     private String mFilesDir;
-    private ImageView imageView;
-    private TextView textView;
+    private ImageView mImageView;
+    private TextView mLabel;
+    private TextView mPredict;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,8 +82,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(test).setOnClickListener(this);
         findViewById(R.id.clear).setOnClickListener(this);
 
-        imageView = (ImageView) findViewById(R.id.image);
-        textView = (TextView) findViewById(R.id.text);
+        mImageView = (ImageView) findViewById(R.id.image);
+        mLabel = (TextView) findViewById(R.id.label);
+        mPredict = (TextView) findViewById(R.id.predict);
 
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSION_CODE);
     }
@@ -162,18 +166,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void train() {
         final File mnistDir = new File(getOrInitFilesDir(), DIRS[2]);
+        final File[] files = mnistDir.listFiles();
 
-        Batches batches = new Batches(mnistDir.listFiles());
+        Batches batches = new Batches(Arrays.copyOf(files, 10));
+        Batches validate = new Batches(files[files.length - 1]);
 
-        NeuralNetwork network = new NeuralNetwork(30);
-        network.train(1, 3, batches, null);
+        mNeural.train(10, 3, batches, validate);
     }
+
+    private final NeuralNetwork mNeural = new NeuralNetwork(30);
 
     private void test() {
         final File mnistDir = new File(getOrInitFilesDir(), DIRS[2]);
 
         final int n = mnistDir.listFiles().length;
-        final byte[] bytes = MNISTUtils.test(mnistDir.listFiles()[(int) (Math.random() * n)]);
+        final ImageDigit digit = MNISTUtils.test(mnistDir.listFiles()[(int) (Math.random() * n)]);
+
+        showImg(digit);
+        predict(digit);
+    }
+
+    private void predict(ImageDigit digit) {
+        final double[] doubles = MNISTUtils.convert(digit.colors);
+        final Matrix input = new Matrix(doubles, 784);
+
+        final int num = mNeural.predict(input);
+
+        Scheduler.Main.execute(new Runnable() {
+            @Override
+            public void run() {
+                mPredict.setText(String.format("Predict: %s", num));
+            }
+        });
+    }
+
+    private void showImg(final ImageDigit digit) {
+        final byte[] bytes = digit.colors;
         final int[] colors = new int[bytes.length];
         int color;
 
@@ -187,7 +215,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Scheduler.Main.execute(new Runnable() {
             @Override
             public void run() {
-                imageView.setImageBitmap(bitmap);
+                mImageView.setImageBitmap(bitmap);
+                mLabel.setText(String.format("Label: %s", digit.label));
             }
         });
     }

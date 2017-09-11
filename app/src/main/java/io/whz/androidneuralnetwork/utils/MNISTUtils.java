@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import io.whz.androidneuralnetwork.pojos.Digit;
+import io.whz.androidneuralnetwork.pojos.ImageDigit;
 
 public class MNISTUtils {
     private static final int LABEL_MAGIC = 2049;
@@ -100,7 +101,7 @@ public class MNISTUtils {
         return list;
     }
 
-    public static byte[] test(File file) {
+    public static ImageDigit test(File file) {
 
         byte b = -1;
         Log.i("test2", (b & 0xff) + "");
@@ -114,9 +115,10 @@ public class MNISTUtils {
             final int cols = inputStream.readInt();
             final int label = inputStream.readInt();
 
-            byte[] buffer = new byte[28 * 28];
+            final byte[] buffer = new byte[28 * 28];
             inputStream.read(buffer);
-            return buffer;
+
+            return new ImageDigit(label, buffer);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -243,7 +245,7 @@ public class MNISTUtils {
         }
     }
 
-    private static double[] convert(byte[] bytes) {
+    public static double[] convert(byte[] bytes) {
         final double[] doubles = new double[bytes.length];
 
         for (int i = 0, len = bytes.length; i < len; ++i) {

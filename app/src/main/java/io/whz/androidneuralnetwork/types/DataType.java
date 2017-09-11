@@ -1,5 +1,6 @@
 package io.whz.androidneuralnetwork.types;
 
-public enum DataType {
-    TRAIN, TEST
+public interface DataType {
+    String TRAIN = "train";
+    String TEST = "test";
 }

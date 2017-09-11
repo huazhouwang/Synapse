@@ -31,6 +31,8 @@ public class Batches {
     public Batches(@NonNull File... batchFiles) {
         mMiniBatch = DEFAULT_MIN_BATCH;
         mBatchFiles.addAll(Arrays.asList(batchFiles));
+
+        reset();
     }
 
     public Batches(int miniBatch, @NonNull File... batchFiles) {
@@ -38,6 +40,7 @@ public class Batches {
 
         mMiniBatch = miniBatch;
         mBatchFiles.addAll(Arrays.asList(batchFiles));
+
         reset();
     }
 
@@ -96,8 +99,8 @@ public class Batches {
         for (int i = 0; i < len; ++i) {
             digit = digits.get(i);
 
-            inputs[i] = new Matrix(digit.pixels, PIXEL_COUNT);
-            targets[i] = oneHot(digit.actual);
+            inputs[i] = new Matrix(digit.colorRates, PIXEL_COUNT);
+            targets[i] = oneHot(digit.label);
         }
 
         return new Batch(inputs, targets);
@@ -123,7 +126,7 @@ public class Batches {
 
     private void normalize(@NonNull Digit[] digits) {
         for (Digit digit : digits) {
-            final double[] pixels = digit.pixels;
+            final double[] pixels = digit.colorRates;
 
             for (int j = 0, jLen = pixels.length; j < jLen; ++j) {
                 pixels[j] /= 0xFF;

@@ -12,7 +12,7 @@ public class BatchCache extends LruCache<String, Digit[]> {
     @Override
     protected int sizeOf(String key, Digit[] value) {
         if (value != null && value.length > 0) {
-            return value.length * value[0].pixels.length * 8;
+            return value.length * value[0].colorRates.length * 8;
         }
 
         return super.sizeOf(key, value);

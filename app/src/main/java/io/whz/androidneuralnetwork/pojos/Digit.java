@@ -3,11 +3,11 @@ package io.whz.androidneuralnetwork.pojos;
 import android.support.annotation.NonNull;
 
 public class Digit {
-    public final double[] pixels;
-    public final int actual;
+    public final double[] colorRates;
+    public final int label;
 
-    public Digit(int actual, @NonNull double[] pixels) {
-        this.pixels = pixels;
-        this.actual = actual;
+    public Digit(int label, @NonNull double[] colorRates) {
+        this.colorRates = colorRates;
+        this.label = label;
     }
 }

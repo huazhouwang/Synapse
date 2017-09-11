@@ -92,13 +92,15 @@ public class NeuralNetwork {
         public void run() {
             Log.i(TAG, "Start training");
 
+            final boolean test = mValidation != null;
+
             for (int i = 1; i <= mEpochs; ++i) {
                 Log.i(TAG, "Epochs: " + i);
 
                 mTraining.shuffle();
                 sgd();
 
-                if (mValidation != null) {
+                if (test) {
                     final double rate = evaluate();
                     Log.i(TAG, String.format("Epoch %s: %s", i, rate));
                 }
@@ -108,7 +110,10 @@ public class NeuralNetwork {
         private void sgd() {
             Batch batch;
 
+            int i = 0;
             while ((batch = mTraining.next()) != null) {
+                ++i;
+                Log.i(TAG, "sgd: " + i);
                 updateMiniBatch(batch.inputs, batch.targets);
             }
         }
@@ -173,16 +178,7 @@ public class NeuralNetwork {
             return activations;
         }
 
-        private Matrix feedForward(@NonNull Matrix input) {
-            final int len = mWeights.length;
-            Matrix res = input;
 
-            for (int i = 0; i < len; ++i) {
-                res = ActivateFunctions.sigmoid(mWeights[i].times(res).plus(mBiases[i]));
-            }
-
-            return res;
-        }
 
         private double evaluate() {
             if (mValidation == null) {
@@ -193,6 +189,7 @@ public class NeuralNetwork {
             int correct = 0;
             int total = 0;
 
+            mValidation.shuffle();
             while ((batch = mValidation.next()) != null) {
                 final Matrix[] inputs = batch.inputs;
                 final Matrix[] targets = batch.targets;
@@ -200,15 +197,31 @@ public class NeuralNetwork {
                 total += len;
 
                 for (int i = 0; i < len; ++i) {
-                    final Matrix output = feedForward(inputs[i]);
+                    final Matrix output = feedForward(mWeights, mBiases, inputs[i]);
 
                     if (MatrixUtils.argmax(output) == MatrixUtils.index(targets[i])) {
-                        ++total;
+                        ++correct;
                     }
                 }
             }
 
-            return total != 0 ? correct / total : 0D;
+            return total != 0 ? (double) correct / total : 0D;
         }
+    }
+
+    public int predict(@NonNull Matrix input) {
+        return MatrixUtils.argmax(feedForward(mWeights, mBiases, input));
+    }
+
+    private static Matrix feedForward(@NonNull Matrix[] weights, @NonNull Matrix[] biases,
+                                      @NonNull Matrix input) {
+        final int len = weights.length;
+        Matrix res = input;
+
+        for (int i = 0; i < len; ++i) {
+            res = ActivateFunctions.sigmoid(weights[i].times(res).plus(biases[i]));
+        }
+
+        return res;
     }
 }

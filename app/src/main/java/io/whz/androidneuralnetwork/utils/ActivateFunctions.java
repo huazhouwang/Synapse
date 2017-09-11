@@ -15,7 +15,7 @@ public class ActivateFunctions {
         for (int i = 0, iLen = doubles.length, jLen = doubles[0].length;
              i < iLen; ++i) {
             for (int j = 0; j < jLen; ++j) {
-                final double cur = doubles[i][j];
+                final double cur = -doubles[i][j];
                 doubles[i][j] = 1D / (1D + Math.exp(cur));
             }
         }

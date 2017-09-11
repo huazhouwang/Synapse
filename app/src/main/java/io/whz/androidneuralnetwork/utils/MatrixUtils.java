@@ -2,6 +2,8 @@ package io.whz.androidneuralnetwork.utils;
 
 import android.support.annotation.NonNull;
 
+import java.util.Random;
+
 import Jama.Matrix;
 
 public class MatrixUtils {
@@ -26,10 +28,23 @@ public class MatrixUtils {
         final Matrix[] matrices = new Matrix[len];
 
         for (int i = 0; i < len; ++i) {
-            matrices[i] = Matrix.random(rows[i], cols[i]);
+            matrices[i] = random(rows[i], cols[i]);
         }
 
         return matrices;
+    }
+
+    public static Matrix random(int row, int col) {
+        final double[][] doubles = new double[row][col];
+        final Random random = new Random();
+
+        for (int i = 0; i < row; ++i) {
+            for (int j = 0; j < col; ++j) {
+                doubles[i][j] = random.nextGaussian();
+            }
+        }
+
+        return new Matrix(doubles);
     }
 
     public static double[][] reShape(@NonNull double[][] src, int targetRow, int targetCol) {
