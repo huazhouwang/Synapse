@@ -19,7 +19,7 @@ public class FileUtils {
         String res;
 
         if (!(res = builder.toString()).isEmpty()) {
-            ProcessUtils.execcommand(String.format("rm -rf %s", res));
+            ProcessUtils.execCommand(String.format("rm -rf %s", res));
         }
     }
 

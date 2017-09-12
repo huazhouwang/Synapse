@@ -3,7 +3,7 @@ package io.whz.androidneuralnetwork.utils;
 import java.io.IOException;
 
 public class ProcessUtils {
-    public static boolean execcommand(String command) {
+    public static boolean execCommand(String command) {
         final Runtime runtime = Runtime.getRuntime();
         boolean result;
 
