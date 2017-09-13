@@ -5,16 +5,16 @@ import android.support.annotation.NonNull;
 import io.whz.androidneuralnetwork.utils.Preconditions;
 
 class MatrixChecker {
-    static void verifyArray(@NonNull double[][] array) {
-        checkNotNull(array);
+    static void verifyArrays(@NonNull double[][] arrays) {
+        checkNotNull(arrays);
 
-        final int m = array.length;
+        final int m = arrays.length;
         checkExpression(m > 0,
                 "Row should be positive");
 
-        final int n = array[0].length;
+        final int n = arrays[0].length;
         for (int i = 1; i < m; ++i) {
-            checkExpression(array[i].length == n,
+            checkExpression(arrays[i].length == n,
                     "All rows must have the same length");
         }
     }

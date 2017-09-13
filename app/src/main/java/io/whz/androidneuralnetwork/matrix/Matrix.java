@@ -8,16 +8,16 @@ import static io.whz.androidneuralnetwork.matrix.MatrixChecker.checkDimensions;
 import static io.whz.androidneuralnetwork.matrix.MatrixChecker.checkExpression;
 import static io.whz.androidneuralnetwork.matrix.MatrixChecker.checkInnerDimensions;
 import static io.whz.androidneuralnetwork.matrix.MatrixChecker.checkNotNull;
-import static io.whz.androidneuralnetwork.matrix.MatrixChecker.verifyArray;
+import static io.whz.androidneuralnetwork.matrix.MatrixChecker.verifyArrays;
 
 public class Matrix {
     private final int mRow;
     private final int mCol;
-    private final double[][] mArray;
+    private final double[] mArray;
 
-    private Matrix(double[][] array) {
-        mRow = array.length;
-        mCol = array[0].length;
+    private Matrix(double[] array, int row, int  col) {
+        mRow = row;
+        mCol = col;
         mArray = array;
     }
 
@@ -25,18 +25,26 @@ public class Matrix {
         return new int[]{mRow, mCol};
     }
 
-    public double[][] getArray() {
+    double[] getArray() {
         return mArray;
     }
 
-    public Matrix copy() {
-        final double[][] array = mArray.clone();
+    public double[][] getArrays() {
+        final double[][] arrays = new double[mRow][mCol];
 
-        for (int i = 0, len = mArray.length; i < len; ++i) {
-            array[i] = mArray[i].clone();
+        for (int i = 0; i < mRow; ++i) {
+            for (int j = 0; j < mCol; ++j) {
+                arrays[i][j] = mArray[i * mCol + j];
+            }
         }
 
-        return array(array);
+        return arrays;
+    }
+
+    public Matrix copy() {
+        final double[] array = mArray.clone();
+
+        return Matrix.array(array, mRow);
     }
 
     public int getRow() {
@@ -48,7 +56,17 @@ public class Matrix {
     }
 
     public double get(int i, int j) {
-        return mArray[i][j];
+        checkExpression(i >= 0 && i < mRow && j >= 0 && j < mCol,
+                "Row or col is out of bounds");
+
+        return mArray[i * mCol + j];
+    }
+
+    public void set(int i, int j, double value) {
+        checkExpression(i >= 0 && i < mRow && j >= 0 && j < mCol,
+                "Row or col is out of bounds");
+
+        mArray[i * mCol + j] = value;
     }
 
     public Matrix times(@NonNull Matrix matrix) {
@@ -105,40 +123,41 @@ public class Matrix {
         return Matrix.transpose(this);
     }
 
-    public static Matrix array(@NonNull double[][] array) {
-        verifyArray(array);
+    public static Matrix array(@NonNull double[][] arrays) {
+        verifyArrays(arrays);
 
-        return new Matrix(array);
+        final int row = arrays.length;
+        final int col = arrays[0].length;
+        final double[] array = new double[row * col];
+
+        for (int i = 0; i < row; ++i) {
+            System.arraycopy(arrays[i], 0, array, i * col, col);
+        }
+
+        return Matrix.array(array, row);
     }
 
     public static Matrix array(@NonNull double[] array, int row) {
         checkNotNull(array);
-        checkExpression(row > 0, "Row should be positive");
+        checkExpression(row > 0,
+                "Row should be positive");
 
         final int col = array.length / row;
-        checkExpression(row * col == array.length, "Array length must be a multiple of row");
+        checkExpression(row * col == array.length,
+                "Array length must be a multiple of row");
 
-        final Matrix matrix = zeros(row, col);
-        final double[][] newArray = matrix.getArray();
-
-        for (int i = 0; i < row; ++i) {
-            System.arraycopy(array, i * row, newArray[i], 0, col);
-        }
-
-        return matrix;
+        return new Matrix(array.clone(), row, col);
     }
 
     public static Matrix randn(int row, int col) {
         checkDimensions(row, col);
 
-        final Matrix matrix = zeros(row, col);
-        final double[][] array = matrix.getArray();
+        final Matrix matrix = Matrix.zeros(row, col);
+        final double[] array = matrix.getArray();
         final Random random = new Random(System.currentTimeMillis());
 
-        for (int i = 0; i < row; ++i) {
-            for (int j = 0; j < col; ++j) {
-                array[i][j] = random.nextGaussian();
-            }
+        for (int i = 0, len = array.length; i < len; ++i) {
+            array[i] = random.nextGaussian();
         }
 
         return matrix;
@@ -157,14 +176,11 @@ public class Matrix {
         checkNotNull(b);
         checkDimensions(a, b);
 
-        final int[] shape = a.shape();
-        final double[][] aArr = a.getArray();
-        final double[][] bArr = b.getArray();
+        final double[] aArr = a.getArray();
+        final double[] bArr = b.getArray();
 
-        for (int i = 0, row = shape[0]; i < row; ++i) {
-            for (int j = 0, col = shape[1]; j < col; ++j) {
-                aArr[i][j] += bArr[i][j];
-            }
+        for (int i = 0, len = aArr.length; i < len; ++i) {
+            aArr[i] += bArr[i];
         }
 
         return a;
@@ -183,14 +199,11 @@ public class Matrix {
         checkNotNull(b);
         checkDimensions(a, b);
 
-        final int[] shape = a.shape();
-        final double[][] aArr = a.getArray();
-        final double[][] bArr = b.getArray();
+        final double[] aArr = a.getArray();
+        final double[] bArr = b.getArray();
 
-        for (int i = 0, row = shape[0]; i < row; ++i) {
-            for (int j = 0, col = shape[1]; j < col; ++j) {
-                aArr[i][j] -= bArr[i][j];
-            }
+        for (int i = 0, len = aArr.length; i < len; ++i) {
+            aArr[i] -= bArr[i];
         }
 
         return a;
@@ -213,12 +226,10 @@ public class Matrix {
     public static Matrix timesTo(@NonNull Matrix matrix, double num) {
         checkNotNull(matrix);
 
-        final double[][] array = matrix.getArray();
+        final double[] array = matrix.getArray();
 
-        for (int i = 0, row = matrix.getRow(), col = matrix.getCol(); i < row; ++i) {
-            for (int j = 0; j < col; ++j) {
-                array[i][j] *= num;
-            }
+        for (int i = 0, len = array.length; i < len; ++i) {
+            array[i] *= num;
         }
 
         return matrix;
@@ -229,14 +240,11 @@ public class Matrix {
         checkNotNull(b);
         checkDimensions(a, b);
 
-        final int[] shape = a.shape();
-        final double[][] aArr = a.getArray();
-        final double[][] bArr = b.getArray();
+        final double[] aArr = a.getArray();
+        final double[] bArr = b.getArray();
 
-        for (int i = 0, row = shape[0]; i < row; ++i) {
-            for (int j = 0, col = shape[1]; j < col; ++j) {
-                aArr[i][j] *= bArr[i][j];
-            }
+        for (int i = 0, len = aArr.length; i < len; ++i) {
+            aArr[i] *= bArr[i];
         }
 
         return a;
@@ -247,54 +255,49 @@ public class Matrix {
         checkNotNull(b);
         checkInnerDimensions(a, b);
 
-        final Matrix res = zeros(a.getRow(), b.getCol());
-        final double[][] array = res.getArray();
-        final int[] shape = res.shape();
+        final Matrix c = zeros(a.getRow(), b.getCol());
+        final double[] cArr = c.getArray();
 
-        double[] tmpRow;
+        final double[] aArr = a.getArray();
+        final double[] bArr = b.getArray();
+
+        final int aRow = a.getRow();
+        final int bCol = b.getCol();
+        final int aCol = a.getCol();
         double tmpNum;
-        final double[] tmpCol = new double[b.getRow()];
-        final double[][] aArr = a.getArray();
-        final double[][] bArr = b.getArray();
 
-        for (int j = 0, row = shape[0],
-             col = shape[1], inner = b.getRow(); j < col; ++j) {
+        for (int i = 0; i < aRow; ++i) {
+            for (int j = 0; j < bCol; ++j) {
+                tmpNum = 0;
 
-            for (int i = 0; i < inner; ++i) {
-                tmpCol[i] = bArr[i][j];
-            }
-
-            for (int i = 0; i < row; ++i) {
-                tmpRow = aArr[i];
-                tmpNum = 0D;
-
-                for (int k = 0; k < inner; ++k) {
-                    tmpNum += (tmpRow[k] * tmpCol[k]);
+                for (int k = 0; k < aCol; ++k) {
+                    tmpNum += aArr[aCol * i + k] * bArr[bCol * k + j];
                 }
 
-                array[i][j] = tmpNum;
+                cArr[i * bCol + j] = tmpNum;
             }
         }
 
-        return res;
+        return c;
     }
 
-    public static Matrix transpose(@NonNull Matrix matrix) {
-        checkNotNull(matrix);
+    public static Matrix transpose(@NonNull Matrix a) {
+        checkNotNull(a);
 
-        final int[] shape = matrix.shape();
-        final Matrix res = zeros(shape[1], shape[0]);
+        final int aRow = a.getRow();
+        final int aCol = a.getCol();
+        final Matrix b = zeros(aCol, aRow);
 
-        final double[][] oldArr = matrix.getArray();
-        final double[][] newArr = res.getArray();
+        final double[] aArr = a.getArray();
+        final double[] bArr = b.getArray();
 
-        for (int i = 0, row = shape[1], col = shape[0]; i < row; ++i) {
-            for (int j = 0; j < col; ++j) {
-                newArr[i][j] = oldArr[j][i];
+        for (int i = 0; i < aRow; ++i) {
+            for (int j = 0; j < aCol; ++j) {
+                bArr[j * aRow + i] = aArr[i * aCol + j];
             }
         }
 
-        return res;
+        return b;
     }
 
     public static Matrix zeroLike(Matrix matrix) {
@@ -304,8 +307,10 @@ public class Matrix {
     }
 
     public static Matrix zeros(@NonNull int... shape) {
-        checkExpression(shape != null && shape.length != 2, "Shape is incorrect");
+        checkNotNull(shape);
+        checkExpression( shape.length == 2, "Shape is incorrect");
 
-        return new Matrix(new double[shape[0]][shape[1]]);
+        return new Matrix(new double[shape[0] * shape[1]],
+                shape[0], shape[1]);
     }
 }
