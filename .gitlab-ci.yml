@@ -24,7 +24,16 @@ before_script:
   - chmod +x ./gradlew
 
 stages:
+  - test
   - build
+
+test:
+  stage: test
+  script:
+    - ./gradlew test
+  artifacts:
+    paths:
+    - app/build/reports
 
 build:
   stage: build
