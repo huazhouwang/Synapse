@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import Jama.Matrix;
+import io.whz.androidneuralnetwork.matrix.Matrix;
 import io.whz.androidneuralnetwork.pojos.ImageDigit;
 import io.whz.androidneuralnetwork.utils.Batches;
 import io.whz.androidneuralnetwork.utils.FileUtils;
@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void predict(ImageDigit digit) {
         final double[] doubles = MNISTUtils.convert(digit.colors);
-        final Matrix input = new Matrix(doubles, 784);
+        final Matrix input = Matrix.array(doubles, 784);
 
         final int num = mNeural.predict(input);
 

@@ -2,9 +2,7 @@ package io.whz.androidneuralnetwork.utils;
 
 import android.support.annotation.NonNull;
 
-import java.util.Random;
-
-import Jama.Matrix;
+import io.whz.androidneuralnetwork.matrix.Matrix;
 
 public class MatrixUtils {
     public static Matrix[] zerosLike(@NonNull Matrix[] matrices) {
@@ -15,97 +13,30 @@ public class MatrixUtils {
 
         for (int i = 0; i < len; ++i) {
             final Matrix matrix = matrices[i];
-            res[i] = new Matrix(matrix.getRowDimension(), matrix.getColumnDimension());
+            res[i] = Matrix.zeroLike(matrix);
         }
 
         return res;
     }
 
-    public static Matrix[] random(int[] rows, int[] cols) {
+    public static Matrix[] randns(int[] rows, int[] cols) {
         final int len;
         Preconditions.checkArgument((len = rows.length) == cols.length);
 
         final Matrix[] matrices = new Matrix[len];
 
         for (int i = 0; i < len; ++i) {
-            matrices[i] = random(rows[i], cols[i]);
+            matrices[i] = Matrix.randn(rows[i], cols[i]);
         }
 
         return matrices;
     }
 
-    public static Matrix random(int row, int col) {
-        final double[][] doubles = new double[row][col];
-        final Random random = new Random();
-
-        for (int i = 0; i < row; ++i) {
-            for (int j = 0; j < col; ++j) {
-                doubles[i][j] = random.nextGaussian();
-            }
-        }
-
-        return new Matrix(doubles);
-    }
-
-    public static double[][] reShape(@NonNull double[][] src, int targetRow, int targetCol) {
-        Preconditions.checkNotNull(src);
-
-        final int srcRow = src.length;
-        final int srcCol = src[0].length;
-
-        Preconditions.checkArgument(srcCol * srcRow == targetCol * targetRow, "Matrix dimensions must agree.");
-
-        int si = 0, sj = 0;
-        final double[][] target = new double[targetRow][targetCol];
-
-        for (int i = 0; i < targetRow; ++i) {
-            for (int j = 0; j < targetCol; ++j) {
-                target[i][j] = src[si][sj++];
-
-                if (sj >= srcCol) {
-                    sj = 0;
-                    ++si;
-                }
-            }
-        }
-
-        return target;
-    }
-
-    public static Matrix reShape(@NonNull Matrix matrix, int targetRow, int targetCol) {
-        Preconditions.checkNotNull(matrix);
-
-        final int srcRow = matrix.getRowDimension();
-        final int srcCol = matrix.getColumnDimension();
-
-        Preconditions.checkArgument(srcCol * srcRow == targetCol * targetRow, "Matrix dimensions must agree.");
-
-        int si = 0, sj = 0;
-
-        final double[][] src = matrix.getArray();
-        final double[][] target = new double[targetRow][targetCol];
-
-        for (int i = 0; i < targetRow; ++i) {
-            for (int j = 0; j < targetCol; ++j) {
-                target[i][j] = src[si][sj++];
-
-                if (sj >= srcCol) {
-                    sj = 0;
-                    ++si;
-                }
-            }
-        }
-
-        return new Matrix(target);
-    }
-
     public static int index(Matrix matrix) {
-        final double[][] doubles = matrix.getArray();
-
-        Preconditions.checkArgument(doubles[0].length == 1);
+        final double[] doubles = matrix.getArray();
 
         for (int i = 0, len = doubles.length; i < len; ++i) {
-            if (doubles[i][0] == 1) {
+            if (doubles[i] == 1) {
                 return i;
             }
         }
@@ -114,13 +45,12 @@ public class MatrixUtils {
     }
 
     public static int argmax(Matrix matrix) {
-        final double[][] doubles = matrix.getArray();
+        final double[] doubles = matrix.getArray();
 
-        Preconditions.checkArgument(doubles[0].length == 1);
         int res = 0;
 
         for (int i = 1, len = doubles.length; i < len; ++i) {
-            if (doubles[i][0] > doubles[res][0]) {
+            if (doubles[i] > doubles[res]) {
                 res = i;
             }
         }

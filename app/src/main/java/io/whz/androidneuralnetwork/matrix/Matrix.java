@@ -25,7 +25,7 @@ public class Matrix {
         return new int[]{mRow, mCol};
     }
 
-    double[] getArray() {
+    public double[] getArray() {
         return mArray;
     }
 

@@ -1,6 +1,6 @@
 package io.whz.androidneuralnetwork.pojos;
 
-import Jama.Matrix;
+import io.whz.androidneuralnetwork.matrix.Matrix;
 
 public class Batch {
     public final Matrix[] inputs;

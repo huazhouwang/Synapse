@@ -9,8 +9,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import Jama.Matrix;
 import io.whz.androidneuralnetwork.App;
+import io.whz.androidneuralnetwork.matrix.Matrix;
 import io.whz.androidneuralnetwork.pojos.Batch;
 import io.whz.androidneuralnetwork.pojos.Digit;
 
@@ -99,7 +99,7 @@ public class Batches {
         for (int i = 0; i < len; ++i) {
             digit = digits.get(i);
 
-            inputs[i] = new Matrix(digit.colorRates, PIXEL_COUNT);
+            inputs[i] = Matrix.array(digit.colorRates, PIXEL_COUNT);
             targets[i] = oneHot(digit.label);
         }
 
@@ -110,7 +110,7 @@ public class Batches {
         final double[] doubles = new double[DIGIT_COUNT];
         doubles[actual] = 1D;
 
-        return new Matrix(doubles, DIGIT_COUNT);
+        return Matrix.array(doubles, DIGIT_COUNT);
     }
 
     @Nullable

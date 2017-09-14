@@ -6,8 +6,8 @@ import android.util.Log;
 
 import java.util.Arrays;
 
-import Jama.Matrix;
 import io.whz.androidneuralnetwork.App;
+import io.whz.androidneuralnetwork.matrix.Matrix;
 import io.whz.androidneuralnetwork.pojos.Batch;
 
 public class NeuralNetwork {
@@ -45,7 +45,7 @@ public class NeuralNetwork {
         final int[] cols = new int[len];
         System.arraycopy(totalSize, 0, cols, 0, len);
 
-        return MatrixUtils.random(rows, cols);
+        return MatrixUtils.randns(rows, cols);
     }
 
     private Matrix[] newBiasesMatrix(int[] totalSize) {
@@ -57,7 +57,7 @@ public class NeuralNetwork {
         final int[] cols = new int[len];
         Arrays.fill(cols, 1);
 
-        return MatrixUtils.random(rows, cols);
+        return MatrixUtils.randns(rows, cols);
     }
 
     public void train(int epochs, double learningRate,
@@ -135,8 +135,8 @@ public class NeuralNetwork {
             final double tmp = mLearningRate / count;
 
             for (int i = 0; i < len; ++i) {
-                mWeights[i].minusEquals(batchWeights[i].times(tmp));
-                mBiases[i].minusEquals(batchBiases[i].times(tmp));
+                mWeights[i].minusTo(batchWeights[i].times(tmp));
+                mBiases[i].minusTo(batchBiases[i].times(tmp));
             }
         }
 
@@ -146,19 +146,19 @@ public class NeuralNetwork {
             final int bLen = batchWeights.length;
 
             final Matrix error = activations[aLen - 1].minus(target);
-            Matrix delta = error.arrayTimes(ActivateFunctions.sigmoidPrime(activations[aLen - 1]));
+            Matrix delta = error.times(ActivateFunctions.sigmoidPrime(activations[aLen - 1]));
 
-            batchBiases[bLen - 1].plusEquals(delta);
-            batchWeights[bLen - 1].plusEquals(delta.times(activations[aLen - 2].transpose()));
+            batchBiases[bLen - 1].plusTo(delta);
+            batchWeights[bLen - 1].plusTo(delta.dot(activations[aLen - 2].transpose()));
 
             for (int i = 2; i < aLen; ++i) {
                 final Matrix prime = ActivateFunctions.sigmoidPrime(activations[aLen - i]);
                 delta = mWeights[bLen - i + 1].transpose()
-                        .times(delta)
-                        .arrayTimes(prime);
+                        .dot(delta)
+                        .times(prime);
 
-                batchBiases[bLen - i].plusEquals(delta);
-                batchWeights[bLen - i].plusEquals(delta.times(activations[aLen - i - 1].transpose()));
+                batchBiases[bLen - i].plusTo(delta);
+                batchWeights[bLen - i].plusTo(delta.dot(activations[aLen - i - 1].transpose()));
             }
         }
 
@@ -169,7 +169,7 @@ public class NeuralNetwork {
 
             for (int i = 0; i < len; ++i) {
                 final Matrix matrix = mWeights[i]
-                        .times(activations[i])
+                        .dot(activations[i])
                         .plus(mBiases[i]);
 
                 activations[i + 1] = ActivateFunctions.sigmoid(matrix);
@@ -177,8 +177,6 @@ public class NeuralNetwork {
 
             return activations;
         }
-
-
 
         private double evaluate() {
             if (mValidation == null) {
@@ -219,7 +217,7 @@ public class NeuralNetwork {
         Matrix res = input;
 
         for (int i = 0; i < len; ++i) {
-            res = ActivateFunctions.sigmoid(weights[i].times(res).plus(biases[i]));
+            res = ActivateFunctions.sigmoid(weights[i].dot(res).plus(biases[i]));
         }
 
         return res;
