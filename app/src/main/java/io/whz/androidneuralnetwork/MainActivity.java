@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.whz.androidneuralnetwork.matrix.Matrix;
-import io.whz.androidneuralnetwork.pojos.ImageDigit;
+import io.whz.androidneuralnetwork.pojos.DigitImg;
 import io.whz.androidneuralnetwork.utils.Batches;
 import io.whz.androidneuralnetwork.utils.FileUtils;
 import io.whz.androidneuralnetwork.utils.MNISTUtils;
@@ -180,13 +180,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final File mnistDir = new File(getOrInitFilesDir(), DIRS[2]);
 
         final int n = mnistDir.listFiles().length;
-        final ImageDigit digit = MNISTUtils.test(mnistDir.listFiles()[(int) (Math.random() * n)]);
+        final DigitImg digit = MNISTUtils.test(mnistDir.listFiles()[(int) (Math.random() * n)]);
 
         showImg(digit);
         predict(digit);
     }
 
-    private void predict(ImageDigit digit) {
+    private void predict(DigitImg digit) {
         final double[] doubles = MNISTUtils.convert(digit.colors);
         final Matrix input = Matrix.array(doubles, 784);
 
@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void showImg(final ImageDigit digit) {
+    private void showImg(final DigitImg digit) {
         final byte[] bytes = digit.colors;
         final int[] colors = new int[bytes.length];
         int color;

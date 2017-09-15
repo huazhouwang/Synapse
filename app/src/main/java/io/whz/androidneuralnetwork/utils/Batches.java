@@ -99,7 +99,7 @@ public class Batches {
         for (int i = 0; i < len; ++i) {
             digit = digits.get(i);
 
-            inputs[i] = Matrix.array(digit.colorRates, PIXEL_COUNT);
+            inputs[i] = Matrix.array(digit.colors, PIXEL_COUNT);
             targets[i] = oneHot(digit.label);
         }
 
@@ -126,7 +126,7 @@ public class Batches {
 
     private void normalize(@NonNull Digit[] digits) {
         for (Digit digit : digits) {
-            final double[] pixels = digit.colorRates;
+            final double[] pixels = digit.colors;
 
             for (int j = 0, jLen = pixels.length; j < jLen; ++j) {
                 pixels[j] /= 0xFF;
