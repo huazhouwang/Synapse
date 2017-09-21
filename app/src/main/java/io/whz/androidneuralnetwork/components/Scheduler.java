@@ -1,4 +1,4 @@
-package io.whz.androidneuralnetwork.utils;
+package io.whz.androidneuralnetwork.components;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -41,6 +41,3 @@ public enum Scheduler implements IThreadExecutor {
 
 }
 
-interface IThreadExecutor {
-    void execute(Runnable runnable);
-}

@@ -22,6 +22,7 @@ public class MNISTUtils {
     private static final int FILE_MINI_BATCH = 2000;
     private static final String BATCH_FILE_SUFFIX = "batch";
 
+
     public static boolean gunzip(File sourceFile, File targetFile) {
         if (!sourceFile.exists()) {
             return false;
@@ -126,7 +127,7 @@ public class MNISTUtils {
         }
     }
 
-    public static boolean parseImages(File sourceFile, File targetDir, String prefix, List<Integer> labels) {
+    public static boolean parseImages(File sourceFile, File targetDir, List<Integer> labels) {
         if (!sourceFile.exists() || !targetDir.exists()) {
             return false;
         }
@@ -159,7 +160,7 @@ public class MNISTUtils {
             for (int i = 1; i <= len; ++i) {
                 if (outputStream == null) {
                     outputStream = new DataOutputStream(new FileOutputStream(new File(targetDir,
-                            String.format("%s_%s.%s", prefix, count++, BATCH_FILE_SUFFIX))));
+                            String.format("%s.%s", count++, BATCH_FILE_SUFFIX))));
                     outputStream.writeInt(BATCH_MAGIC);
                     outputStream.writeInt(FILE_MINI_BATCH);
                     outputStream.writeInt(rows);

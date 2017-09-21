@@ -7,16 +7,16 @@ import android.util.Log;
 import java.util.Arrays;
 
 import io.whz.androidneuralnetwork.App;
+import io.whz.androidneuralnetwork.components.Scheduler;
 import io.whz.androidneuralnetwork.matrix.Matrix;
 import io.whz.androidneuralnetwork.pojos.Batch;
 
 public class NeuralNetwork {
     private static final String TAG = App.TAG + "-NeuralNetwork";
     
-    private final int INPUT_LAYER_NUMBER = 784;
-    private final int OUTPUT_LAYER_NUMBER = 10;
+    private static final int INPUT_LAYER_NUMBER = 784;
+    private static final int OUTPUT_LAYER_NUMBER = 10;
 
-    private final int[] mHLSizes;
     private final Matrix[] mBiases;
     private final Matrix[] mWeights;
 
@@ -31,7 +31,6 @@ public class NeuralNetwork {
         totalSizes[0] = INPUT_LAYER_NUMBER;
         totalSizes[totalSizes.length - 1] = OUTPUT_LAYER_NUMBER;
 
-        mHLSizes = totalSizes;
         mBiases = newBiasesMatrix(totalSizes);
         mWeights = newWeightsMatrices(totalSizes);
     }

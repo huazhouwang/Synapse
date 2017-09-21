@@ -1,3 +1,13 @@
 <resources>
-    <string name="app_name">AndroidNeuralNetwork</string>
+    <string name="app_name">Synapse</string>
+    <string name="training_data_number">60000</string>
+    <string name="test_image_data">Test image data</string>
+    <string name="training_image_data">Training image data</string>
+    <string name="mnist_title">MNIST</string>
+    <string name="test_data_number">10000</string>
+    <string name="download">Download</string>
+    <string name="data_ready">Ready</string>
+    <string name="decompress">Decompressing</string>
+    <string name="downloading">Downloading</string>
+    <string name="try_again">Try again</string>
 </resources>
