@@ -38,7 +38,9 @@
             android:exported="false" />
         <service
             android:name=".HandleService"
-            android:exported="false"></service>
+            android:exported="false" />
+
+        <activity android:name=".NeuralConfigDialog"></activity>
     </application>
 
 </manifest>

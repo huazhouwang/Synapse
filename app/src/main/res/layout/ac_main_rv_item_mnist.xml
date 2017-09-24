@@ -9,8 +9,6 @@
     app:cardElevation="6dp"
     app:cardCornerRadius="3dp"
     tools:layout_gravity="center"
-    tools:layout_marginLeft="16dp"
-    tools:layout_marginRight="16dp"
     >
 
     <RelativeLayout
@@ -73,7 +71,7 @@
             android:layout_below="@+id/test_data"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="12dp"
-            android:backgroundTint="@color/download_active"
+            android:backgroundTint="@color/state_download"
             android:paddingLeft="32dp"
             android:paddingRight="32dp"
             android:textAllCaps="true"
@@ -89,7 +87,7 @@
             android:layout_below="@id/test_data"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="12dp"
-            android:textColor="@color/download_active"
+            android:textColor="@color/state_download"
             android:textAllCaps="true"
             android:textStyle="bold"
             android:textSize="12sp"

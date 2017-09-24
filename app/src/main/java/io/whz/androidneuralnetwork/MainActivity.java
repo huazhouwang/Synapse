@@ -11,6 +11,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -32,7 +33,7 @@ import io.whz.androidneuralnetwork.types.Dirs;
 import io.whz.androidneuralnetwork.utils.FileUtils;
 import me.drakeet.multitype.MultiTypeAdapter;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int REQUEST_EXTERNAL_STORAGE = 0x01;
     private static final String TAG = App.TAG + "-MainActivity";
 
@@ -52,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
         mRecyclerView = findViewById(R.id.rv);
         mFab = findViewById(R.id.fab);
+
+        mFab.setOnClickListener(this);
 
         registerItems();
         mRecyclerView.setAdapter(mAdapter);
@@ -234,5 +237,19 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(MainService.ACTION_KEY, MainService.ACTION_DOWNLOAD);
 
         startService(intent);
+    }
+
+    @Override
+    public void onClick(View view) {
+        final int id = view.getId();
+
+        switch (id) {
+            case R.id.fab:
+                new NeuralConfigDialog()
+                        .show(getSupportFragmentManager(), "New Neural Network");
+                break;
+            default:
+                break;
+        }
     }
 }

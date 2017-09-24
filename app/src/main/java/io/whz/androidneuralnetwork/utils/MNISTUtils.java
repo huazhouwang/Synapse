@@ -19,7 +19,7 @@ public class MNISTUtils {
     private static final int LABEL_MAGIC = 2049;
     private static final int IMAGE_MAGIC = 2051;
     private static final int BATCH_MAGIC = 2052;
-    private static final int FILE_MINI_BATCH = 2000;
+    private static final int PRE_FILE_SIZE = 2000;
     private static final String BATCH_FILE_SUFFIX = "batch";
 
 
@@ -162,7 +162,7 @@ public class MNISTUtils {
                     outputStream = new DataOutputStream(new FileOutputStream(new File(targetDir,
                             String.format("%s.%s", count++, BATCH_FILE_SUFFIX))));
                     outputStream.writeInt(BATCH_MAGIC);
-                    outputStream.writeInt(FILE_MINI_BATCH);
+                    outputStream.writeInt(PRE_FILE_SIZE);
                     outputStream.writeInt(rows);
                     outputStream.writeInt(cols);
                 }
@@ -171,7 +171,7 @@ public class MNISTUtils {
                 outputStream.writeInt(labels.get(i - 1));
                 outputStream.write(buffer);
 
-                if (i % FILE_MINI_BATCH == 0) {
+                if (i % PRE_FILE_SIZE == 0) {
                     outputStream.flush();
                     outputStream.close();
                     outputStream = null;

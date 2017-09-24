@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#C7011F</color>
-    <color name="colorPrimaryDark">#6F0011</color>
-    <color name="colorAccent">#7C4DFF</color>
-    <color name="textPrimary">#212121</color>
-    <color name="secondaryText">#757575</color>
-    <color name="windowBackground">#FAFAFA</color>
-    <color name="download_active">#4CAF50</color>
+    <color name="color_primary">#C7011F</color>
+    <color name="color_primary_dark">#6F0011</color>
+    <color name="color_accent">#536DFE</color>
+    <color name="text_primary">#212121</color>
+    <color name="secondary_text">#757575</color>
+    <color name="window_background">#FAFAFA</color>
+    <color name="state_download">#4CAF50</color>
+
+    <color name="action_delete_layer">#C7011F</color>
+    <color name="action_add_new_layer">#2196F3</color>
 
     <color name="icons">#FFFFFF</color>
     <color name="divider">#BDBDBD</color>
