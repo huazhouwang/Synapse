@@ -1,7 +1,9 @@
 package io.whz.androidneuralnetwork;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.ActivityOptions;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -206,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (what) {
             case MANEvent.CLICK_DOWNLOAD:
-                requestDownload();
+                showConfirmDialog(this);
                 break;
 
             case MANEvent.DOWNLOAD_COMPLETE:
@@ -239,15 +242,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void handleDecompressComplete(MANEvent<?> event) {
         final boolean success = event.obj != null ? (Boolean) event.obj : false;
+        @StringRes final int res;
 
-        @StringRes int res = R.string.text_decompress_success;
-
-        if (!success) {
+        if (success) {
+            mDataSetItem.change(DataSetItem.READY);
+            res = R.string.text_decompress_success;
+        } else {
             mDataSetItem.change(DataSetItem.UNREADY);
-            notifyAdapterChange();
             res = R.string.text_decompress_error;
         }
 
+        notifyAdapterChange();
         Snackbar.make(mRecyclerView, res, Snackbar.LENGTH_SHORT)
                 .show();
     }
@@ -257,6 +262,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         intent.putExtra(MainService.ACTION_KEY, MainService.ACTION_DOWNLOAD);
 
         startService(intent);
+    }
+
+    private void showConfirmDialog(@NonNull final Activity activity) {
+        new AlertDialog.Builder(activity)
+                .setTitle("Download")
+                .setMessage("1. train-images-idx3-ubyte.gz\n2. train-labels-idx1-ubyte.gz\n" +
+                        "3. t10k-images-idx3-ubyte.gz\n4. t10k-labels-idx1-ubyte.gz.\n\n" +
+                        "Total size 11 MB\nPlease switch to WIFI first")
+                .setPositiveButton("Download", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (activity.isFinishing()) {
+                            return;
+                        }
+
+                        requestDownload();
+                    }
+                }).setNegativeButton("Cancel", null)
+                .show();
     }
 
     @Override

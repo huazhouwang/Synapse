@@ -9,4 +9,6 @@
     <dimen name="dialog_per_line_margin">8dp</dimen>
     <dimen name="dialog_edit_text_size">14sp</dimen>
     <dimen name="ac_main_mnist_item_margin">8dp</dimen>
+    <dimen name="page_padding_vertical">16dp</dimen>
+    <dimen name="page_padding_horizontal">8dp</dimen>
 </resources>

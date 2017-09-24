@@ -1,6 +1,8 @@
 package io.whz.androidneuralnetwork;
 
 import android.app.DownloadManager;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -25,6 +27,7 @@ import io.whz.androidneuralnetwork.utils.FileUtils;
 import io.whz.androidneuralnetwork.utils.MNISTUtils;
 
 public class MainService extends Service {
+    private static final int FOREGROUND_SERVER = 0x11;
     private static final String TAG = App.TAG + "-MainService";
 
     public static final String ACTION_KEY = "action_key";
@@ -115,6 +118,8 @@ public class MainService extends Service {
     }
 
     private void onDecompressComplete(boolean success) {
+        stopForeground(true);
+
         if (!success) {
             FileUtils.clear(Global.getInstance().getDirs().download);
         }
@@ -126,6 +131,23 @@ public class MainService extends Service {
         stopSelf();
     }
 
+    private void showDecompressNotification() {
+        final Intent intent = new Intent(this, MainActivity.class);
+        final PendingIntent pending = PendingIntent.getService(this, 0, intent, 0);
+
+        final Notification.Builder builder = new Notification.Builder(this.getApplicationContext());
+
+        builder.setContentTitle(getString(R.string.text_notification_decompress))
+                .setSmallIcon(R.drawable.ic_build_24dp)
+                .setTicker(getString(R.string.text_notification_decompress))
+                .setWhen(System.currentTimeMillis())
+                .setProgress(0, 0, true)
+                .setOngoing(true)
+                .setContentIntent(pending);
+
+        startForeground(FOREGROUND_SERVER, builder.build());
+    }
+
     private void decompress() {
         final Dirs dirs = Global.getInstance().getDirs();
         FileUtils.makeDirs(dirs.decompress, dirs.mnist);
@@ -134,6 +156,8 @@ public class MainService extends Service {
 
         Scheduler.Secondary.execute(new DecompressRunnable(sign, true));
         Scheduler.Secondary.execute(new DecompressRunnable(sign, false));
+
+        showDecompressNotification();
     }
 
     private class DecompressRunnable implements Runnable {

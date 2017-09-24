@@ -25,4 +25,5 @@
     <string name="text_download_success">Download successfully, decompressing</string>
     <string name="text_decompress_error">Something wrong, please try again</string>
     <string name="text_decompress_success">All data is ready, enjoy yourself</string>
+    <string name="text_notification_decompress">Decompressing</string>
 </resources>
