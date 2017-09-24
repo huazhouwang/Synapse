@@ -14,9 +14,10 @@
     <string name="hint_new_hidden_size">New Hidden Layer Size</string>
     <string name="hint_learning_rate">Learning Rate</string>
     <string name="hint_epochs">Epochs</string>
-    <string name="text_selected_data_size">%s of 58000</string>
+    <string name="template_data_size">%s of 58000</string>
     <string name="title_seek_bar">Training Data:</string>
     <string name="text_neural_config_title">New Neural Network</string>
     <string name="text_neural_config_bt_positive">Run</string>
     <string name="text_neural_config_bt_negative">Cancel</string>
+    <string name="transition_neural_config" translatable="false">transition_neural_config</string>
 </resources>

@@ -1,6 +1,7 @@
 package io.whz.androidneuralnetwork;
 
 import android.Manifest;
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,6 +31,7 @@ import io.whz.androidneuralnetwork.components.Preferences;
 import io.whz.androidneuralnetwork.events.MANEvent;
 import io.whz.androidneuralnetwork.multiple.binders.DataSetViewBinder;
 import io.whz.androidneuralnetwork.multiple.items.DataSetItem;
+import io.whz.androidneuralnetwork.transitions.FabTransform;
 import io.whz.androidneuralnetwork.types.Dirs;
 import io.whz.androidneuralnetwork.utils.FileUtils;
 import me.drakeet.multitype.MultiTypeAdapter;
@@ -245,11 +248,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (id) {
             case R.id.fab:
-                new NeuralConfigDialog()
-                        .show(getSupportFragmentManager(), "New Neural Network");
+                startNeuralNetworkConfig(view);
                 break;
             default:
                 break;
         }
+    }
+
+    private void startNeuralNetworkConfig(@NonNull View view) {
+        final Intent intent = new Intent(this, NeuralConfigActivity.class);
+
+        FabTransform.addExtras(intent,
+                ContextCompat.getColor(this, R.color.color_accent),
+                R.drawable.ic_add_white_24dp);
+
+        final ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(
+                this, view, getString(R.string.transition_neural_config));
+
+        startActivity(intent, options.toBundle());
     }
 }

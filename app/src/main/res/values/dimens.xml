@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="spacing_large">32dp</dimen>
+    <dimen name="dialog_corners">2dp</dimen>
+    <dimen name="dialog_padding_vertical">24dp</dimen>
+    <dimen name="dialog_padding_horizontal">16dp</dimen>
+    <dimen name="dialog_title_spacing">16dp</dimen>
+    <dimen name="dialog_per_line_margin">8dp</dimen>
+    <dimen name="dialog_edit_text_size">14sp</dimen>
+</resources>

@@ -16,26 +16,23 @@
             android:id="@+id/input_hidden"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
+            android:textSize="@dimen/dialog_edit_text_size"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/secondary_text"
-            android:drawableEnd="@drawable/ic_close_black_24dp"
             android:inputType="number"
             android:maxLength="3"
             />
     </android.support.design.widget.TextInputLayout>
 
-    <!--<android.support.v7.widget.AppCompatImageView-->
-        <!--android:id="@+id/delete"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_gravity="center"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:layout_centerVertical="true"-->
-        <!--android:layout_marginEnd="8dp"-->
-        <!--android:src="@drawable/ic_close_black_24dp"-->
-        <!--app:tint="@color/action_delete_layer"-->
-        <!--android:visibility="gone"-->
-        <!--tools:visibility="visible"-->
-        <!--/>-->
+    <android.support.v7.widget.AppCompatImageView
+        android:id="@+id/action_delete_layer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|center_vertical"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/ic_close_black_24dp"
+        app:tint="@color/action_delete_layer"
+        android:visibility="gone"
+        tools:visibility="visible"
+        />
 </FrameLayout>

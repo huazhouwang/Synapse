@@ -36,11 +36,13 @@
             android:name=".MainService"
             android:enabled="true"
             android:exported="false" />
-        <service
-            android:name=".HandleService"
-            android:exported="false" />
 
-        <activity android:name=".NeuralConfigDialog"></activity>
+        <activity
+            android:name=".NeuralConfigActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme.Translucent.NeuralNetworkConfig"
+            android:windowSoftInputMode="adjustResize"
+            />
     </application>
 
 </manifest>

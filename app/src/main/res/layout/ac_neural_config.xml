@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="@dimen/spacing_large"
+    android:paddingEnd="@dimen/spacing_large"
+    android:onClick="onDismiss"
+    tools:context="io.whz.androidneuralnetwork.NeuralConfigActivity">
+
+    <ScrollView
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/dialog_background"
+        android:layout_gravity="center"
+        android:transitionName="@string/transition_neural_config"
+        tools:ignore="UselessParent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/dialog_padding_vertical"
+            android:paddingBottom="8dp"
+            android:paddingStart="@dimen/dialog_padding_horizontal"
+            android:paddingEnd="@dimen/dialog_padding_horizontal"
+            android:orientation="vertical"
+            tools:layout_gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/dialog_title_spacing"
+                android:text="@string/text_neural_config_title"
+                android:textAppearance="@android:style/TextAppearance.Material.DialogWindowTitle"
+                />
+
+            <LinearLayout
+                android:id="@+id/layout_hidden_layers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:focusable="true"
+                android:focusableInTouchMode="true">
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/action_add_new_layer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_per_line_margin"
+                android:textSize="12sp"
+                android:textColor="@color/secondary_text"
+                android:textStyle="italic"
+                android:text="@string/action_add_new_layer"
+                />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:layout_marginTop="@dimen/dialog_per_line_margin"
+                >
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/hint_learning_rate">
+
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/input_learning_rate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/dialog_edit_text_size"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/secondary_text"
+                        android:inputType="numberDecimal"
+                        />
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/hint_epochs">
+
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/input_epochs"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/dialog_edit_text_size"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/secondary_text"
+                        android:inputType="number"
+                        />
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginTop="@dimen/dialog_per_line_margin"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                >
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/title_seek_bar"
+                    android:textSize="16sp"
+                    android:textColor="@color/color_accent"
+                    />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    >
+                    <TextView
+                        android:id="@+id/selected_data_size"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary_text"
+                        tools:text="@string/template_data_size"
+                        />
+
+                    <android.support.v7.widget.AppCompatSeekBar
+                        android:id="@+id/seek_bar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:max="100"
+                        android:progress="50"
+                        />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dialog_per_line_margin"
+                android:gravity="end"
+                android:orientation="horizontal"
+                >
+                <android.support.v7.widget.AppCompatButton
+                    style="?android:borderlessButtonStyle"
+                    android:layout_width="80dp"
+                    android:layout_height="40dp"
+                    android:textColor="@color/color_accent"
+                    android:textSize="14sp"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:text="@string/text_neural_config_bt_negative"
+                    android:onClick="onDismiss"
+                    />
+
+                <android.support.v7.widget.AppCompatButton
+                    style="?android:borderlessButtonStyle"
+                    android:layout_width="60dp"
+                    android:layout_height="40dp"
+                    android:textColor="@color/color_accent"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:text="@string/text_neural_config_bt_positive"
+                    android:onClick="onConfirm"
+                    />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>
+

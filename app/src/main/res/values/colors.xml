@@ -7,6 +7,7 @@
     <color name="secondary_text">#757575</color>
     <color name="window_background">#FAFAFA</color>
     <color name="state_download">#4CAF50</color>
+    <color name="scrim">#99323232</color>
 
     <color name="action_delete_layer">#C7011F</color>
     <color name="action_add_new_layer">#2196F3</color>
