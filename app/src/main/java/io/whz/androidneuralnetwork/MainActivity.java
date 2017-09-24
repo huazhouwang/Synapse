@@ -266,11 +266,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void showConfirmDialog(@NonNull final Activity activity) {
         new AlertDialog.Builder(activity)
-                .setTitle("Download")
-                .setMessage("1. train-images-idx3-ubyte.gz\n2. train-labels-idx1-ubyte.gz\n" +
-                        "3. t10k-images-idx3-ubyte.gz\n4. t10k-labels-idx1-ubyte.gz.\n\n" +
-                        "Total size 11 MB\nPlease switch to WIFI first")
-                .setPositiveButton("Download", new DialogInterface.OnClickListener() {
+                .setTitle(R.string.text_dialog_download_title)
+                .setMessage(R.string.text_dialog_download_msg)
+                .setPositiveButton(R.string.text_dialog_download_positive, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         if (activity.isFinishing()) {
@@ -279,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         requestDownload();
                     }
-                }).setNegativeButton("Cancel", null)
+                }).setNegativeButton(R.string.text_dialog_download_negavite, null)
                 .show();
     }
 

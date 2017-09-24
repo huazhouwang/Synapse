@@ -120,7 +120,9 @@ public class MainService extends Service {
     private void onDecompressComplete(boolean success) {
         stopForeground(true);
 
-        if (!success) {
+        if (success) {
+            FileUtils.clear(Global.getInstance().getDirs().decompress);
+        } else {
             FileUtils.clear(Global.getInstance().getDirs().download);
         }
 
