@@ -6,12 +6,12 @@
     <color name="text_primary">#212121</color>
     <color name="secondary_text">#757575</color>
     <color name="window_background">#FAFAFA</color>
-    <color name="state_download">#4CAF50</color>
     <color name="scrim">#99323232</color>
+    <color name="state_download">#BDBDBD</color>
+    <color name="state_downloaded">#4CAF50</color>
 
     <color name="action_delete_layer">#C7011F</color>
     <color name="action_add_new_layer">#2196F3</color>
 
-    <color name="icons">#FFFFFF</color>
     <color name="divider">#BDBDBD</color>
 </resources>

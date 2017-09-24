@@ -161,5 +161,6 @@ public class NeuralConfigActivity extends AppCompatActivity implements View.OnCl
     }
 
     public void onConfirm(View view) {
+        finish();
     }
 }

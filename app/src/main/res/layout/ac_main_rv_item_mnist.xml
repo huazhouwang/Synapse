@@ -13,86 +13,61 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp"
-        >
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/container_padding_top"
+        android:paddingBottom="@dimen/container_padding_bottom"
+        android:paddingStart="@dimen/container_padding_horizontal"
+        android:paddingEnd="@dimen/container_padding_horizontal">
         <TextView
-            style="@style/TitleText"
+            style="@android:style/TextAppearance.Material.Title"
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:text="@string/mnist_title"
             />
 
         <TextView
             style="@style/BodyText"
-            android:id="@+id/training_data"
+            android:id="@+id/data_set_1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/title"
-            android:layout_marginTop="12dp"
-            android:text="@string/training_image_data"
-            />
-
-        <TextView
-            style="@style/DataSetNumber"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/training_data"
-            android:layout_alignParentEnd="true"
-            android:layout_alignEnd="@+id/training_data"
-            android:text="@string/training_data_number"
+            android:text="@string/text_data_set_training"
             />
 
         <TextView
             style="@style/BodyText"
-            android:id="@+id/test_data"
+            android:id="@+id/data_set_2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/training_data"
-            android:layout_marginTop="8dp"
-            android:text="@string/test_image_data"
+            android:layout_below="@+id/data_set_1"
+            android:layout_marginTop="@dimen/ac_main_mnist_item_margin"
+            android:text="@string/text_data_set_testing"
             />
 
-        <TextView
-            style="@style/DataSetNumber"
+        <ImageView
+            android:id="@+id/download"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/test_data"
+            android:layout_alignBaseline="@+id/data_set_1"
             android:layout_alignParentEnd="true"
-            android:layout_alignEnd="@+id/test_data"
-            android:text="@string/test_data_number"
-            />
-
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/download_data"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/test_data"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="12dp"
-            android:backgroundTint="@color/state_download"
-            android:paddingLeft="32dp"
-            android:paddingRight="32dp"
-            android:textAllCaps="true"
-            android:textSize="12sp"
-            android:textColor="@android:color/white"
-            android:text="@string/download"
+            android:scaleType="fitCenter"
+            android:src="@drawable/state_download"
+            android:background="?selectableItemBackgroundBorderless"
             />
 
         <TextView
-            android:id="@+id/downloaded"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/test_data"
+            android:layout_below="@+id/data_set_2"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="12dp"
-            android:textColor="@color/state_download"
-            android:textAllCaps="true"
-            android:textStyle="bold"
             android:textSize="12sp"
-            android:text="@string/data_ready"
-            android:visibility="gone"
+            android:textStyle="italic"
+            android:textColor="@color/secondary_text"
+            android:layout_marginTop="@dimen/ac_main_mnist_item_margin"
+            android:gravity="center"
+            android:text="@string/text_data_set"
             />
     </RelativeLayout>
 

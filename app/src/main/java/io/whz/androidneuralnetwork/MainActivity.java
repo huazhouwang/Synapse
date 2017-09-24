@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -32,7 +33,6 @@ import io.whz.androidneuralnetwork.events.MANEvent;
 import io.whz.androidneuralnetwork.multiple.binders.DataSetViewBinder;
 import io.whz.androidneuralnetwork.multiple.items.DataSetItem;
 import io.whz.androidneuralnetwork.transitions.FabTransform;
-import io.whz.androidneuralnetwork.types.Dirs;
 import io.whz.androidneuralnetwork.utils.FileUtils;
 import me.drakeet.multitype.MultiTypeAdapter;
 
@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public Set<String> getUnreadyFiles() {
         final Set<String> unreadyFiles = new HashSet<>(Arrays.asList(Global.getInstance().getDataSet()));
 
-        final File downloadDir = new File(Global.getInstance().getRootDir(), Dirs.DOWNLOAD);
+        final File downloadDir = Global.getInstance().getDirs().download;
         FileUtils.makeDirs(downloadDir);
 
         final File[] files = downloadDir.listFiles();
@@ -224,15 +224,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void handleDownloadComplete(MANEvent<?> event) {
         final boolean success = event.obj != null ? (Boolean) event.obj : false;
-        mDataSetItem.change(success ? DataSetItem.READY : DataSetItem.UNREADY);
-        notifyAdapterChange();
+
+        @StringRes int res = R.string.text_download_success;
+
+        if (!success) {
+            mDataSetItem.change(DataSetItem.UNREADY);
+            notifyAdapterChange();
+            res = R.string.text_download_error;
+        }
+
+        Snackbar.make(mRecyclerView, res, Snackbar.LENGTH_SHORT)
+                .show();
     }
 
     private void handleDecompressComplete(MANEvent<?> event) {
         final boolean success = event.obj != null ? (Boolean) event.obj : false;
-        mDataSetItem.change(success ? DataSetItem.READY : DataSetItem.UNREADY);
-        notifyAdapterChange();
-        Snackbar.make(mRecyclerView, "Success", Snackbar.LENGTH_SHORT).show();
+
+        @StringRes int res = R.string.text_decompress_success;
+
+        if (!success) {
+            mDataSetItem.change(DataSetItem.UNREADY);
+            notifyAdapterChange();
+            res = R.string.text_decompress_error;
+        }
+
+        Snackbar.make(mRecyclerView, res, Snackbar.LENGTH_SHORT)
+                .show();
     }
 
     private void requestDownload() {

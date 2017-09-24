@@ -2,9 +2,11 @@
 <resources>
     <dimen name="spacing_large">32dp</dimen>
     <dimen name="dialog_corners">2dp</dimen>
-    <dimen name="dialog_padding_vertical">24dp</dimen>
-    <dimen name="dialog_padding_horizontal">16dp</dimen>
+    <dimen name="container_padding_top">24dp</dimen>
+    <dimen name="container_padding_bottom">8dp</dimen>
+    <dimen name="container_padding_horizontal">16dp</dimen>
     <dimen name="dialog_title_spacing">16dp</dimen>
     <dimen name="dialog_per_line_margin">8dp</dimen>
     <dimen name="dialog_edit_text_size">14sp</dimen>
+    <dimen name="ac_main_mnist_item_margin">8dp</dimen>
 </resources>

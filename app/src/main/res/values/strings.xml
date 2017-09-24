@@ -1,8 +1,6 @@
 <resources>
     <string name="app_name">Synapse</string>
     <string name="training_data_number">60000</string>
-    <string name="test_image_data">Test image data</string>
-    <string name="training_image_data">Training image data</string>
     <string name="mnist_title">MNIST</string>
     <string name="test_data_number">10000</string>
     <string name="download">Download</string>
@@ -20,4 +18,11 @@
     <string name="text_neural_config_bt_positive">Run</string>
     <string name="text_neural_config_bt_negative">Cancel</string>
     <string name="transition_neural_config" translatable="false">transition_neural_config</string>
+    <string name="text_data_set">58000 rows training, 2000 rows validation, \nand 10000 rows testing</string>
+    <string name="text_data_set_training">TRAINING (60000 rows)</string>
+    <string name="text_data_set_testing">TESTING (10000 rows)</string>
+    <string name="text_download_error">Something wrong, please try again</string>
+    <string name="text_download_success">Download successfully, decompressing</string>
+    <string name="text_decompress_error">Something wrong, please try again</string>
+    <string name="text_decompress_success">All data is ready, enjoy yourself</string>
 </resources>
