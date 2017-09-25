@@ -11,9 +11,12 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.IBinder;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 
 import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,32 +26,98 @@ import io.whz.androidneuralnetwork.components.Dirs;
 import io.whz.androidneuralnetwork.components.Global;
 import io.whz.androidneuralnetwork.components.Scheduler;
 import io.whz.androidneuralnetwork.events.MANEvent;
+import io.whz.androidneuralnetwork.pojos.NeuralModel;
 import io.whz.androidneuralnetwork.utils.FileUtils;
 import io.whz.androidneuralnetwork.utils.MNISTUtils;
+import io.whz.androidneuralnetwork.utils.Preconditions;
 
 public class MainService extends Service {
-    private static final int FOREGROUND_SERVER = 0x11;
+    private static final int FOREGROUND_SERVER = 0x1111;
     private static final String TAG = App.TAG + "-MainService";
 
-    public static final String ACTION_KEY = "action_key";
-    public static final int ACTION_DOWNLOAD = 0x01;
+    public static final String EXTRAS_NEURAL_CONFIG = "extras_neural_config";
 
+    public static final String ACTION_KEY = "action_key";
+    private static final int IDLE = 0x00;
+    public static final int ACTION_DOWNLOAD = 0x01;
+    public static final int ACTION_TRAIN = 0x01 << 1;
+    public static final int ACTION_TEST = 0x01 << 2;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({IDLE, ACTION_DOWNLOAD, ACTION_TRAIN, ACTION_TEST})
+    private @interface Action {}
+
+    @Action
+    private int mAction = IDLE;
     private BroadcastReceiver mDownloadReceiver;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        final int action = intent.getIntExtra(ACTION_KEY, -1);
+        @Action final int action = intent.getIntExtra(ACTION_KEY, -1);
 
-        switch (action) {
-            case -1:
-                throw new UnsupportedOperationException();
+        if (isIdle()) {
+            switch (action) {
+                case ACTION_DOWNLOAD:
+                    downloadFiles();
+                    break;
 
-            case ACTION_DOWNLOAD:
-                downloadFiles();
-                break;
+                case ACTION_TRAIN:
+                    handleTraining(intent);
+                    break;
+
+                case ACTION_TEST:
+                    break;
+
+                case IDLE:
+                default:
+                    throw new UnsupportedOperationException();
+            }
+
+            mAction = action;
         }
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void handleTraining(@NonNull Intent intent) {
+        final NeuralModel model = (NeuralModel) intent.getSerializableExtra(EXTRAS_NEURAL_CONFIG);
+
+        Preconditions.checkNotNull(model);
+
+        // TODO: 25/09/2017
+    }
+
+    private boolean isIdle() {
+        final String rep;
+
+        switch (mAction) {
+            case IDLE:
+                return true;
+                
+            case ACTION_DOWNLOAD:
+                rep = getString(R.string.text_wait_for_download);
+                break;
+
+            case ACTION_TEST:
+                rep = getString(R.string.text_wait_for_test);
+                break;
+
+            case ACTION_TRAIN:
+                rep = getString(R.string.text_wait_for_train);
+                break;
+
+            default:
+                return false;
+        }
+
+        sendRejectMsg(rep);
+        return false;
+    }
+
+    private void sendRejectMsg(@NonNull String msg) {
+        Global.getInstance()
+                .getBus()
+                .post(new MANEvent<>(MANEvent.REJECT_MSG, msg));
     }
 
     private void deleteOldFiles() {
@@ -102,35 +171,48 @@ public class MainService extends Service {
         }
     }
 
-    private void onDownloadComplete(boolean success) {
-        unregisterDownloadReceiver();
+    private void onDownloadComplete(final boolean success) {
+        Scheduler.Main.execute(new Runnable() {
+            @Override
+            public void run() {
+                unregisterDownloadReceiver();
 
-        Global.getInstance()
-                .getBus()
-                .post(new MANEvent<>(MANEvent.DOWNLOAD_COMPLETE, success));
+                Global.getInstance()
+                        .getBus()
+                        .post(new MANEvent<>(MANEvent.DOWNLOAD_COMPLETE, success));
 
-        if (success) {
-            decompress();
-        } else {
-            FileUtils.clear(Global.getInstance().getDirs().download);
-            stopSelf();
-        }
+                if (success) {
+                    decompress();
+                } else {
+                    FileUtils.clear(Global.getInstance().getDirs().download);
+
+                    mAction = IDLE;
+                    stopSelf();
+                }
+            }
+        });
     }
 
-    private void onDecompressComplete(boolean success) {
-        stopForeground(true);
+    private void onDecompressComplete(final boolean success) {
+        Scheduler.Main.execute(new Runnable() {
+            @Override
+            public void run() {
+                stopForeground(true);
 
-        if (success) {
-            FileUtils.clear(Global.getInstance().getDirs().decompress);
-        } else {
-            FileUtils.clear(Global.getInstance().getDirs().download);
-        }
+                if (success) {
+                    FileUtils.clear(Global.getInstance().getDirs().decompress);
+                } else {
+                    FileUtils.clear(Global.getInstance().getDirs().download);
+                }
 
-        Global.getInstance()
-                .getBus()
-                .post(new MANEvent<>(MANEvent.DECOMPRESS_COMPLETE, success));
+                Global.getInstance()
+                        .getBus()
+                        .post(new MANEvent<>(MANEvent.DECOMPRESS_COMPLETE, success));
 
-        stopSelf();
+                mAction = IDLE;
+                stopSelf();
+            }
+        });
     }
 
     private void showDecompressNotification() {

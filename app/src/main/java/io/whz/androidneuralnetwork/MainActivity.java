@@ -17,6 +17,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
 
 import org.greenrobot.eventbus.EventBus;
@@ -220,9 +221,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 handleDecompressComplete(event);
                 break;
 
+            case MANEvent.REJECT_MSG:
+                handleRejectMsg(event);
+                break;
+
             default:
                 break;
         }
+    }
+
+    private void handleRejectMsg(MANEvent<?> event) {
+        final String text = String.valueOf(event.obj);
+
+        if (TextUtils.isEmpty(text)) {
+            return;
+        }
+
+        Snackbar.make(mRecyclerView, text, Snackbar.LENGTH_SHORT)
+                .show();
     }
 
     private void handleDownloadComplete(MANEvent<?> event) {
@@ -295,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void startNeuralNetworkConfig(@NonNull View view) {
-        final Intent intent = new Intent(this, NeuralConfigActivity.class);
+        final Intent intent = new Intent(this, NeuralModelActivity.class);
 
         FabTransform.addExtras(intent,
                 ContextCompat.getColor(this, R.color.color_accent),

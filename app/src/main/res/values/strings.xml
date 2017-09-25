@@ -14,7 +14,7 @@
     <string name="hint_epochs">Epochs</string>
     <string name="template_data_size">%s of 58000</string>
     <string name="title_seek_bar">Training Data:</string>
-    <string name="text_neural_config_title">New Neural Network</string>
+    <string name="text_neural_config_title">New Model</string>
     <string name="text_neural_config_bt_positive">Run</string>
     <string name="text_neural_config_bt_negative">Cancel</string>
     <string name="transition_neural_config" translatable="false">transition_neural_config</string>
@@ -30,4 +30,14 @@
     <string name="text_dialog_download_title">Download</string>
     <string name="text_dialog_download_positive">Confirm</string>
     <string name="text_dialog_download_negavite">Cancel</string>
+    <string name="text_default_learning_rate">3</string>
+    <string name="text_default_epochs">10</string>
+    <string name="text_default_hidden_size">30</string>
+    <string name="text_error_empty_hidden">Has empty hidden layer</string>
+    <string name="text_error_zero_hidden_size">Zero hidden size is illegal</string>
+    <string name="text_error_zero_learning_rate">Zero learning rate is illegal</string>
+    <string name="text_error_zero_epochs">Zero epochs is illegal</string>
+    <string name="text_wait_for_download">Downloading, please wait</string>
+    <string name="text_wait_for_test">Testing, Please wait</string>
+    <string name="text_wait_for_train">Training, please wait</string>
 </resources>

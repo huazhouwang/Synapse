@@ -9,7 +9,8 @@
     <color name="scrim">#99323232</color>
     <color name="state_download">#BDBDBD</color>
     <color name="state_downloaded">#4CAF50</color>
-    <color name="color_notify_decompress">#BDBDBD</color>
+    <color name="notify_decompress">#BDBDBD</color>
+    <color name="normal_link">#4183C4</color>
 
     <color name="action_delete_layer">#C7011F</color>
     <color name="action_add_new_layer">#2196F3</color>

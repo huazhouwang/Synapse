@@ -1,22 +1,28 @@
 package io.whz.androidneuralnetwork;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import io.whz.androidneuralnetwork.pojos.NeuralModel;
 import io.whz.androidneuralnetwork.transitions.FabTransform;
 
-public class NeuralConfigActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+public class NeuralModelActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private static final int MAX_HIDDEN_SIZE = 5;
     private static final int MINI_BATCH_SIZE = 2000;
     private static final int MAX_PROGRESS = 100;
@@ -29,12 +35,16 @@ public class NeuralConfigActivity extends AppCompatActivity implements View.OnCl
     private LayoutInflater mInflater;
     private TextView mDataSizeText;
     private View mAddNewHidden;
+    private TextView mLearningRateInput;
+    private TextView mEpochsInput;
+    private SeekBar mTrainingSize;
+
     private String mDataSizeTemplate;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.ac_neural_config);
+        setContentView(R.layout.activity_neural_model);
 
         mInflater = LayoutInflater.from(this);
         mDataSizeTemplate = getString(R.string.template_data_size);
@@ -42,13 +52,13 @@ public class NeuralConfigActivity extends AppCompatActivity implements View.OnCl
         mContainer = findViewById(R.id.container);
         mHiddenGroup = findViewById(R.id.layout_hidden_layers);
         mDataSizeText = findViewById(R.id.selected_data_size);
-
-        final SeekBar seekBar = findViewById(R.id.seek_bar);
-        prepareSeekBar(seekBar, mDataSizeText);
-
+        mLearningRateInput = findViewById(R.id.input_learning_rate);
+        mEpochsInput = findViewById(R.id.input_epochs);
+        mTrainingSize = findViewById(R.id.seek_bar);
         mAddNewHidden = findViewById(R.id.action_add_new_layer);
-        mAddNewHidden.setOnClickListener(this);
 
+        prepareSeekBar(mTrainingSize, mDataSizeText);
+        mAddNewHidden.setOnClickListener(this);
         addNewHiddenLayer();
 
         FabTransform.setup(this, mContainer);
@@ -161,6 +171,97 @@ public class NeuralConfigActivity extends AppCompatActivity implements View.OnCl
     }
 
     public void onConfirm(View view) {
-        finish();
+        final NeuralModel config = checkInputs();
+
+        if (config == null) {
+            return;
+        }
+
+        final Intent intent = new Intent(this, MainService.class);
+        intent.putExtra(MainService.ACTION_KEY, MainService.ACTION_TRAIN);
+        intent.putExtra(MainService.EXTRAS_NEURAL_CONFIG, config);
+
+        startService(intent);
+
+        final Animation out = AnimationUtils.loadAnimation(this, R.anim.side_top_fade_out);
+
+        out.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                NeuralModelActivity.this.finish();
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
+
+        mContainer.startAnimation(out);
+    }
+
+    private NeuralModel checkInputs() {
+        final int[] hiddenSizes = new int[mHiddenSizeInputs.size()];
+
+        for (int i = 0, len = hiddenSizes.length; i < len; ++i) {
+            final String size = String.valueOf(mHiddenSizeInputs.get(i).getText());
+
+            if (TextUtils.isEmpty(size)) {
+                showSnackbar(getString(R.string.text_error_empty_hidden));
+                return null;
+            } else if ((hiddenSizes[i] = solveInt(size)) <= 0) {
+                showSnackbar(getString(R.string.text_error_zero_hidden_size));
+
+                return null;
+            }
+        }
+
+        final double leaningRate = solveDouble(String.valueOf(mLearningRateInput.getText()));
+
+        if (leaningRate <= 0) {
+            showSnackbar(getString(R.string.text_error_zero_learning_rate));
+            return null;
+        }
+
+        final int epochs = solveInt(String.valueOf(mEpochsInput.getText()));
+
+        if (epochs <= 0) {
+            showSnackbar(getString(R.string.text_error_zero_epochs));
+            return null;
+        }
+
+        final int trainingSize = mTrainingSize.getProgress();
+
+        return new NeuralModel(hiddenSizes, leaningRate, epochs, trainingSize);
+    }
+
+    private int solveInt(@NonNull String input) {
+        int res;
+
+        try {
+            res =  Integer.valueOf(input);
+        } catch (NumberFormatException e) {
+            res = 0;
+        }
+
+        return res;
+    }
+
+    private double solveDouble(@NonNull String input) {
+        double res;
+
+        try {
+            res = Double.valueOf(input);
+        } catch (NumberFormatException e) {
+            res = 0D;
+        }
+
+        return res;
+    }
+
+    private void showSnackbar(@NonNull String text) {
+        Snackbar.make(mContainer, text, Snackbar.LENGTH_SHORT)
+                .show();
     }
 }

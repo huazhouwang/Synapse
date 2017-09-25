@@ -21,6 +21,8 @@
             android:textColorHint="@color/secondary_text"
             android:inputType="number"
             android:maxLength="3"
+            android:selectAllOnFocus="true"
+            android:text="@string/text_default_hidden_size"
             />
     </android.support.design.widget.TextInputLayout>
 

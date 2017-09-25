@@ -8,7 +8,7 @@
     android:paddingStart="@dimen/spacing_large"
     android:paddingEnd="@dimen/spacing_large"
     android:onClick="onDismiss"
-    tools:context="io.whz.androidneuralnetwork.NeuralConfigActivity">
+    tools:context="io.whz.androidneuralnetwork.NeuralModelActivity">
 
     <ScrollView
         android:id="@+id/container"
@@ -43,8 +43,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:focusable="true"
-                android:focusableInTouchMode="true">
-            </LinearLayout>
+                android:focusableInTouchMode="true"/>
 
             <TextView
                 android:id="@+id/action_add_new_layer"
@@ -52,7 +51,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/dialog_per_line_margin"
                 android:textSize="12sp"
-                android:textColor="@color/secondary_text"
+                android:textColor="@color/normal_link"
                 android:textStyle="italic"
                 android:text="@string/action_add_new_layer"
                 />
@@ -79,6 +78,9 @@
                         android:textColor="@color/text_primary"
                         android:textColorHint="@color/secondary_text"
                         android:inputType="numberDecimal"
+                        android:maxLength="6"
+                        android:text="@string/text_default_learning_rate"
+                        android:selectAllOnFocus="true"
                         />
                 </android.support.design.widget.TextInputLayout>
 
@@ -96,6 +98,9 @@
                         android:textColor="@color/text_primary"
                         android:textColorHint="@color/secondary_text"
                         android:inputType="number"
+                        android:maxLength="4"
+                        android:text="@string/text_default_epochs"
+                        android:selectAllOnFocus="true"
                         />
                 </android.support.design.widget.TextInputLayout>
             </LinearLayout>
