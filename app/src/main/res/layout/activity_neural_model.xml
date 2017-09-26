@@ -8,7 +8,7 @@
     android:paddingStart="@dimen/spacing_large"
     android:paddingEnd="@dimen/spacing_large"
     android:onClick="onDismiss"
-    tools:context="io.whz.androidneuralnetwork.NeuralModelActivity">
+    tools:context="io.whz.androidneuralnetwork.component.NeuralModelActivity">
 
     <ScrollView
         android:id="@+id/container"

@@ -2,7 +2,7 @@ package io.whz.androidneuralnetwork.matrix;
 
 import android.support.annotation.NonNull;
 
-import io.whz.androidneuralnetwork.utils.Preconditions;
+import io.whz.androidneuralnetwork.util.Precondition;
 
 class MatrixChecker {
     static void verifyArrays(@NonNull double[][] arrays) {
@@ -20,11 +20,11 @@ class MatrixChecker {
     }
 
     static void checkNotNull(Object o) {
-        Preconditions.checkNotNull(o);
+        Precondition.checkNotNull(o);
     }
 
     static void checkExpression(boolean expression, String message) {
-        Preconditions.checkArgument(expression, message);
+        Precondition.checkArgument(expression, message);
     }
 
     static void checkExpression(boolean expression) {

@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".App"
+        android:name=".component.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -16,7 +16,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".component.MainActivity"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,12 +26,12 @@
         </activity>
 
         <service
-            android:name=".MainService"
+            android:name=".component.MainService"
             android:enabled="true"
             android:exported="false" />
 
         <activity
-            android:name=".NeuralModelActivity"
+            android:name=".component.NeuralModelActivity"
             android:exported="false"
             android:theme="@style/AppTheme.Translucent.NeuralNetworkConfig"
             android:windowSoftInputMode="adjustResize"
