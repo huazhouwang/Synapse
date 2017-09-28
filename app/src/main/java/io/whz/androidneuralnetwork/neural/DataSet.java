@@ -11,11 +11,12 @@ import java.util.List;
 
 import io.whz.androidneuralnetwork.component.App;
 import io.whz.androidneuralnetwork.matrix.Matrix;
+import io.whz.androidneuralnetwork.pojo.neural.Batch;
 import io.whz.androidneuralnetwork.pojo.neural.Digit;
 import io.whz.androidneuralnetwork.util.Precondition;
 
-public class Batch {
-    private static final String TAG = App.TAG + "-Batch";
+public class DataSet {
+    private static final String TAG = App.TAG + "-DataSet";
     private static final int DEFAULT_MIN_BATCH = 20;
     private static final int DIGIT_COUNT = 10;
     private static final int PIXEL_COUNT = 784;
@@ -28,14 +29,14 @@ public class Batch {
     private int mRemain;
     private int mIndex;
 
-    public Batch(@NonNull File... batchFiles) {
+    public DataSet(@NonNull File... batchFiles) {
         mMiniBatch = DEFAULT_MIN_BATCH;
         mBatchFiles.addAll(Arrays.asList(batchFiles));
 
         reset();
     }
 
-    public Batch(int miniBatch, @NonNull File... batchFiles) {
+    public DataSet(int miniBatch, @NonNull File... batchFiles) {
         Precondition.checkArgument(miniBatch <= 0, "MiniBatch must be positive");
 
         mMiniBatch = miniBatch;
@@ -53,7 +54,7 @@ public class Batch {
     }
 
     @Nullable
-    public io.whz.androidneuralnetwork.pojo.neural.Batch next() {
+    public Batch nextBatch() {
         final List<Digit> batch = new ArrayList<>();
         int need = mMiniBatch;
 
@@ -85,7 +86,7 @@ public class Batch {
         return convert2Matrix(batch);
     }
 
-    private io.whz.androidneuralnetwork.pojo.neural.Batch convert2Matrix(@NonNull List<Digit> digits) {
+    private Batch convert2Matrix(@NonNull List<Digit> digits) {
         if (digits.isEmpty()) {
             return null;
         }
@@ -103,7 +104,7 @@ public class Batch {
             targets[i] = oneHot(digit.label);
         }
 
-        return new io.whz.androidneuralnetwork.pojo.neural.Batch(inputs, targets);
+        return new Batch(inputs, targets);
     }
 
     private Matrix oneHot(int actual) {

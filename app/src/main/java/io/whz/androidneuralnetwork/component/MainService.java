@@ -2,6 +2,7 @@ package io.whz.androidneuralnetwork.component;
 
 import android.app.DownloadManager;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -9,27 +10,48 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.whz.androidneuralnetwork.R;
+import io.whz.androidneuralnetwork.element.ChannelCreator;
 import io.whz.androidneuralnetwork.element.Dir;
 import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.element.Scheduler;
-import io.whz.androidneuralnetwork.pojo.event.MANEvent;
-import io.whz.androidneuralnetwork.pojo.neural.NeuralModel;
-import io.whz.androidneuralnetwork.util.FileUtil;
+import io.whz.androidneuralnetwork.neural.DataSet;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
+import io.whz.androidneuralnetwork.neural.NeuralNetwork;
+import io.whz.androidneuralnetwork.neural.TrainCallback;
+import io.whz.androidneuralnetwork.pojo.event.MANEvent;
+import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
+import io.whz.androidneuralnetwork.pojo.event.TrainStateEvent;
+import io.whz.androidneuralnetwork.pojo.neural.CompletedModel;
+import io.whz.androidneuralnetwork.pojo.neural.NeuralModel;
+import io.whz.androidneuralnetwork.pojo.neural.UpdateModel;
+import io.whz.androidneuralnetwork.util.FileUtil;
 import io.whz.androidneuralnetwork.util.Precondition;
 
 public class MainService extends Service {
@@ -50,7 +72,11 @@ public class MainService extends Service {
 
     @Action
     private int mAction = IDLE;
+
     private BroadcastReceiver mDownloadReceiver;
+    private AtomicBoolean mTrainInterruptSign;// TODO: 28/09/2017 interrupt
+    private NotificationCompat.Builder mTrainNotifyBuilder;
+    private NotificationManager mNotifyManager;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -82,10 +108,17 @@ public class MainService extends Service {
 
     private void handleTraining(@NonNull Intent intent) {
         final NeuralModel model = (NeuralModel) intent.getSerializableExtra(EXTRAS_NEURAL_CONFIG);
-
         Precondition.checkNotNull(model);
 
-        // TODO: 25/09/2017
+        interruptTraining();
+
+        mTrainInterruptSign = new AtomicBoolean(false);
+        Scheduler.Secondary.execute(new TrainRunnable(model, mTrainInterruptSign));
+    }
+
+    private void reset() {
+        mAction = IDLE;
+        stopSelf();
     }
 
     private boolean isIdle() {
@@ -159,10 +192,23 @@ public class MainService extends Service {
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+
+        mNotifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        Global.getInstance().getBus()
+                .register(this);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
 
         unregisterDownloadReceiver();
+
+        Global.getInstance().getBus()
+                .unregister(this);
     }
 
     private void unregisterDownloadReceiver() {
@@ -172,62 +218,85 @@ public class MainService extends Service {
         }
     }
 
-    private void onDownloadComplete(final boolean success) {
-        Scheduler.Main.execute(new Runnable() {
-            @Override
-            public void run() {
-                unregisterDownloadReceiver();
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onNormalEvent(MSNEvent event) {
+        final int what = event.what;
 
-                Global.getInstance()
-                        .getBus()
-                        .post(new MANEvent<>(MANEvent.DOWNLOAD_COMPLETE, success));
+        switch (what) {
+            case MSNEvent.DOWNLOAD_COMPLETE:
+                handleDownloadComplete(event);
+                break;
 
-                if (success) {
-                    decompress();
-                } else {
-                    FileUtil.clear(Global.getInstance().getDirs().download);
+            case MSNEvent.DECOMPRESS_COMPLETE:
+                handleDecompressComplete(event);
+                break;
 
-                    mAction = IDLE;
-                    stopSelf();
-                }
-            }
-        });
+            case MSNEvent.TRAIN_INTERRUPT:
+                handleInterruptTrainEvent(event);
+                break;
+
+            default:
+                break;
+        }
     }
 
-    private void onDecompressComplete(final boolean success) {
-        Scheduler.Main.execute(new Runnable() {
-            @Override
-            public void run() {
-                stopForeground(true);
+    private void handleInterruptTrainEvent(@NonNull MSNEvent event) {
+        interruptTraining();
+    }
 
-                if (success) {
-                    FileUtil.clear(Global.getInstance().getDirs().decompress);
-                } else {
-                    FileUtil.clear(Global.getInstance().getDirs().download);
-                }
+    private void interruptTraining() {
+        if (mTrainInterruptSign != null) {
+            mTrainInterruptSign.set(true);
+        }
+    }
 
-                Global.getInstance()
-                        .getBus()
-                        .post(new MANEvent<>(MANEvent.DECOMPRESS_COMPLETE, success));
+    private void handleDownloadComplete(@NonNull MSNEvent event) {
+        final boolean success = event.obj != null ? (Boolean) event.obj : false;
+        unregisterDownloadReceiver();
 
-                mAction = IDLE;
-                stopSelf();
-            }
-        });
+        Global.getInstance()
+                .getBus()
+                .post(new MANEvent<>(MANEvent.DOWNLOAD_COMPLETE, success));
+
+        if (success) {
+            decompress();
+        } else {
+            FileUtil.clear(Global.getInstance().getDirs().download);
+            reset();
+        }
+    }
+
+    private void handleDecompressComplete(@NonNull MSNEvent event) {
+        final boolean success = event.obj != null ? (Boolean) event.obj : false;
+        stopForeground(true);
+
+        if (success) {
+            FileUtil.clear(Global.getInstance().getDirs().decompress);
+        } else {
+            FileUtil.clear(Global.getInstance().getDirs().download);
+        }
+
+        Global.getInstance()
+                .getBus()
+                .post(new MANEvent<>(MANEvent.DECOMPRESS_COMPLETE, success));
+
+        reset();
     }
 
     private void showDecompressNotification() {
         final Intent intent = new Intent(this, MainActivity.class);
-        final PendingIntent pending = PendingIntent.getService(this, 0, intent, 0);
+        final PendingIntent pending = PendingIntent.getActivity(this, 0, intent, 0);
 
         final Notification.Builder builder = new Notification.Builder(this.getApplicationContext());
 
-        builder.setContentTitle(getString(R.string.text_notification_decompress))
-                .setSmallIcon(R.drawable.ic_build_24dp)
-                .setTicker(getString(R.string.text_notification_decompress))
+        builder.setContentTitle(getString(R.string.app_name))
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setColor(ContextCompat.getColor(this, R.color.color_accent))
                 .setWhen(System.currentTimeMillis())
-                .setProgress(0, 0, true)
                 .setOngoing(true)
+                .setContentText(getString(R.string.text_notification_decompress))
+                .setProgress(0, 0, true)
                 .setContentIntent(pending);
 
         startForeground(FOREGROUND_SERVER, builder.build());
@@ -245,7 +314,110 @@ public class MainService extends Service {
         showDecompressNotification();
     }
 
-    private class DecompressRunnable implements Runnable {
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void OnTrainStateChange(@NonNull TrainStateEvent event) {
+        @TrainStateEvent.Type final int what = event.what;
+
+        switch (what) {
+            case TrainStateEvent.START:
+                handleTrainStartEvent(event);
+                break;
+
+            case TrainStateEvent.UPDATE:
+                handleTrainUpdateEvent(event);
+                break;
+
+            case TrainStateEvent.COMPLETE:
+                handleTrainCompleteEvent(event);
+                break;
+
+            case TrainStateEvent.ERROR:
+                handleTrainError(event);
+                break;
+        }
+    }
+
+    private void handleTrainError(TrainStateEvent event) {
+        reset();
+    }
+
+    private void handleTrainCompleteEvent(TrainStateEvent event) {
+        stopForeground(true);
+
+        final CompletedModel msg = (CompletedModel) event.obj;
+
+        if (msg == null) {
+            return;
+        }
+
+        final String time = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(msg.usedTime);
+        final String accuracy = msg.accuracies != null ? String.format(Locale.getDefault(), "%.2f", msg.accuracies[0] * 100) : "--";
+
+        mTrainNotifyBuilder = null;
+
+        final Intent intent = new Intent(this, MainActivity.class);
+        final PendingIntent pending = PendingIntent.getActivity(this, 0, intent, 0);
+
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
+
+        builder.setContentTitle(String.format("%s has trained completely", msg.model.name))
+                .setContentText(String.format("Used time %s | Accuracy: %s", time, accuracy))
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setColor(ContextCompat.getColor(this, R.color.color_accent))
+                .setVibrate(new long[]{1000, 1000, 1000})
+                .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
+                .setLights(Color.CYAN, 1000, 500)
+                .setWhen(System.currentTimeMillis())
+                .setContentIntent(pending)
+                .setAutoCancel(true)
+                .setFullScreenIntent(pending, true);
+
+        mNotifyManager.notify(FOREGROUND_SERVER, builder.build());
+
+        reset();
+    }
+
+    private void handleTrainStartEvent(@NonNull TrainStateEvent event) {
+        final NeuralModel model = (NeuralModel) event.obj;
+
+        if (model == null) {
+            return;
+        }
+
+        final Intent intent = new Intent(this, MainActivity.class); // TODO: 28/09/2017 jump to detail activity
+        final PendingIntent pending = PendingIntent.getActivity(this, 0, intent, 0);
+
+        mTrainNotifyBuilder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
+
+        mTrainNotifyBuilder.setContentTitle(String.format("Training %s", model.name))
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setColor(ContextCompat.getColor(this, R.color.color_accent))
+                .setWhen(System.currentTimeMillis())
+                .setProgress(model.epochs, 0, false)
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .addAction(R.drawable.ic_block_24dp, getString(R.string.text_train_interrupt), pending);
+
+        startForeground(FOREGROUND_SERVER, mTrainNotifyBuilder.build());
+    }
+
+    @SuppressWarnings("unchecked")
+    private void handleTrainUpdateEvent(@NonNull TrainStateEvent event) {
+        final UpdateModel msg = (UpdateModel) event.obj;
+
+        if (msg == null) {
+            return;
+        }
+
+        mTrainNotifyBuilder.setContentText(String.format(
+                Locale.getDefault(), "Epoch: %s | Accuracy: %.2f%%", msg.epoch, msg.accuracy * 100))
+                .setProgress(msg.model.epochs, msg.epoch, false);
+
+        mNotifyManager.notify(FOREGROUND_SERVER, mTrainNotifyBuilder.build());
+    }
+
+    private static class DecompressRunnable implements Runnable {
         private static final int QUIT_SIGN = Integer.MIN_VALUE;
         private static final String DECOMPRESSED_LABEL_SUFFIX = ".label";
         private static final String DECOMPRESSED_IMAGE_SUFFIX = ".image";
@@ -295,16 +467,18 @@ public class MainService extends Service {
                     && mSign.get() != QUIT_SIGN
                     && MNISTUtil.parseImages(targetImages, savedDir, labels)) {
                 if (mSign.decrementAndGet() == 0) {
-                    MainService.this.onDecompressComplete(true);
+                    Global.getInstance().getBus()
+                            .post(new MSNEvent<>(MSNEvent.DECOMPRESS_COMPLETE, true));
                 }
             } else if (mSign.get() != QUIT_SIGN) {
                 mSign.set(QUIT_SIGN);
-                MainService.this.onDecompressComplete(false);
+                Global.getInstance().getBus()
+                        .post(new MSNEvent<>(MSNEvent.DECOMPRESS_COMPLETE, false));
             }
         }
     }
 
-    private class DownloadReceiver extends BroadcastReceiver {
+    private static class DownloadReceiver extends BroadcastReceiver {
         private final DownloadManager mDownloadManager;
         private Set<Long> mIds;
 
@@ -328,16 +502,84 @@ public class MainService extends Service {
                 mIds.remove(downloadedId);
 
                 if (mIds.isEmpty()) {
-                    MainService.this.onDownloadComplete(true);
+                    Global.getInstance().getBus()
+                            .post(new MSNEvent<>(MSNEvent.DOWNLOAD_COMPLETE, true));
                 }
             } else {
                 for (Long id : mIds) {
                     mDownloadManager.remove(id);
                 }
 
-                MainService.this.onDownloadComplete(false);
+                Global.getInstance().getBus()
+                        .post(new MSNEvent<>(MSNEvent.DOWNLOAD_COMPLETE, false));
             }
         }
+    }
+
+    private static class TrainRunnable implements Runnable, TrainCallback {
+        private final NeuralModel mModel;
+        private final AtomicBoolean mInterruptSign;
+        private final EventBus mEventBus;
+
+        private TrainRunnable(@NonNull NeuralModel model, @NonNull AtomicBoolean breakSign) {
+            mModel = model;
+            mInterruptSign = breakSign;
+            mEventBus = Global.getInstance().getBus();
+        }
+
+        @Override
+        public void run() {
+            final File[] files = allotFiles(mModel.trainingSize);
+            final int len;
+
+            if ((len = files.length) == 0) {
+                mEventBus.post(new TrainStateEvent<>(TrainStateEvent.ERROR));
+                return;
+            }
+
+            final DataSet training = new DataSet(Arrays.copyOf(files, len - 1));
+            final DataSet validation = new DataSet(files[len - 1]);
+            final NeuralNetwork network = new NeuralNetwork(mModel.hiddenSizes);
+
+            network.train(mModel.epochs, mModel.learningRate, training, validation, this);
+        }
+
+        @Override
+        public void onStart() {
+            mEventBus.post(new TrainStateEvent<>(TrainStateEvent.START, mModel));
+        }
+
+        @Override
+        public boolean onUpdate(final int epoch, final double accuracy) {
+            if (mInterruptSign.get()) {
+                return false;
+            }
+
+            mEventBus.post(new TrainStateEvent<>(TrainStateEvent.UPDATE,
+                    new UpdateModel(mModel, epoch, accuracy)));
+
+            return true;
+        }
+
+        @Override
+        public void onComplete(long usedTime, double[] accuracies) {
+            mEventBus.post(new TrainStateEvent<>(TrainStateEvent.COMPLETE,
+                    new CompletedModel(mModel, usedTime, accuracies)));
+        }
+    }
+
+    private static File[] allotFiles(int trainingSize) {
+        int fileNum = (int) Math.floor((double) trainingSize / MNISTUtil.PRE_FILE_SIZE) + 1;
+        fileNum = Math.min(fileNum, MNISTUtil.MAX_TRAINING_SIZE / MNISTUtil.PRE_FILE_SIZE);
+
+        final List<File> fileList = Arrays.asList(Global.getInstance().getDirs().train.listFiles());
+        fileNum = Math.min(fileNum, fileList.size());
+
+        Collections.shuffle(fileList);
+        final File[] files = new File[fileList.size()];
+        fileList.toArray(files);
+
+        return Arrays.copyOf(files, fileNum);
     }
 
     @Override

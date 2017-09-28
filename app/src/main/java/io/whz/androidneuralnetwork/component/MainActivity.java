@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onNormalEvent(MANEvent<?> event) {
+    public void onNormalEvent(MANEvent event) {
         final int what = event.what;
 
         switch (what) {
@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void handleRejectMsg(MANEvent<?> event) {
+    private void handleRejectMsg(MANEvent event) {
         final String text = String.valueOf(event.obj);
 
         if (TextUtils.isEmpty(text)) {
@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .show();
     }
 
-    private void handleDownloadComplete(MANEvent<?> event) {
+    private void handleDownloadComplete(MANEvent event) {
         final boolean success = event.obj != null ? (Boolean) event.obj : false;
 
         @StringRes int res = R.string.text_download_success;
@@ -257,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .show();
     }
 
-    private void handleDecompressComplete(MANEvent<?> event) {
+    private void handleDecompressComplete(MANEvent event) {
         final boolean success = event.obj != null ? (Boolean) event.obj : false;
         @StringRes final int res;
 

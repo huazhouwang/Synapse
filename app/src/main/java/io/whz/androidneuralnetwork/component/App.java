@@ -1,10 +1,12 @@
 package io.whz.androidneuralnetwork.component;
 
 import android.app.Application;
+import android.os.Build;
 
 import org.greenrobot.eventbus.EventBus;
 
 import io.whz.androidneuralnetwork.EventBusIndex;
+import io.whz.androidneuralnetwork.element.ChannelCreator;
 import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.element.Preference;
 import io.whz.androidneuralnetwork.pojo.dao.DaoMaster;
@@ -21,6 +23,13 @@ public class App extends Application {
         configEvenBus();
         configPreferences();
         configGreenDao();
+        createNotificationChannel();
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ChannelCreator.createChannel(this.getApplicationContext());
+        }
     }
 
     private void configGreenDao() {

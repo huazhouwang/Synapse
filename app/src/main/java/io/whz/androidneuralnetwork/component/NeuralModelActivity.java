@@ -20,14 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.whz.androidneuralnetwork.R;
+import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.pojo.neural.NeuralModel;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 
 public class NeuralModelActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private static final int MAX_HIDDEN_SIZE = 5;
-    private static final int MINI_BATCH_SIZE = 2000;
+    private static final int MINI_BATCH_SIZE = MNISTUtil.PRE_FILE_SIZE;
     private static final int MAX_PROGRESS = 100;
-    private static final float STEP_NUMBER = 58000F / MINI_BATCH_SIZE;
+    private static final float STEP_NUMBER = (MNISTUtil.MAX_TRAINING_SIZE - MNISTUtil.PRE_FILE_SIZE) / MNISTUtil.PRE_FILE_SIZE;
 
     private final List<TextView> mHiddenSizeInputs = new ArrayList<>();
 
@@ -69,7 +70,7 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
         seekBar.setMax(MAX_PROGRESS);
         seekBar.setProgress(MAX_PROGRESS >> 1);
         seekBar.setOnSeekBarChangeListener(this);
-        dataSizeText.setText(calculateDataSize(seekBar.getProgress()));
+        dataSizeText.setText(formatDataSize(seekBar.getProgress()));
     }
 
     private void addNewHiddenLayer() {
@@ -152,13 +153,19 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-        mDataSizeText.setText(calculateDataSize(i));
+        mDataSizeText.setText(formatDataSize(i));
     }
 
-    private String calculateDataSize(float progress) {
+    private int calculateDataSize(float progress) {
         final int size = (int) ((progress / MAX_PROGRESS) * STEP_NUMBER) * MINI_BATCH_SIZE;
 
-        return String.format(mDataSizeTemplate, String.valueOf(size <= 0 ? MINI_BATCH_SIZE : size));
+        return size <= 0 ? MINI_BATCH_SIZE : size;
+    }
+
+    private String formatDataSize(float progress) {
+        final int size = calculateDataSize(progress);
+
+        return String.format(mDataSizeTemplate, size);
     }
 
     @Override
@@ -232,9 +239,9 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
             return null;
         }
 
-        final int trainingSize = mTrainingSize.getProgress();
+        final int trainingSize = calculateDataSize(mTrainingSize.getProgress());
 
-        return new NeuralModel(hiddenSizes, leaningRate, epochs, trainingSize);
+        return new NeuralModel("testingModel", hiddenSizes, leaningRate, epochs, trainingSize);
     }
 
     private int solveInt(@NonNull String input) {

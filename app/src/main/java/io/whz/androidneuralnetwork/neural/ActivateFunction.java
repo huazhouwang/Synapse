@@ -6,9 +6,9 @@ import android.support.annotation.NonNull;
 import io.whz.androidneuralnetwork.matrix.Matrix;
 import io.whz.androidneuralnetwork.util.Precondition;
 
-public class ActivateFunction {
+class ActivateFunction {
     @CheckResult
-    public static Matrix sigmoid(@NonNull Matrix matrix) {
+    static Matrix sigmoid(@NonNull Matrix matrix) {
         Precondition.checkNotNull(matrix);
 
         final Matrix copy = matrix.copy();
@@ -23,7 +23,7 @@ public class ActivateFunction {
     }
 
     @CheckResult
-    public static Matrix sigmoidPrime(@NonNull Matrix activation) {
+    static Matrix sigmoidPrime(@NonNull Matrix activation) {
         Precondition.checkNotNull(activation);
 
         final Matrix copy = activation.copy();

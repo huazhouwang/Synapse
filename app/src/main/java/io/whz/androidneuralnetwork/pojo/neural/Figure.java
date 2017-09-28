@@ -2,12 +2,12 @@ package io.whz.androidneuralnetwork.pojo.neural;
 
 import android.support.annotation.NonNull;
 
-public class DigitImg {
-    public final byte[] colors;
+public class Figure {
+    public final byte[] bytes;
     public final int label;
 
-    public DigitImg(int label, @NonNull byte[] colors) {
-        this.colors = colors;
+    public Figure(int label, @NonNull byte[] bytes) {
+        this.bytes = bytes;
         this.label = label;
     }
 }

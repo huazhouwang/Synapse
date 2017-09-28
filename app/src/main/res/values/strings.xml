@@ -40,4 +40,5 @@
     <string name="text_wait_for_download">Downloading, please wait</string>
     <string name="text_wait_for_test">Testing, Please wait</string>
     <string name="text_wait_for_train">Training, please wait</string>
+    <string name="text_train_interrupt">Interrupt</string>
 </resources>

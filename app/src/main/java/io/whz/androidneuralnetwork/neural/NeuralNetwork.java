@@ -2,13 +2,14 @@ package io.whz.androidneuralnetwork.neural;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import io.whz.androidneuralnetwork.component.App;
-import io.whz.androidneuralnetwork.element.Scheduler;
 import io.whz.androidneuralnetwork.matrix.Matrix;
+import io.whz.androidneuralnetwork.pojo.neural.Batch;
 import io.whz.androidneuralnetwork.util.MatrixUtil;
 import io.whz.androidneuralnetwork.util.Precondition;
 
@@ -61,59 +62,85 @@ public class NeuralNetwork {
     }
 
     public void train(int epochs, double learningRate,
-                      @NonNull Batch trainBatch, @Nullable Batch validateBatch) {
+                          @NonNull DataSet trainDataSet, @Nullable DataSet validateDataSet,
+                          @NonNull TrainCallback callback) {
         Precondition.checkArgument(epochs > 0, "Epochs must greater than 0");
         Precondition.checkArgument(learningRate > 0D, "Learning rate must greater than 0");
-        Precondition.checkNotNull(trainBatch);
+        Precondition.checkNotNull(trainDataSet);
 
-        Scheduler.Secondary.execute(new TrainRunnable(epochs, learningRate, trainBatch,
-                validateBatch, mBiases, mWeights));
+        new TrainRunnable(epochs, learningRate, trainDataSet,
+                validateDataSet, mBiases, mWeights, callback)
+                .run();
     }
 
     private static class TrainRunnable implements Runnable {
         private final int mEpochs;
         private final double mLearningRate;
-        private final Batch mTraining;
-        private final Batch mValidation;
+        private final DataSet mTraining;
+        private final DataSet mValidation;
         private final Matrix[] mBiases;
         private final Matrix[] mWeights;
+        private TrainCallback mCallback;
 
-        private TrainRunnable(int epochs, double learningRate, Batch training,
-                              Batch validation, Matrix[] biases, Matrix[] weights) {
+        private TrainRunnable(int epochs, double learningRate, DataSet training,
+                              DataSet validation, Matrix[] biases, Matrix[] weights,
+                              TrainCallback callback) {
             mEpochs = epochs;
             mLearningRate = learningRate;
             mTraining = training;
             mValidation = validation;
             mBiases = biases;
             mWeights = weights;
+            mCallback = callback;
         }
 
         @Override
         public void run() {
-            Log.i(TAG, "Start training");
-
             final boolean test = mValidation != null;
+            final long startTime = System.currentTimeMillis();
+
+            mCallback.onStart();
+            
+            final List<Double> mAccuracyList = new ArrayList<>();
 
             for (int i = 1; i <= mEpochs; ++i) {
-                Log.i(TAG, "Epochs: " + i);
-
                 mTraining.shuffle();
                 sgd();
 
                 if (test) {
                     final double rate = evaluate();
-                    Log.i(TAG, String.format("Epoch %s: %s", i, rate));
+
+                    mAccuracyList.add(rate);
+                    if (!mCallback.onUpdate(i, rate)) {
+                        return;
+                    }
                 }
             }
+
+            final long usedTime = System.currentTimeMillis() - startTime;
+            final double[] accuracies = convert(mAccuracyList);
+
+            mCallback.onComplete(usedTime, accuracies);
+        }
+
+        private double[] convert(@NonNull List<Double> list) {
+            if (list.isEmpty()) {
+                return null;
+            }
+
+            final double[] doubles = new double[list.size()];
+
+            for (int i = 0, len = list.size(); i < len; ++i) {
+                doubles[i] = list.get(i);
+            }
+
+            return doubles;
         }
 
         private void sgd() {
-            io.whz.androidneuralnetwork.pojo.neural.Batch batch;
+            Batch batch;
 
-            int i = 0;
-            while ((batch = mTraining.next()) != null) {
-                ++i;
-                Log.i(TAG, "sgd: " + i);
+            while ((batch = mTraining.nextBatch()) != null) {
                 updateMiniBatch(batch.inputs, batch.targets);
             }
         }
@@ -183,12 +210,12 @@ public class NeuralNetwork {
                 return 0D;
             }
 
-            io.whz.androidneuralnetwork.pojo.neural.Batch batch;
+            Batch batch;
             int correct = 0;
             int total = 0;
 
             mValidation.shuffle();
-            while ((batch = mValidation.next()) != null) {
+            while ((batch = mValidation.nextBatch()) != null) {
                 final Matrix[] inputs = batch.inputs;
                 final Matrix[] targets = batch.targets;
                 final int len = inputs.length;

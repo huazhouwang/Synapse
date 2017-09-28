@@ -13,15 +13,15 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import io.whz.androidneuralnetwork.pojo.neural.Digit;
-import io.whz.androidneuralnetwork.pojo.neural.DigitImg;
+import io.whz.androidneuralnetwork.pojo.neural.Figure;
 
 public class MNISTUtil {
     private static final int LABEL_MAGIC = 2049;
     private static final int IMAGE_MAGIC = 2051;
     private static final int BATCH_MAGIC = 2052;
-    private static final int PRE_FILE_SIZE = 2000;
+    public static final int MAX_TRAINING_SIZE = 60000;
+    public static final int PRE_FILE_SIZE = 2000;
     private static final String BATCH_FILE_SUFFIX = "batch";
-
 
     public static boolean gunzip(File sourceFile, File targetFile) {
         if (!sourceFile.exists()) {
@@ -102,7 +102,7 @@ public class MNISTUtil {
         return list;
     }
 
-    public static DigitImg test(File file) {
+    public static Figure test(File file) {
 
         byte b = -1;
         Log.i("test2", (b & 0xff) + "");
@@ -119,7 +119,7 @@ public class MNISTUtil {
             final byte[] buffer = new byte[28 * 28];
             inputStream.read(buffer);
 
-            return new DigitImg(label, buffer);
+            return new Figure(label, buffer);
 
         } catch (IOException e) {
             e.printStackTrace();
