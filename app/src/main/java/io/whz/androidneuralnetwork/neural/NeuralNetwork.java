@@ -3,9 +3,7 @@ package io.whz.androidneuralnetwork.neural;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import io.whz.androidneuralnetwork.component.App;
 import io.whz.androidneuralnetwork.matrix.Matrix;
@@ -97,11 +95,8 @@ public class NeuralNetwork {
         @Override
         public void run() {
             final boolean test = mValidation != null;
-            final long startTime = System.currentTimeMillis();
 
             mCallback.onStart();
-            
-            final List<Double> mAccuracyList = new ArrayList<>();
 
             for (int i = 1; i <= mEpochs; ++i) {
                 mTraining.shuffle();
@@ -110,31 +105,13 @@ public class NeuralNetwork {
                 if (test) {
                     final double rate = evaluate();
 
-                    mAccuracyList.add(rate);
                     if (!mCallback.onUpdate(i, rate)) {
                         return;
                     }
                 }
             }
 
-            final long usedTime = System.currentTimeMillis() - startTime;
-            final double[] accuracies = convert(mAccuracyList);
-
-            mCallback.onComplete(usedTime, accuracies);
-        }
-
-        private double[] convert(@NonNull List<Double> list) {
-            if (list.isEmpty()) {
-                return null;
-            }
-
-            final double[] doubles = new double[list.size()];
-
-            for (int i = 0, len = list.size(); i < len; ++i) {
-                doubles[i] = list.get(i);
-            }
-
-            return doubles;
+            mCallback.onComplete();
         }
 
         private void sgd() {

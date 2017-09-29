@@ -1,7 +1,6 @@
 package io.whz.androidneuralnetwork.component;
 
 import android.app.DownloadManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -26,7 +25,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -48,9 +47,9 @@ import io.whz.androidneuralnetwork.neural.TrainCallback;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainStateEvent;
-import io.whz.androidneuralnetwork.pojo.neural.CompletedModel;
+import io.whz.androidneuralnetwork.pojo.neural.ModelCompleteHolder;
 import io.whz.androidneuralnetwork.pojo.neural.NeuralModel;
-import io.whz.androidneuralnetwork.pojo.neural.UpdateModel;
+import io.whz.androidneuralnetwork.pojo.neural.ModelUpdateHolder;
 import io.whz.androidneuralnetwork.util.FileUtil;
 import io.whz.androidneuralnetwork.util.Precondition;
 
@@ -288,7 +287,7 @@ public class MainService extends Service {
         final Intent intent = new Intent(this, MainActivity.class);
         final PendingIntent pending = PendingIntent.getActivity(this, 0, intent, 0);
 
-        final Notification.Builder builder = new Notification.Builder(this.getApplicationContext());
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
 
         builder.setContentTitle(getString(R.string.app_name))
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -345,14 +344,19 @@ public class MainService extends Service {
     private void handleTrainCompleteEvent(TrainStateEvent event) {
         stopForeground(true);
 
-        final CompletedModel msg = (CompletedModel) event.obj;
+        final ModelCompleteHolder holder = (ModelCompleteHolder) event.obj;
 
-        if (msg == null) {
+        if (holder == null) {
             return;
         }
 
-        final String time = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(msg.usedTime);
-        final String accuracy = msg.accuracies != null ? String.format(Locale.getDefault(), "%.2f", msg.accuracies[0] * 100) : "--";
+        final long timeUsed = Math.max(holder.usedTime, 0L);
+        final String time = String.format(Locale.getDefault(), "%02d:%02d:%02d",
+                timeUsed / (3600000), timeUsed / (60000) % 60, timeUsed / 1000 % 60);
+
+        final double[] accuracies = holder.accuracies;
+        final String accuracy = accuracies != null ? String.format(Locale.getDefault(),
+                "%.2f", accuracies[accuracies.length - 1] * 100) : "--";
 
         mTrainNotifyBuilder = null;
 
@@ -361,15 +365,14 @@ public class MainService extends Service {
 
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
 
-        builder.setContentTitle(String.format("%s has trained completely", msg.model.name))
-                .setContentText(String.format("Used time %s | Accuracy: %s", time, accuracy))
+        builder.setContentTitle(String.format(getString(R.string.template_train_complete_title), holder.model.name))
+                .setContentText(String.format(getString(R.string.template_train_complete_content), time, accuracy))
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setColor(ContextCompat.getColor(this, R.color.color_accent))
                 .setVibrate(new long[]{1000, 1000, 1000})
                 .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                 .setLights(Color.CYAN, 1000, 500)
                 .setWhen(System.currentTimeMillis())
-                .setContentIntent(pending)
                 .setAutoCancel(true)
                 .setFullScreenIntent(pending, true);
 
@@ -390,7 +393,7 @@ public class MainService extends Service {
 
         mTrainNotifyBuilder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
 
-        mTrainNotifyBuilder.setContentTitle(String.format("Training %s", model.name))
+        mTrainNotifyBuilder.setContentTitle(String.format(getString(R.string.tmplate_train_start_title), model.name))
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setColor(ContextCompat.getColor(this, R.color.color_accent))
                 .setWhen(System.currentTimeMillis())
@@ -404,15 +407,16 @@ public class MainService extends Service {
 
     @SuppressWarnings("unchecked")
     private void handleTrainUpdateEvent(@NonNull TrainStateEvent event) {
-        final UpdateModel msg = (UpdateModel) event.obj;
+        final ModelUpdateHolder holder = (ModelUpdateHolder) event.obj;
 
-        if (msg == null) {
+        if (holder == null) {
             return;
         }
 
         mTrainNotifyBuilder.setContentText(String.format(
-                Locale.getDefault(), "Epoch: %s | Accuracy: %.2f%%", msg.epoch, msg.accuracy * 100))
-                .setProgress(msg.model.epochs, msg.epoch, false);
+                Locale.getDefault(), getString(R.string.template_train_update_content),
+                String.valueOf(holder.epoch), holder.accuracy * 100))
+                .setProgress(holder.model.epochs, holder.epoch, false);
 
         mNotifyManager.notify(FOREGROUND_SERVER, mTrainNotifyBuilder.build());
     }
@@ -520,11 +524,14 @@ public class MainService extends Service {
         private final NeuralModel mModel;
         private final AtomicBoolean mInterruptSign;
         private final EventBus mEventBus;
+        private final List<Double> mTimeUsedList;
+        private long mStartTime;
 
         private TrainRunnable(@NonNull NeuralModel model, @NonNull AtomicBoolean breakSign) {
             mModel = model;
             mInterruptSign = breakSign;
             mEventBus = Global.getInstance().getBus();
+            mTimeUsedList = new ArrayList<>();
         }
 
         @Override
@@ -547,6 +554,7 @@ public class MainService extends Service {
         @Override
         public void onStart() {
             mEventBus.post(new TrainStateEvent<>(TrainStateEvent.START, mModel));
+            mStartTime = System.currentTimeMillis();
         }
 
         @Override
@@ -555,16 +563,34 @@ public class MainService extends Service {
                 return false;
             }
 
+            mTimeUsedList.add(accuracy);
             mEventBus.post(new TrainStateEvent<>(TrainStateEvent.UPDATE,
-                    new UpdateModel(mModel, epoch, accuracy)));
+                    new ModelUpdateHolder(mModel, epoch, accuracy)));
 
             return true;
         }
 
         @Override
-        public void onComplete(long usedTime, double[] accuracies) {
+        public void onComplete() {
+            final long timeUsed = System.currentTimeMillis() - mStartTime;
+            final double[] accuracies = convert(mTimeUsedList);
+
             mEventBus.post(new TrainStateEvent<>(TrainStateEvent.COMPLETE,
-                    new CompletedModel(mModel, usedTime, accuracies)));
+                    new ModelCompleteHolder(mModel, timeUsed, accuracies)));
+        }
+
+        private double[] convert(@NonNull List<Double> list) {
+            if (list.isEmpty()) {
+                return null;
+            }
+
+            final double[] doubles = new double[list.size()];
+
+            for (int i = 0, len = list.size(); i < len; ++i) {
+                doubles[i] = list.get(i);
+            }
+
+            return doubles;
         }
     }
 
