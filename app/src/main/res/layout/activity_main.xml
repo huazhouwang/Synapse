@@ -6,20 +6,65 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="io.whz.androidneuralnetwork.component.MainActivityV1">
+    tools:context="io.whz.androidneuralnetwork.component.MainActivity">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv"
+    <ScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="@dimen/page_padding_vertical"
-        android:paddingBottom="@dimen/page_padding_vertical"
-        android:paddingStart="@dimen/page_padding_horizontal"
-        android:paddingEnd="@dimen/page_padding_horizontal"
-        android:clipToPadding="false"
-        android:layout_gravity="center"
-        tools:listitem="@layout/ac_main_rv_item_mnist"
-        />
+        android:fillViewport="true"
+        >
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+            <LinearLayout
+                android:id="@+id/bottom_tip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentBottom="true"
+                android:gravity="center"
+                android:layout_marginBottom="8dp"
+                >
+                <TextView
+                    style="@style/BottomTip"
+                    android:id="@+id/project_tip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_star_tip"
+                    />
+
+                <TextView
+                    style="@style/BottomTip"
+                    android:id="@+id/app_tip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/text_rate_tip"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/item_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@+id/bottom_tip"
+                android:orientation="vertical"
+                android:paddingTop="@dimen/page_padding_vertical"
+                android:paddingBottom="@dimen/page_padding_vertical"
+                android:paddingStart="@dimen/page_padding_horizontal"
+                android:paddingEnd="@dimen/page_padding_horizontal"
+                android:clipToPadding="false"
+                android:animateLayoutChanges="true"
+                >
+
+                <include layout="@layout/ac_main_list_item_data_set" />
+
+            </LinearLayout>
+        </RelativeLayout>
+    </ScrollView>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -28,6 +73,6 @@
         android:layout_margin="16dp"
         android:src="@drawable/ic_add_white_24dp"
         app:fabSize="normal"
-        app:layout_anchor="@+id/rv"
+        app:layout_anchor="@+id/scroll_view"
         app:layout_anchorGravity="right|bottom" />
 </android.support.design.widget.CoordinatorLayout>

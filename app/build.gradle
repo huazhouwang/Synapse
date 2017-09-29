@@ -43,7 +43,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:26.0.2'
     compile 'com.android.support:design:26.0.2'
     compile 'com.android.support:cardview-v7:26.0.2'
-    compile 'me.drakeet.multitype:multitype:3.3.0'
     compile 'org.greenrobot:greendao:3.2.2'
     compile 'org.greenrobot:eventbus:3.0.0'
 

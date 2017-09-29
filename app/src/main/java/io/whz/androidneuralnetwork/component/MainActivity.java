@@ -15,58 +15,48 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.element.Preference;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
-import io.whz.androidneuralnetwork.pojo.multiple.binder.DataSetViewBinder;
-import io.whz.androidneuralnetwork.pojo.multiple.item.DataSetItem;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 import io.whz.androidneuralnetwork.util.FileUtil;
-import me.drakeet.multitype.MultiTypeAdapter;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int REQUEST_EXTERNAL_STORAGE = 0x01;
     private static final String TAG = App.TAG + "-MainActivity";
 
-    private final MultiTypeAdapter mAdapter = new MultiTypeAdapter();
-    private RecyclerView mRecyclerView;
     private FloatingActionButton mFab;
-
-    private final DataSetItem mDataSetItem = new DataSetItem();
+    private ViewGroup mItemContainer;
+    private View mDownload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        checkDownloadManager();
-        checkExternalStorage();
+        mItemContainer = findViewById(R.id.item_container);
+        mDownload = findViewById(R.id.download);
+        mDownload.setOnClickListener(this);
 
-        mRecyclerView = findViewById(R.id.rv);
         mFab = findViewById(R.id.fab);
-
         mFab.setOnClickListener(this);
 
-        registerItems();
-        mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        checkDownloadManager();
+        checkExternalStorage();
     }
 
     private void checkDownloadManager() {
@@ -127,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public Set<String> getUnreadyFiles() {
+    public boolean isDataSetReady() {
         final Set<String> unreadyFiles = new HashSet<>(Arrays.asList(Global.getInstance().getDataSet()));
 
         final File downloadDir = Global.getInstance().getDirs().download;
@@ -141,30 +131,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        return unreadyFiles;
+        return unreadyFiles.isEmpty();
     }
 
     private void solveData() {
-        isAnyDataUnready();
+        changeDownloadState(isDataSetReady());
     }
 
-    private boolean isAnyDataUnready() {
-        final Set<String> files = getUnreadyFiles();
-
-        // TODO: 18/09/2017 或许可以把 dataSetItem 全局变量拿掉
-        mDataSetItem.change(files.isEmpty() ? DataSetItem.READY : DataSetItem.UNREADY);
-        notifyAdapterChange();
-
-        return files.isEmpty();
-    }
-
-    private void notifyAdapterChange() {
-        final List<Object> items = new ArrayList<>();
-
-        items.add(mDataSetItem);
-
-        mAdapter.setItems(items);
-        mAdapter.notifyDataSetChanged();
+    private void changeDownloadState(boolean isDownloaded) {
+        if (isDownloaded) {
+            mDownload.setActivated(true);
+            mDownload.setClickable(false);
+        } else {
+            mDownload.setActivated(false);
+            mDownload.setClickable(true);
+        }
     }
 
     private void showFirstTip() {
@@ -182,10 +163,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         // TODO: 16/09/2017 show tip dialog
-    }
-
-    private void registerItems() {
-        mAdapter.register(DataSetItem.class, new DataSetViewBinder());
     }
 
     @Override
@@ -210,10 +187,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final int what = event.what;
 
         switch (what) {
-            case MANEvent.CLICK_DOWNLOAD:
-                showConfirmDialog(this);
-                break;
-
             case MANEvent.DOWNLOAD_COMPLETE:
                 handleDownloadComplete(event);
                 break;
@@ -238,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 
-        Snackbar.make(mRecyclerView, text, Snackbar.LENGTH_SHORT)
+        Snackbar.make(mItemContainer, text, Snackbar.LENGTH_SHORT)
                 .show();
     }
 
@@ -248,12 +221,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @StringRes int res = R.string.text_download_success;
 
         if (!success) {
-            mDataSetItem.change(DataSetItem.UNREADY);
-            notifyAdapterChange();
             res = R.string.text_download_error;
         }
 
-        Snackbar.make(mRecyclerView, res, Snackbar.LENGTH_SHORT)
+        Snackbar.make(mItemContainer, res, Snackbar.LENGTH_SHORT)
                 .show();
     }
 
@@ -262,15 +233,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @StringRes final int res;
 
         if (success) {
-            mDataSetItem.change(DataSetItem.READY);
+            changeDownloadState(true);
             res = R.string.text_decompress_success;
         } else {
-            mDataSetItem.change(DataSetItem.UNREADY);
             res = R.string.text_decompress_error;
         }
 
-        notifyAdapterChange();
-        Snackbar.make(mRecyclerView, res, Snackbar.LENGTH_SHORT)
+        Snackbar.make(mItemContainer, res, Snackbar.LENGTH_SHORT)
                 .show();
     }
 
@@ -306,6 +275,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.fab:
                 startNeuralNetworkConfig(view);
                 break;
+
+            case R.id.download:
+                showConfirmDialog(this);
+                break;
+
             default:
                 break;
         }

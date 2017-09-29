@@ -45,4 +45,6 @@
     <string name="template_train_complete_content" formatted="false">Time used: %s | Accuracy: %s%%</string>
     <string name="tmplate_train_start_title">Model: %s</string>
     <string name="template_train_update_content" formatted="false">Epoch: %s | Accuracy: %.2f%%</string>
+    <string name="text_star_tip">Star <i>project</i></string>
+    <string name="text_rate_tip">Rate <i>application</i></string>
 </resources>
