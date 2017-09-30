@@ -20,7 +20,7 @@ public class DataSetViewBinder extends ItemViewBinder<DataSetItem, DataSetViewBi
     @NonNull
     @Override
     protected DataSetHolder onCreateViewHolder(@NonNull LayoutInflater layoutInflater, @NonNull ViewGroup viewGroup) {
-        final View v = layoutInflater.inflate(R.layout.ac_main_rv_item_mnist, viewGroup, false);
+        final View v = layoutInflater.inflate(R.layout.ac_main_rv_item_data_set, viewGroup, false);
         final DataSetHolder holder = new DataSetHolder(v);
         holder.download.setOnClickListener(this);
 
@@ -32,13 +32,10 @@ public class DataSetViewBinder extends ItemViewBinder<DataSetItem, DataSetViewBi
         final int state = dataSet.state();
 
         if (state == DataSetItem.READY) {
-            holder.download.setImageResource(R.drawable.ic_cloud_done_24dp);
-            holder.download.setClickable(false);
-            holder.download.setActivated(true);
+            holder.download.setEnabled(false);
         } else if (state == DataSetItem.UNREADY){
-            holder.download.setImageResource(R.drawable.ic_cloud_download_24dp);
+            holder.download.setEnabled(true);
             holder.download.setClickable(true);
-            holder.download.setActivated(false);
         }
     }
 

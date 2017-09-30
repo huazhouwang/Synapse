@@ -127,7 +127,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public Set<String> getUnreadyFiles() {
+    private void notifyAdapterChange() {
+        final List<Object> items = new ArrayList<>();
+
+        items.add(mDataSetItem);
+
+        mAdapter.setItems(items);
+        mAdapter.notifyDataSetChanged();
+    }
+
+    public boolean isDataSetReady() {
         final Set<String> unreadyFiles = new HashSet<>(Arrays.asList(Global.getInstance().getDataSet()));
 
         final File downloadDir = Global.getInstance().getDirs().download;
@@ -141,30 +150,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        return unreadyFiles;
+        return unreadyFiles.isEmpty();
     }
 
     private void solveData() {
-        isAnyDataUnready();
+        changeDownloadState(isDataSetReady());
     }
 
-    private boolean isAnyDataUnready() {
-        final Set<String> files = getUnreadyFiles();
-
-        // TODO: 18/09/2017 或许可以把 dataSetItem 全局变量拿掉
-        mDataSetItem.change(files.isEmpty() ? DataSetItem.READY : DataSetItem.UNREADY);
+    private void changeDownloadState(boolean isDownloaded) {
+        mDataSetItem.change(isDownloaded ? DataSetItem.READY : DataSetItem.UNREADY);
         notifyAdapterChange();
-
-        return files.isEmpty();
-    }
-
-    private void notifyAdapterChange() {
-        final List<Object> items = new ArrayList<>();
-
-        items.add(mDataSetItem);
-
-        mAdapter.setItems(items);
-        mAdapter.notifyDataSetChanged();
     }
 
     private void showFirstTip() {

@@ -289,12 +289,11 @@ public class MainService extends Service {
 
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
 
-        builder.setContentTitle(getString(R.string.app_name))
+        builder.setContentTitle(getString(R.string.text_notification_decompress))
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setColor(ContextCompat.getColor(this, R.color.color_accent))
                 .setWhen(System.currentTimeMillis())
                 .setOngoing(true)
-                .setContentText(getString(R.string.text_notification_decompress))
                 .setProgress(0, 0, true)
                 .setContentIntent(pending);
 

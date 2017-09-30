@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="io.whz.androidneuralnetwork.component.MainActivityV1">
+    tools:context="io.whz.androidneuralnetwork.component.MainActivity">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv"
@@ -18,7 +18,7 @@
         android:paddingEnd="@dimen/page_padding_horizontal"
         android:clipToPadding="false"
         android:layout_gravity="center"
-        tools:listitem="@layout/ac_main_rv_item_mnist"
+        tools:listitem="@layout/ac_main_rv_item_data_set"
         />
 
     <android.support.design.widget.FloatingActionButton

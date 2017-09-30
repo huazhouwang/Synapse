@@ -2,7 +2,7 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:state_activated="true"
+        android:state_enabled="false"
         android:drawable="@drawable/ic_cloud_done_24dp" />
 
     <item android:drawable="@drawable/ic_cloud_download_24dp" />
