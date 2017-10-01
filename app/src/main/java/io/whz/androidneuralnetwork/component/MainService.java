@@ -366,9 +366,8 @@ public class MainService extends Service {
         final String time = String.format(Locale.getDefault(), "%02d:%02d:%02d",
                 timeUsed / (3600000), timeUsed / (60000) % 60, timeUsed / 1000 % 60);
 
-        final double[] accuracies = holder.accuracies;
-        final String accuracy = accuracies != null ? String.format(Locale.getDefault(),
-                "%.2f", accuracies[accuracies.length - 1] * 100) : "--";
+        final String accuracy = String.format(Locale.getDefault(),
+                "%.2f", holder.evaluate * 100);
 
         mTrainNotifyBuilder = null;
 
