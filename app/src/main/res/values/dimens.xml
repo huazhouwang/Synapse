@@ -10,5 +10,6 @@
     <dimen name="dialog_edit_text_size">14sp</dimen>
     <dimen name="ac_main_mnist_item_margin">8dp</dimen>
     <dimen name="page_padding_vertical">16dp</dimen>
-    <dimen name="page_padding_horizontal">8dp</dimen>
+    <dimen name="page_padding_horizontal">16dp</dimen>
+    <dimen name="list_item_vertical_gap">8dp</dimen>
 </resources>

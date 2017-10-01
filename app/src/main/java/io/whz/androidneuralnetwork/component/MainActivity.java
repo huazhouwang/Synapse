@@ -287,6 +287,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             return;
                         }
 
+                        mDataSetItem.change(DataSetItem.PENDING);
+                        notifyAdapterChange();
                         requestDownload();
                     }
                 }).setNegativeButton(R.string.text_dialog_download_negavite, null)

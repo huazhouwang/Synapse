@@ -26,7 +26,7 @@
     <string name="text_decompress_error">Something wrong, please try again</string>
     <string name="text_decompress_success">All data is ready, enjoy yourself</string>
     <string name="text_notification_decompress">Decompressing</string>
-    <string name="text_dialog_download_msg"><i>train-images-idx3-ubyte.gz</i> \n<i>train-labels-idx1-ubyte.gz</i> \n<i>t10k-images-idx3-ubyte.gz</i> \n<i>t10k-labels-idx1-ubyte.gz</i> \n\n<b>Total Size: 11 MB</b> \nPlease switch to wifi first!</string>
+    <string name="text_dialog_download_msg">Total Size: 11 MB\n\nRecommend to connect wifi first</string>
     <string name="text_dialog_download_title">Download</string>
     <string name="text_dialog_download_positive">Confirm</string>
     <string name="text_dialog_download_negavite">Cancel</string>

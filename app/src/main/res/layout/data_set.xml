@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/list_item_vertical_gap"
+    app:cardElevation="3dp"
+    tools:layout_gravity="center">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="16dp"
+        android:paddingBottom="@dimen/container_padding_bottom"
+        android:paddingStart="@dimen/container_padding_horizontal"
+        android:paddingEnd="@dimen/container_padding_horizontal">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="@string/mnist_title"
+            />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            >
+
+            <android.support.v7.widget.AppCompatImageView
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                app:srcCompat="@drawable/dot"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/text_primary"
+                android:text="train-images-idx3-ubyte.gz"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="3dp"
+            >
+
+            <android.support.v7.widget.AppCompatImageView
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                app:srcCompat="@drawable/dot"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/text_primary"
+                android:text="train-labels-idx1-ubyte.gz"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="3dp"
+            >
+
+            <android.support.v7.widget.AppCompatImageView
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                app:srcCompat="@drawable/dot"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/text_primary"
+                android:text="t10k-images-idx3-ubyte.gz"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="3dp"
+            >
+
+            <android.support.v7.widget.AppCompatImageView
+                android:layout_width="5dp"
+                android:layout_height="5dp"
+                app:srcCompat="@drawable/dot"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/text_primary"
+                android:text="t10k-labels-idx1-ubyte.gz"
+                />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:textColor="@color/secondary_text"
+            android:textStyle="italic"
+            android:text="60,000 rows training data, 10,000 rows test data"
+            />
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/download"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="fitCenter"
+        android:src="@drawable/state_download"
+        android:background="?android:selectableItemBackgroundBorderless"
+        android:layout_gravity="center_vertical|end"
+        android:layout_marginEnd="16dp"
+        />
+</android.support.v7.widget.CardView>
