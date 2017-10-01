@@ -1,7 +1,9 @@
 package io.whz.androidneuralnetwork.neural;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.util.Log;
+
+import org.greenrobot.greendao.annotation.NotNull;
 
 import java.util.Arrays;
 
@@ -60,14 +62,14 @@ public class NeuralNetwork {
     }
 
     public void train(int epochs, double learningRate,
-                          @NonNull DataSet trainDataSet, @Nullable DataSet validateDataSet,
-                          @NonNull TrainCallback callback) {
+                      @NonNull DataSet trainDataSet, @NotNull DataSet validateDataSet,
+                      @NonNull DataSet testDataSet, @NonNull TrainCallback callback) {
         Precondition.checkArgument(epochs > 0, "Epochs must greater than 0");
         Precondition.checkArgument(learningRate > 0D, "Learning rate must greater than 0");
         Precondition.checkNotNull(trainDataSet);
 
         new TrainRunnable(epochs, learningRate, trainDataSet,
-                validateDataSet, mBiases, mWeights, callback)
+                validateDataSet, testDataSet, mBiases, mWeights, callback)
                 .run();
     }
 
@@ -76,17 +78,19 @@ public class NeuralNetwork {
         private final double mLearningRate;
         private final DataSet mTraining;
         private final DataSet mValidation;
+        private final DataSet mTest;
         private final Matrix[] mBiases;
         private final Matrix[] mWeights;
         private TrainCallback mCallback;
 
         private TrainRunnable(int epochs, double learningRate, DataSet training,
-                              DataSet validation, Matrix[] biases, Matrix[] weights,
+                              DataSet validation, DataSet test, Matrix[] biases, Matrix[] weights,
                               TrainCallback callback) {
             mEpochs = epochs;
             mLearningRate = learningRate;
             mTraining = training;
             mValidation = validation;
+            mTest = test;
             mBiases = biases;
             mWeights = weights;
             mCallback = callback;
@@ -94,24 +98,23 @@ public class NeuralNetwork {
 
         @Override
         public void run() {
-            final boolean test = mValidation != null;
-
             mCallback.onStart();
 
             for (int i = 1; i <= mEpochs; ++i) {
                 mTraining.shuffle();
                 sgd();
 
-                if (test) {
-                    final double rate = evaluate();
+                final double rate = evaluate(mValidation);
 
-                    if (!mCallback.onUpdate(i, rate)) {
-                        return;
-                    }
+                if (!mCallback.onUpdate(i, rate)) {
+                    return;
                 }
             }
 
-            mCallback.onComplete();
+            mCallback.onTrainComplete();
+
+            final double rate = evaluate(mTest);
+            mCallback.onEvaluateComplete(rate);
         }
 
         private void sgd() {
@@ -182,17 +185,14 @@ public class NeuralNetwork {
             return activations;
         }
 
-        private double evaluate() {
-            if (mValidation == null) {
-                return 0D;
-            }
-
+        private double evaluate(@NonNull DataSet dataSet) {
             Batch batch;
             int correct = 0;
             int total = 0;
 
-            mValidation.shuffle();
-            while ((batch = mValidation.nextBatch()) != null) {
+            dataSet.shuffle();
+
+            while ((batch = dataSet.nextBatch()) != null) {
                 final Matrix[] inputs = batch.inputs;
                 final Matrix[] targets = batch.targets;
                 final int len = inputs.length;
@@ -206,6 +206,8 @@ public class NeuralNetwork {
                     }
                 }
             }
+
+            Log.i(TAG, "Total:" + total);
 
             return total != 0 ? (double) correct / total : 0D;
         }

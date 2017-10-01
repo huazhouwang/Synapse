@@ -17,6 +17,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -48,8 +49,8 @@ import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainStateEvent;
 import io.whz.androidneuralnetwork.pojo.neural.ModelCompleteHolder;
-import io.whz.androidneuralnetwork.pojo.neural.NeuralModel;
 import io.whz.androidneuralnetwork.pojo.neural.ModelUpdateHolder;
+import io.whz.androidneuralnetwork.pojo.neural.NeuralModel;
 import io.whz.androidneuralnetwork.util.FileUtil;
 import io.whz.androidneuralnetwork.util.Precondition;
 
@@ -330,10 +331,22 @@ public class MainService extends Service {
                 handleTrainCompleteEvent(event);
                 break;
 
+            case TrainStateEvent.EVALUATE:
+                handleStartEvaluate();
+                break;
+
             case TrainStateEvent.ERROR:
                 handleTrainError(event);
                 break;
         }
+    }
+
+    private void handleStartEvaluate() {
+        mTrainNotifyBuilder.setContentText("Evaluating")
+                .setProgress(0, 0, true);
+        mTrainNotifyBuilder.mActions.clear();
+
+        mNotifyManager.notify(FOREGROUND_SERVER, mTrainNotifyBuilder.build());
     }
 
     private void handleTrainError(TrainStateEvent event) {
@@ -525,6 +538,8 @@ public class MainService extends Service {
         private final EventBus mEventBus;
         private final List<Double> mTimeUsedList;
         private long mStartTime;
+        private long mTimeUsed;
+        private double[] mAccuracies;
 
         private TrainRunnable(@NonNull NeuralModel model, @NonNull AtomicBoolean breakSign) {
             mModel = model;
@@ -545,9 +560,10 @@ public class MainService extends Service {
 
             final DataSet training = new DataSet(Arrays.copyOf(files, len - 1));
             final DataSet validation = new DataSet(files[len - 1]);
+            final DataSet test = new DataSet(Global.getInstance().getDirs().test.listFiles());
             final NeuralNetwork network = new NeuralNetwork(mModel.hiddenSizes);
 
-            network.train(mModel.epochs, mModel.learningRate, training, validation, this);
+            network.train(mModel.epochs, mModel.learningRate, training, validation, test, this);
         }
 
         @Override
@@ -570,12 +586,19 @@ public class MainService extends Service {
         }
 
         @Override
-        public void onComplete() {
-            final long timeUsed = System.currentTimeMillis() - mStartTime;
-            final double[] accuracies = convert(mTimeUsedList);
+        public void onTrainComplete() {
+            mTimeUsed = System.currentTimeMillis() - mStartTime;
+            mAccuracies = convert(mTimeUsedList);
 
+            mEventBus.post(new TrainStateEvent<>(TrainStateEvent.EVALUATE));
+        }
+
+        @Override
+        public void onEvaluateComplete(double evaluate) {
             mEventBus.post(new TrainStateEvent<>(TrainStateEvent.COMPLETE,
-                    new ModelCompleteHolder(mModel, timeUsed, accuracies)));
+                    new ModelCompleteHolder(mModel, mTimeUsed, mAccuracies, evaluate)));
+
+            Log.i(TAG, "Evaluate:" + evaluate);
         }
 
         private double[] convert(@NonNull List<Double> list) {

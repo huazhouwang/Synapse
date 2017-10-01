@@ -8,11 +8,12 @@ import java.lang.annotation.RetentionPolicy;
 public class TrainStateEvent<T> extends TypeEvent<T> {
     public static final int START = 0x01;
     public static final int UPDATE = 0x01 << 1;
-    public static final int COMPLETE = 0x01 << 2;
-    public static final int ERROR = 0x01 << 3;
+    public static final int EVALUATE = 0x01 << 2;
+    public static final int COMPLETE = 0x01 << 3;
+    public static final int ERROR = 0x01 << 4;
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({START, UPDATE, COMPLETE, ERROR})
+    @IntDef({START, UPDATE, EVALUATE, COMPLETE, ERROR})
     public @interface Type {
     }
 
