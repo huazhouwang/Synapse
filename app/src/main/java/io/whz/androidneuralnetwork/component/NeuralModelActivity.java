@@ -40,6 +40,7 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
     private TextView mLearningRateInput;
     private TextView mEpochsInput;
     private SeekBar mTrainingSize;
+    private TextView mNameInput;
 
     private String mDataSizeTemplate;
 
@@ -52,6 +53,7 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
         mDataSizeTemplate = getString(R.string.template_data_size);
 
         mContainer = findViewById(R.id.container);
+        mNameInput = findViewById(R.id.input_name);
         mHiddenGroup = findViewById(R.id.layout_hidden_layers);
         mDataSizeText = findViewById(R.id.selected_data_size);
         mLearningRateInput = findViewById(R.id.input_learning_rate);
@@ -210,6 +212,15 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
     }
 
     private NeuralModel checkInputs() {
+        final String name = String.valueOf(mNameInput.getText());
+
+        if (TextUtils.isEmpty(name.trim())) {
+            showSnackbar("Empty name is illegal");
+            return null;
+        } else {
+            // TODO: 01/10/2017 check unique name
+        }
+
         final int[] hiddenSizes = new int[mHiddenSizeInputs.size()];
 
         for (int i = 0, len = hiddenSizes.length; i < len; ++i) {
@@ -241,7 +252,7 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
 
         final int trainingSize = calculateDataSize(mTrainingSize.getProgress());
 
-        return new NeuralModel("testingModel", hiddenSizes, leaningRate, epochs, trainingSize);
+        return new NeuralModel(name, hiddenSizes, leaningRate, epochs, trainingSize);
     }
 
     private int solveInt(@NonNull String input) {

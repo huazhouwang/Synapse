@@ -27,6 +27,8 @@
             android:paddingStart="@dimen/container_padding_horizontal"
             android:paddingEnd="@dimen/container_padding_horizontal"
             android:orientation="vertical"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             tools:layout_gravity="center">
 
             <TextView
@@ -37,13 +39,31 @@
                 android:textAppearance="@android:style/TextAppearance.Material.DialogWindowTitle"
                 />
 
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:hint="Name">
+
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/input_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/dialog_edit_text_size"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/secondary_text"
+                    android:inputType="numberDecimal"
+                    android:maxLength="6"
+                    android:selectAllOnFocus="true"
+                    />
+            </android.support.design.widget.TextInputLayout>
+
             <LinearLayout
                 android:id="@+id/layout_hidden_layers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:focusable="true"
-                android:focusableInTouchMode="true"/>
+                />
 
             <TextView
                 android:id="@+id/action_add_new_layer"
