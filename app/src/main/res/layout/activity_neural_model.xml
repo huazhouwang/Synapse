@@ -71,7 +71,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/dialog_per_line_margin"
                 android:textSize="12sp"
-                android:textColor="@color/normal_link"
+                android:textColor="@color/color_accent"
                 android:textStyle="italic"
                 android:text="@string/action_add_new_layer"
                 />
