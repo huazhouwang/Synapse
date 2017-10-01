@@ -26,9 +26,8 @@ import io.whz.androidneuralnetwork.transition.FabTransform;
 
 public class NeuralModelActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private static final int MAX_HIDDEN_SIZE = 5;
-    private static final int MINI_BATCH_SIZE = MNISTUtil.PRE_FILE_SIZE;
     private static final int MAX_PROGRESS = 100;
-    private static final float STEP_NUMBER = (MNISTUtil.MAX_TRAINING_SIZE - MNISTUtil.PRE_FILE_SIZE) / MNISTUtil.PRE_FILE_SIZE;
+    private static final float STEP_NUMBER = MNISTUtil.MAX_TRAINING_SIZE / MNISTUtil.PRE_FILE_SIZE;
 
     private final List<TextView> mHiddenSizeInputs = new ArrayList<>();
 
@@ -159,15 +158,15 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
     }
 
     private int calculateDataSize(float progress) {
-        final int size = (int) ((progress / MAX_PROGRESS) * STEP_NUMBER) * MINI_BATCH_SIZE;
+        final int size = (int) ((progress / MAX_PROGRESS) * STEP_NUMBER) * MNISTUtil.PRE_FILE_SIZE;
 
-        return size <= 0 ? MINI_BATCH_SIZE : size;
+        return size <= 0 ? MNISTUtil.PRE_FILE_SIZE << 1 : size;
     }
 
     private String formatDataSize(float progress) {
         final int size = calculateDataSize(progress);
 
-        return String.format(mDataSizeTemplate, size);
+        return String.format(mDataSizeTemplate, size, MNISTUtil.MAX_TRAINING_SIZE);
     }
 
     @Override

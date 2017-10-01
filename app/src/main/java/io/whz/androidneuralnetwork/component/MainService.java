@@ -594,7 +594,7 @@ public class MainService extends Service {
     }
 
     private static File[] allotFiles(int trainingSize) {
-        int fileNum = (int) Math.floor((double) trainingSize / MNISTUtil.PRE_FILE_SIZE) + 1;
+        int fileNum = (int) Math.floor((double) trainingSize / MNISTUtil.PRE_FILE_SIZE);
         fileNum = Math.min(fileNum, MNISTUtil.MAX_TRAINING_SIZE / MNISTUtil.PRE_FILE_SIZE);
 
         final List<File> fileList = Arrays.asList(Global.getInstance().getDirs().train.listFiles());
