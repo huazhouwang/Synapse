@@ -17,7 +17,6 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -26,7 +25,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -45,12 +43,11 @@ import io.whz.androidneuralnetwork.neural.DataSet;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.neural.NeuralNetwork;
 import io.whz.androidneuralnetwork.neural.TrainCallback;
+import io.whz.androidneuralnetwork.pojo.dao.TrainedModel;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
-import io.whz.androidneuralnetwork.pojo.event.TrainStateEvent;
-import io.whz.androidneuralnetwork.pojo.neural.ModelCompleteHolder;
-import io.whz.androidneuralnetwork.pojo.neural.ModelUpdateHolder;
-import io.whz.androidneuralnetwork.pojo.neural.NeuralModel;
+import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
+import io.whz.androidneuralnetwork.pojo.temp.NewModel;
 import io.whz.androidneuralnetwork.util.FileUtil;
 import io.whz.androidneuralnetwork.util.Precondition;
 
@@ -107,7 +104,7 @@ public class MainService extends Service {
     }
 
     private void handleTraining(@NonNull Intent intent) {
-        final NeuralModel model = (NeuralModel) intent.getSerializableExtra(EXTRAS_NEURAL_CONFIG);
+        final NewModel model = (NewModel) intent.getSerializableExtra(EXTRAS_NEURAL_CONFIG);
         Precondition.checkNotNull(model);
 
         interruptTraining();
@@ -315,27 +312,27 @@ public class MainService extends Service {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void OnTrainStateChange(@NonNull TrainStateEvent event) {
-        @TrainStateEvent.Type final int what = event.what;
+    public void OnTrainStateChange(@NonNull TrainEvent event) {
+        @TrainEvent.Type final int what = event.what;
 
         switch (what) {
-            case TrainStateEvent.START:
+            case TrainEvent.START:
                 handleTrainStartEvent(event);
                 break;
 
-            case TrainStateEvent.UPDATE:
+            case TrainEvent.UPDATE:
                 handleTrainUpdateEvent(event);
                 break;
 
-            case TrainStateEvent.COMPLETE:
+            case TrainEvent.COMPLETE:
                 handleTrainCompleteEvent(event);
                 break;
 
-            case TrainStateEvent.EVALUATE:
+            case TrainEvent.EVALUATE:
                 handleStartEvaluate();
                 break;
 
-            case TrainStateEvent.ERROR:
+            case TrainEvent.ERROR:
                 handleTrainError(event);
                 break;
         }
@@ -349,25 +346,31 @@ public class MainService extends Service {
         mNotifyManager.notify(FOREGROUND_SERVER, mTrainNotifyBuilder.build());
     }
 
-    private void handleTrainError(TrainStateEvent event) {
+    private void handleTrainError(TrainEvent event) {
         reset();
     }
 
-    private void handleTrainCompleteEvent(TrainStateEvent event) {
+    private void handleTrainCompleteEvent(TrainEvent event) {
         stopForeground(true);
 
-        final ModelCompleteHolder holder = (ModelCompleteHolder) event.obj;
+        final NewModel model = (NewModel) event.obj;
 
-        if (holder == null) {
+        if (model == null) {
             return;
         }
 
-        final long timeUsed = Math.max(holder.usedTime, 0L);
+        try {
+            saveModel(model);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        final long timeUsed = Math.max(model.getTimeUsed(), 0L);
         final String time = String.format(Locale.getDefault(), "%02d:%02d:%02d",
                 timeUsed / (3600000), timeUsed / (60000) % 60, timeUsed / 1000 % 60);
 
         final String accuracy = String.format(Locale.getDefault(),
-                "%.2f", holder.evaluate * 100);
+                "%.2f", model.getEvaluate() * 100);
 
         mTrainNotifyBuilder = null;
 
@@ -376,7 +379,7 @@ public class MainService extends Service {
 
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
 
-        builder.setContentTitle(String.format(getString(R.string.template_train_complete_title), holder.model.name))
+        builder.setContentTitle(String.format(getString(R.string.template_train_complete_title), model.getName()))
                 .setContentText(String.format(getString(R.string.template_train_complete_content), time, accuracy))
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setColor(ContextCompat.getColor(this, R.color.color_accent))
@@ -392,8 +395,56 @@ public class MainService extends Service {
         reset();
     }
 
-    private void handleTrainStartEvent(@NonNull TrainStateEvent event) {
-        final NeuralModel model = (NeuralModel) event.obj;
+    private void saveModel(@NonNull NewModel newModel) {
+        final String hiddenSizes = arrayToString(newModel.getHiddenSizes());
+        final String accuracies = arrayToString(newModel.getAccuracies());
+
+        final TrainedModel model = new TrainedModel();
+        model.setName(newModel.getName());
+        model.setHiddenSizes(hiddenSizes);
+        model.setEpochs(newModel.getEpochs());
+        model.setLearningRate(newModel.getLearningRate());
+        model.setDataSize(newModel.getDataSize());
+        model.setAccuracies(accuracies);
+        model.setEvaluate(newModel.getEvaluate());
+        model.setTimeUsed(newModel.getTimeUsed());
+        model.setCreatedTime(System.currentTimeMillis());
+
+        Global.getInstance()
+                .getSession()
+                .getTrainedModelDao()
+                .insert(model);
+    }
+
+    private static String arrayToString(@NonNull int... arrays) {
+        final StringBuilder builder = new StringBuilder();
+
+        for (int i : arrays) {
+            builder.append(i)
+                    .append(":");
+        }
+
+        builder.deleteCharAt(builder.length() - 1);
+
+        return builder.toString();
+    }
+
+    private static String arrayToString(@NonNull List<Double> arrays) {
+        final StringBuilder builder = new StringBuilder();
+        final Locale locale = Locale.getDefault();
+
+        for (double i : arrays) {
+            builder.append(String.format(locale, "%.4f", i))
+                    .append(":");
+        }
+
+        builder.deleteCharAt(builder.length() - 1);
+
+        return builder.toString();
+    }
+
+    private void handleTrainStartEvent(@NonNull TrainEvent event) {
+        final NewModel model = (NewModel) event.obj;
 
         if (model == null) {
             return;
@@ -404,30 +455,31 @@ public class MainService extends Service {
 
         mTrainNotifyBuilder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
 
-        mTrainNotifyBuilder.setContentTitle(String.format(getString(R.string.tmplate_train_start_title), model.name))
+        mTrainNotifyBuilder.setContentTitle(String.format(getString(R.string.tmplate_train_start_title), model.getName()))
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setColor(ContextCompat.getColor(this, R.color.color_accent))
                 .setWhen(System.currentTimeMillis())
-                .setProgress(model.epochs, 0, false)
+                .setProgress(model.getEpochs(), 0, false)
                 .setOngoing(true)
                 .setAutoCancel(false)
+                .setFullScreenIntent(pending, true)
                 .addAction(R.drawable.ic_block_24dp, getString(R.string.text_train_interrupt), pending);
 
         startForeground(FOREGROUND_SERVER, mTrainNotifyBuilder.build());
     }
 
     @SuppressWarnings("unchecked")
-    private void handleTrainUpdateEvent(@NonNull TrainStateEvent event) {
-        final ModelUpdateHolder holder = (ModelUpdateHolder) event.obj;
+    private void handleTrainUpdateEvent(@NonNull TrainEvent event) {
+        final NewModel model = (NewModel) event.obj;
 
-        if (holder == null) {
+        if (model == null) {
             return;
         }
 
         mTrainNotifyBuilder.setContentText(String.format(
                 Locale.getDefault(), getString(R.string.template_train_update_content),
-                String.valueOf(holder.epoch), holder.accuracy * 100))
-                .setProgress(holder.model.epochs, holder.epoch, false);
+                String.valueOf(model.getStepEpoch()), model.getLastAccuracy() * 100))
+                .setProgress(model.getEpochs(), model.getStepEpoch(), false);
 
         mNotifyManager.notify(FOREGROUND_SERVER, mTrainNotifyBuilder.build());
     }
@@ -532,42 +584,38 @@ public class MainService extends Service {
     }
 
     private static class TrainRunnable implements Runnable, TrainCallback {
-        private final NeuralModel mModel;
+        private final NewModel mModel;
         private final AtomicBoolean mInterruptSign;
         private final EventBus mEventBus;
-        private final List<Double> mTimeUsedList;
         private long mStartTime;
-        private long mTimeUsed;
-        private double[] mAccuracies;
 
-        private TrainRunnable(@NonNull NeuralModel model, @NonNull AtomicBoolean breakSign) {
+        private TrainRunnable(@NonNull NewModel model, @NonNull AtomicBoolean breakSign) {
             mModel = model;
             mInterruptSign = breakSign;
             mEventBus = Global.getInstance().getBus();
-            mTimeUsedList = new ArrayList<>();
         }
 
         @Override
         public void run() {
-            final File[] files = allotFiles(mModel.trainingSize);
+            final File[] files = allotFiles(mModel.getDataSize());
             final int len;
 
             if ((len = files.length) == 0) {
-                mEventBus.post(new TrainStateEvent<>(TrainStateEvent.ERROR));
+                mEventBus.post(new TrainEvent<>(TrainEvent.ERROR));
                 return;
             }
 
             final DataSet training = new DataSet(Arrays.copyOf(files, len - 1));
             final DataSet validation = new DataSet(files[len - 1]);
             final DataSet test = new DataSet(Global.getInstance().getDirs().test.listFiles());
-            final NeuralNetwork network = new NeuralNetwork(mModel.hiddenSizes);
+            final NeuralNetwork network = new NeuralNetwork(mModel.getHiddenSizes());
 
-            network.train(mModel.epochs, mModel.learningRate, training, validation, test, this);
+            network.train(mModel.getEpochs(), mModel.getLearningRate(), training, validation, test, this);
         }
 
         @Override
         public void onStart() {
-            mEventBus.post(new TrainStateEvent<>(TrainStateEvent.START, mModel));
+            mEventBus.post(new TrainEvent<>(TrainEvent.START, mModel));
             mStartTime = System.currentTimeMillis();
         }
 
@@ -577,42 +625,41 @@ public class MainService extends Service {
                 return false;
             }
 
-            mTimeUsedList.add(accuracy);
-            mEventBus.post(new TrainStateEvent<>(TrainStateEvent.UPDATE,
-                    new ModelUpdateHolder(mModel, epoch, accuracy)));
+            mModel.addAccuracy(accuracy);
+            mModel.setStepEpoch(epoch);
+
+            mEventBus.post(new TrainEvent<>(TrainEvent.UPDATE, mModel));
 
             return true;
         }
 
         @Override
         public void onTrainComplete() {
-            mTimeUsed = System.currentTimeMillis() - mStartTime;
-            mAccuracies = convert(mTimeUsedList);
+            final long timeUsed = System.currentTimeMillis() - mStartTime;
+            mModel.setTimeUsed(timeUsed);
 
-            mEventBus.post(new TrainStateEvent<>(TrainStateEvent.EVALUATE));
+            mEventBus.post(new TrainEvent<>(TrainEvent.EVALUATE));
         }
 
         @Override
         public void onEvaluateComplete(double evaluate) {
-            mEventBus.post(new TrainStateEvent<>(TrainStateEvent.COMPLETE,
-                    new ModelCompleteHolder(mModel, mTimeUsed, mAccuracies, evaluate)));
+            mModel.setEvaluate(evaluate);
+            mEventBus.post(new TrainEvent<>(TrainEvent.COMPLETE, mModel));
+        }
+    }
 
-            Log.i(TAG, "Evaluate:" + evaluate);
+    private static double[] convert(@NonNull List<Double> list) {
+        if (list.isEmpty()) {
+            return null;
         }
 
-        private double[] convert(@NonNull List<Double> list) {
-            if (list.isEmpty()) {
-                return null;
-            }
+        final double[] doubles = new double[list.size()];
 
-            final double[] doubles = new double[list.size()];
-
-            for (int i = 0, len = list.size(); i < len; ++i) {
-                doubles[i] = list.get(i);
-            }
-
-            return doubles;
+        for (int i = 0, len = list.size(); i < len; ++i) {
+            doubles[i] = list.get(i);
         }
+
+        return doubles;
     }
 
     private static File[] allotFiles(int trainingSize) {

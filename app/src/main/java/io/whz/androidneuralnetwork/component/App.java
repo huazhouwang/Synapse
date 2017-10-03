@@ -34,10 +34,9 @@ public class App extends Application {
 
     private void configGreenDao() {
         final DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(
-                getApplicationContext(), DB_NAME, null);
+                getApplicationContext(), DB_NAME);
 
-        final DaoMaster master = new DaoMaster(helper.getWritableDb());
-        final DaoSession session = master.newSession();
+        final DaoSession session = new DaoMaster(helper.getWritableDb()).newSession();
 
         Global.getInstance()
                 .setSession(session);

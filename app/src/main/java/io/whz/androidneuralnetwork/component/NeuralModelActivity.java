@@ -21,7 +21,7 @@ import java.util.List;
 
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
-import io.whz.androidneuralnetwork.pojo.neural.NeuralModel;
+import io.whz.androidneuralnetwork.pojo.temp.NewModel;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 
 public class NeuralModelActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
@@ -180,15 +180,15 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
     }
 
     public void onConfirm(View view) {
-        final NeuralModel config = checkInputs();
+        final NewModel model = checkInputs();
 
-        if (config == null) {
+        if (model == null) {
             return;
         }
 
         final Intent intent = new Intent(this, MainService.class);
         intent.putExtra(MainService.ACTION_KEY, MainService.ACTION_TRAIN);
-        intent.putExtra(MainService.EXTRAS_NEURAL_CONFIG, config);
+        intent.putExtra(MainService.EXTRAS_NEURAL_CONFIG, model);
 
         startService(intent);
 
@@ -210,7 +210,7 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
         mContainer.startAnimation(out);
     }
 
-    private NeuralModel checkInputs() {
+    private NewModel checkInputs() {
         final String name = String.valueOf(mNameInput.getText());
 
         if (TextUtils.isEmpty(name.trim())) {
@@ -249,9 +249,17 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
             return null;
         }
 
-        final int trainingSize = calculateDataSize(mTrainingSize.getProgress());
+        final int dataSize = calculateDataSize(mTrainingSize.getProgress());
 
-        return new NeuralModel(name, hiddenSizes, leaningRate, epochs, trainingSize);
+        final NewModel model = new NewModel();
+
+        model.setName(name);
+        model.setHiddenSizes(hiddenSizes);
+        model.setLearningRate(leaningRate);
+        model.setEpochs(epochs);
+        model.setDataSize(dataSize);
+
+        return model;
     }
 
     private int solveInt(@NonNull String input) {

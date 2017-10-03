@@ -5,7 +5,7 @@ import android.support.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-public class TrainStateEvent<T> extends TypeEvent<T> {
+public class TrainEvent<T> extends TypeEvent<T> {
     public static final int START = 0x01;
     public static final int UPDATE = 0x01 << 1;
     public static final int EVALUATE = 0x01 << 2;
@@ -17,11 +17,11 @@ public class TrainStateEvent<T> extends TypeEvent<T> {
     public @interface Type {
     }
 
-    public TrainStateEvent(@Type int what, T obj) {
+    public TrainEvent(@Type int what, T obj) {
         super(what, obj);
     }
 
-    public TrainStateEvent(@Type int what) {
+    public TrainEvent(@Type int what) {
         super(what);
     }
 }
