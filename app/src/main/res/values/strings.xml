@@ -47,4 +47,15 @@
     <string name="template_train_update_content" formatted="false">Epoch: %s | Accuracy: %.2f%%</string>
     <string name="text_star_tip">STAR PROJECT</string>
     <string name="text_rate_tip">RATE APPLICATION</string>
+    <string name="text_tip_layers">Layers</string>
+    <string name="text_tip_learning_rate">Learning rate</string>
+    <string name="text_tip_epochs">Epochs</string>
+    <string name="text_tip_data_size">Data Size</string>
+    <string name="text_time_used">Time used</string>
+    <string name="text_tip_evaluate">Evaluate Accuracy</string>
+    <string name="text_chart_left_axis">Training Accuracy</string>
+    <string name="text_value_unable">--</string>
+    <string name="text_dialog_no_data_msg">Will return to previous page</string>
+    <string name="text_dialog_no_data_title">Data no found</string>
+    <string name="text_dialog_no_data_negative">Return</string>
 </resources>

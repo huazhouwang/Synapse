@@ -1,7 +1,6 @@
 package io.whz.androidneuralnetwork.neural;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import org.greenrobot.greendao.annotation.NotNull;
 
@@ -16,8 +15,8 @@ import io.whz.androidneuralnetwork.util.Precondition;
 public class NeuralNetwork {
     private static final String TAG = App.TAG + "-NeuralNetwork";
     
-    private static final int INPUT_LAYER_NUMBER = 784;
-    private static final int OUTPUT_LAYER_NUMBER = 10;
+    public static final int INPUT_LAYER_NUMBER = 784;
+    public static final int OUTPUT_LAYER_NUMBER = 10;
 
     private final Matrix[] mBiases;
     private final Matrix[] mWeights;
@@ -206,8 +205,6 @@ public class NeuralNetwork {
                     }
                 }
             }
-
-            Log.i(TAG, "Total:" + total);
 
             return total != 0 ? (double) correct / total : 0D;
         }

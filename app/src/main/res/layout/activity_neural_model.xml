@@ -52,8 +52,7 @@
                     android:textSize="@dimen/dialog_edit_text_size"
                     android:textColor="@color/text_primary"
                     android:textColorHint="@color/secondary_text"
-                    android:inputType="numberDecimal"
-                    android:maxLength="6"
+                    android:inputType="text"
                     android:selectAllOnFocus="true"
                     />
             </android.support.design.widget.TextInputLayout>
@@ -118,7 +117,7 @@
                         android:textColor="@color/text_primary"
                         android:textColorHint="@color/secondary_text"
                         android:inputType="number"
-                        android:maxLength="4"
+                        android:maxLength="2"
                         android:text="@string/text_default_epochs"
                         android:selectAllOnFocus="true"
                         />

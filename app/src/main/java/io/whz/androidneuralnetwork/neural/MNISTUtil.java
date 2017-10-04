@@ -1,5 +1,6 @@
 package io.whz.androidneuralnetwork.neural;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.DataInputStream;
@@ -254,5 +255,22 @@ public class MNISTUtil {
         }
 
         return doubles;
+    }
+
+    public static String getLayerSizes(@NonNull int[] hiddenSizes) {
+        final StringBuilder builder = new StringBuilder();
+        final String spilt = " × ";
+
+        builder.append(NeuralNetwork.INPUT_LAYER_NUMBER)
+                .append(spilt);
+
+        for (int size : hiddenSizes) {
+            builder.append(size)
+                    .append(spilt);
+        }
+
+        builder.append(NeuralNetwork.OUTPUT_LAYER_NUMBER);
+
+        return builder.toString();
     }
 }

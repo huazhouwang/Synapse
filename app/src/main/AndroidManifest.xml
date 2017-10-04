@@ -18,7 +18,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".component.MainActivity"
-            android:launchMode="singleTask">
+            android:configChanges="orientation|keyboard"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,17 +27,24 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".component.MainService"
-            android:enabled="true"
-            android:exported="false" />
-
         <activity
             android:name=".component.NeuralModelActivity"
             android:exported="false"
             android:theme="@style/AppTheme.Translucent.NeuralNetworkConfig"
-            android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".component.ModelDetailActivity"></activity>
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|keyboard"
+            />
+
+        <activity
+            android:name=".component.ModelDetailActivity"
+            android:exported="false"
+            android:configChanges="orientation|keyboard"
+            android:launchMode="singleTop" />
+
+        <service
+            android:name=".component.MainService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

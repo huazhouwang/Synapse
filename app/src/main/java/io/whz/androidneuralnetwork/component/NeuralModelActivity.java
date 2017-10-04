@@ -21,7 +21,7 @@ import java.util.List;
 
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
-import io.whz.androidneuralnetwork.pojo.temp.NewModel;
+import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 
 public class NeuralModelActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
@@ -180,7 +180,7 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
     }
 
     public void onConfirm(View view) {
-        final NewModel model = checkInputs();
+        final Model model = checkInputs();
 
         if (model == null) {
             return;
@@ -210,7 +210,7 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
         mContainer.startAnimation(out);
     }
 
-    private NewModel checkInputs() {
+    private Model checkInputs() {
         final String name = String.valueOf(mNameInput.getText());
 
         if (TextUtils.isEmpty(name.trim())) {
@@ -251,7 +251,7 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
 
         final int dataSize = calculateDataSize(mTrainingSize.getProgress());
 
-        final NewModel model = new NewModel();
+        final Model model = new Model();
 
         model.setName(name);
         model.setHiddenSizes(hiddenSizes);
