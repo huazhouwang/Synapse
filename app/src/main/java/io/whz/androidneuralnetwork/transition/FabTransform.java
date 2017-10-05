@@ -47,6 +47,7 @@ import java.util.List;
 import static android.view.View.MeasureSpec.makeMeasureSpec;
 
 /**
+ * Thanks https://github.com/nickbutcher/plaid
  * A transition between a FAB & another surface using a circular reveal moving along an arc.
  * <p>
  * See: https://www.google.com/design/spec/motion/transforming-material.html#transforming-material-radial-transformation

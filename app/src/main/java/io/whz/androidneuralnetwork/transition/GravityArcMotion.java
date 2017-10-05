@@ -20,6 +20,7 @@ import android.graphics.Path;
 import android.transition.ArcMotion;
 
 /**
+ * Thanks https://github.com/nickbutcher/plaid
  * A tweak to {@link ArcMotion} which slightly alters the path calculation. In the real world
  * gravity slows upward motion and accelerates downward motion. This class emulates this behavior
  * to make motion paths appear more natural.
