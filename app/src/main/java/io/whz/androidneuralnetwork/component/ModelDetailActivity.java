@@ -34,7 +34,7 @@ import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
-import io.whz.androidneuralnetwork.util.AUtil;
+import io.whz.androidneuralnetwork.util.StringFormatUtil;
 
 public class ModelDetailActivity extends AppCompatActivity {
     public static final String INTENT_TYPE = "intent_type";
@@ -158,7 +158,7 @@ public class ModelDetailActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.text_dialog_interrupt_title)
                 .setMessage(R.string.text_dialog_interrupt_msg)
-                .setPositiveButton(R.string.text_dialog_interrupt_positive, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Global.getInstance()
@@ -169,7 +169,7 @@ public class ModelDetailActivity extends AppCompatActivity {
                             finishAfterTransition();
                         }
                     }
-                }).setNegativeButton(R.string.text_dialog_interrupt_negative, null)
+                }).setNegativeButton(R.string.dialog_negative, null)
                 .show();
     }
 
@@ -207,7 +207,10 @@ public class ModelDetailActivity extends AppCompatActivity {
         mModel = model;
         setUpTrainCompleteValues(model);
 
-        mInterruptItem.setVisible(false);
+        if (mInterruptItem != null) {
+            mInterruptItem.setVisible(false);
+            mDeleteItem.setVisible(false);
+        }
     }
 
     private void handleTrainingEvent(@NonNull TrainEvent event) {
@@ -234,6 +237,7 @@ public class ModelDetailActivity extends AppCompatActivity {
     }
 
     private void setUpNormalValues(@NonNull Model model) {
+        setTitle(model.getName());
         mLayersText.setText(MNISTUtil.getLayerSizes(model.getHiddenSizes()));
         mLearningRateText.setText(String.valueOf(model.getLearningRate()));
         mEpochsText.setText(String.valueOf(model.getEpochs()));
@@ -241,8 +245,8 @@ public class ModelDetailActivity extends AppCompatActivity {
     }
 
     private void setUpTrainCompleteValues(@NonNull Model model) {
-        mTimeUsedText.setText(AUtil.formatTimeUsed(model.getTimeUsed()));
-        mEvaluateText.setText(AUtil.format2Percent(model.getEvaluate()));
+        mTimeUsedText.setText(StringFormatUtil.formatTimeUsed(model.getTimeUsed()));
+        mEvaluateText.setText(StringFormatUtil.format2Percent(model.getEvaluate()));
     }
 
     private boolean setUpChart(@NonNull Model model) {
@@ -325,8 +329,11 @@ public class ModelDetailActivity extends AppCompatActivity {
         }
 
         mModel = model;
-        mInterruptItem.setVisible(false);
-        mDeleteItem.setVisible(true);
+
+        if (mInterruptItem != null) {
+            mInterruptItem.setVisible(false);
+            mDeleteItem.setVisible(true);
+        }
 
         displayTrainedModel(model);
     }
@@ -353,8 +360,8 @@ public class ModelDetailActivity extends AppCompatActivity {
         final String hiddenSizeString = model.getHiddenSizeString();
         final String accuracyString = model.getAccuracyString();
 
-        final int[] hiddenSizes = getHiddenSizes(hiddenSizeString);
-        final List<Double> accuracies = getAccuracies(accuracyString);
+        final int[] hiddenSizes = StringFormatUtil.splitString2IntArray(hiddenSizeString);
+        final List<Double> accuracies = StringFormatUtil.splitString2DoubleList(accuracyString);
 
         model.setHiddenSizes(hiddenSizes);
         model.addAllAccuracy(accuracies);
@@ -362,28 +369,6 @@ public class ModelDetailActivity extends AppCompatActivity {
         setUpNormalValues(model);
         setUpTrainCompleteValues(model);
         setUpChart(model);
-    }
-
-    private List<Double> getAccuracies(@NonNull String accuracyString) {
-        final String[] tmp = accuracyString.split(":");
-        final List<Double> res = new ArrayList<>();
-
-        for (String item : tmp) {
-            res.add(Double.valueOf(item));
-        }
-
-        return res;
-    }
-
-    private int[] getHiddenSizes(@NonNull String hiddenSizeString) {
-        final String[] sizes = hiddenSizeString.split(":");
-        final int[] res = new int[sizes.length];
-
-        for (int i = 0, len = res.length; i < len; ++i) {
-            res[i] = Integer.valueOf(sizes[i]);
-        }
-
-        return res;
     }
 
     @Override
@@ -456,7 +441,7 @@ public class ModelDetailActivity extends AppCompatActivity {
                 return true;
 
             case R.id.delete:
-                // TODO: 05/10/2017
+                deleteModel(mModel);
                 return true;
 
             default:
@@ -464,5 +449,39 @@ public class ModelDetailActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void deleteModel(@Nullable Model model) {
+        if (model == null
+                || model.getId() == null) {
+            finishAfterTransition();
+            return;
+        }
+
+        final long id = model.getId();
+        final Activity that = this;
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.text_dialog_delete_model_title)
+                .setMessage(String.format(getString(R.string.text_dialog_delete_model_msg), model.getName()))
+                .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        try {
+                            Global.getInstance()
+                                    .getSession()
+                                    .getModelDao()
+                                    .deleteByKey(id);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            if (!that.isFinishing()) {
+                                that.finishAfterTransition();
+                            }
+                        }
+                    }
+                })
+                .setNegativeButton(R.string.dialog_negative, null)
+                .show();
     }
 }

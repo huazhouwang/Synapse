@@ -47,7 +47,7 @@ import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
-import io.whz.androidneuralnetwork.util.AUtil;
+import io.whz.androidneuralnetwork.util.StringFormatUtil;
 import io.whz.androidneuralnetwork.util.FileUtil;
 import io.whz.androidneuralnetwork.util.Precondition;
 
@@ -381,8 +381,8 @@ public class MainService extends Service {
             e.printStackTrace();
         }
 
-        final String time = AUtil.formatTimeUsed(model.getTimeUsed());
-        final String accuracy = AUtil.format2Percent(model.getEvaluate());
+        final String time = StringFormatUtil.formatTimeUsed(model.getTimeUsed());
+        final String accuracy = StringFormatUtil.format2Percent(model.getEvaluate());
 
         mTrainNotifyBuilder = null;
 
@@ -411,8 +411,8 @@ public class MainService extends Service {
     }
 
     private long saveModel(@NonNull Model model) {
-        final String hiddenSizeString = arrayToString(model.getHiddenSizes());
-        final String accuracyString = arrayToString(model.getAccuracies());
+        final String hiddenSizeString = StringFormatUtil.mergeIntArray2String(model.getHiddenSizes());
+        final String accuracyString = StringFormatUtil.mergeDoubleList2String(model.getAccuracies());
 
         model.setHiddenSizeString(hiddenSizeString);
         model.setAccuracyString(accuracyString);
@@ -422,33 +422,6 @@ public class MainService extends Service {
                 .getSession()
                 .getModelDao()
                 .insert(model);
-    }
-
-    private static String arrayToString(@NonNull int... arrays) {
-        final StringBuilder builder = new StringBuilder();
-
-        for (int i : arrays) {
-            builder.append(i)
-                    .append(":");
-        }
-
-        builder.deleteCharAt(builder.length() - 1);
-
-        return builder.toString();
-    }
-
-    private static String arrayToString(@NonNull List<Double> arrays) {
-        final StringBuilder builder = new StringBuilder();
-        final Locale locale = Locale.getDefault();
-
-        for (double i : arrays) {
-            builder.append(String.format(locale, "%.4f", i))
-                    .append(":");
-        }
-
-        builder.deleteCharAt(builder.length() - 1);
-
-        return builder.toString();
     }
 
     private void handleTrainStartEvent(@NonNull TrainEvent event) {
@@ -494,7 +467,7 @@ public class MainService extends Service {
 
         mTrainNotifyBuilder.setContentText(String.format(
                 Locale.getDefault(), getString(R.string.template_train_update_content),
-                String.valueOf(model.getStepEpoch()), AUtil.format2Percent(model.getLastAccuracy())))
+                String.valueOf(model.getStepEpoch()), StringFormatUtil.format2Percent(model.getLastAccuracy())))
                 .setProgress(model.getEpochs(), model.getStepEpoch(), false);
 
         mNotifyManager.notify(FOREGROUND_SERVER, mTrainNotifyBuilder.build());

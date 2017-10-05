@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new AlertDialog.Builder(activity)
                 .setTitle(R.string.text_dialog_download_title)
                 .setMessage(R.string.text_dialog_download_msg)
-                .setPositiveButton(R.string.text_dialog_download_positive, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         if (activity.isFinishing()) {
@@ -291,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         notifyAdapterChange();
                         requestDownload();
                     }
-                }).setNegativeButton(R.string.text_dialog_download_negative, null)
+                }).setNegativeButton(R.string.dialog_negative, null)
                 .show();
     }
 

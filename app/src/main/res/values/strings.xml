@@ -28,8 +28,6 @@
     <string name="text_notification_decompress">Decompressing</string>
     <string name="text_dialog_download_msg">Total Size: 11 MB\n\nRecommend to connect wifi first</string>
     <string name="text_dialog_download_title">Download</string>
-    <string name="text_dialog_download_positive">Confirm</string>
-    <string name="text_dialog_download_negative">Cancel</string>
     <string name="text_default_learning_rate">3</string>
     <string name="text_default_epochs">10</string>
     <string name="text_default_hidden_size">30</string>
@@ -60,7 +58,9 @@
     <string name="text_dialog_no_data_negative">Return</string>
     <string name="text_dialog_interrupt_title">Interrupt Training?</string>
     <string name="text_dialog_interrupt_msg">Would not save the trained data!</string>
-    <string name="text_dialog_interrupt_positive">confirm</string>
-    <string name="text_dialog_interrupt_negative">Cancel</string>
+    <string name="dialog_positive">confirm</string>
+    <string name="dialog_negative">Cancel</string>
     <string name="action_delete">delete</string>
+    <string name="text_dialog_delete_model_msg">Would you want to delete %s model?</string>
+    <string name="text_dialog_delete_model_title">Delete Model</string>
 </resources>
