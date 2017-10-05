@@ -7,5 +7,7 @@ public interface TrainCallback {
 
     void onTrainComplete();
 
+    void onInterrupted();
+
     void onEvaluateComplete(double evaluate);
 }

@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingTop="@dimen/page_padding_vertical"
     android:paddingBottom="@dimen/page_padding_vertical"
     android:paddingStart="@dimen/container_padding_horizontal"
     android:paddingEnd="@dimen/container_padding_horizontal"
     tools:context=".component.ModelDetailActivity">
 
-    <GridLayout
-        android:id="@+id/grid_layout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:columnCount="2"
-        android:rowCount="3">
-
+        android:baselineAligned="false">
         <RelativeLayout
             android:id="@+id/item1_layout"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
+            android:layout_rowWeight="1"
+            android:layout_weight="1"
             android:layout_gravity="fill_horizontal"
             >
 
@@ -42,6 +42,11 @@
                 android:layout_toEndOf="@+id/item1"
                 android:layout_marginStart="8dp"
                 android:text="@string/text_value_unable"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:textAlignment="inherit"
                 />
 
             <TextView
@@ -56,11 +61,11 @@
 
         <RelativeLayout
             android:id="@+id/item2_layout"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:paddingStart="16dp"
             android:paddingEnd="0dp"
-            android:layout_columnWeight="1"
+            android:layout_weight="1"
             android:layout_gravity="fill_horizontal"
             >
 
@@ -91,14 +96,21 @@
                 android:text="@string/text_tip_learning_rate"
                 />
         </RelativeLayout>
+        </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:layout_marginTop="@dimen/model_detail_above_line_margin"
+        >
         <RelativeLayout
             android:id="@+id/item3_layout"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill_horizontal"
-            android:layout_marginTop="24dp"
+            android:layout_weight="1"
             >
 
             <View
@@ -131,13 +143,11 @@
 
         <RelativeLayout
             android:id="@+id/item4_layout"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:paddingStart="16dp"
             android:paddingEnd="0dp"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill_horizontal"
-            android:layout_marginTop="24dp"
             >
 
             <View
@@ -167,14 +177,21 @@
                 android:text="@string/text_tip_data_size"
                 />
         </RelativeLayout>
+    </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:layout_marginTop="@dimen/model_detail_above_line_margin"
+        >
         <RelativeLayout
             android:id="@+id/item5_layout"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill_horizontal"
-            android:layout_marginTop="24dp"
+            android:layout_weight="1"
             >
 
             <View
@@ -207,14 +224,11 @@
 
         <RelativeLayout
             android:id="@+id/item6_layout"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:paddingStart="16dp"
-            android:paddingEnd="0dp"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill_horizontal"
-            android:layout_marginTop="24dp"
-            >
+            android:paddingEnd="0dp">
 
             <View
                 android:id="@+id/item6"
@@ -243,14 +257,13 @@
                 android:text="@string/text_tip_evaluate"
                 />
         </RelativeLayout>
-    </GridLayout>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/record_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/text_primary"
-        android:layout_below="@+id/grid_layout"
         android:layout_marginTop="32dp"
         android:textStyle="bold"
         android:textSize="14sp"
@@ -262,7 +275,6 @@
         android:id="@+id/line_chart"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_below="@+id/record_title"
         android:layout_marginTop="8dp"
         />
-</RelativeLayout>
+</LinearLayout>

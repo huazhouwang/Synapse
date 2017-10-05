@@ -1,13 +1,17 @@
 package io.whz.androidneuralnetwork.component;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -28,15 +32,18 @@ import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
+import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
+import io.whz.androidneuralnetwork.util.AUtil;
 
 public class ModelDetailActivity extends AppCompatActivity {
     public static final String INTENT_TYPE = "intent_type";
     public static final String TRAINED_ID = "trained_id";
+    public static final String INTERRUPT_ACTION = "interrupt_action";
 
-    public static final int ILLEGAL = 0;
-    public static final int IS_TRAINING = 1;
-    public static final int IS_TRAINED = 2;
+    public static final int ILLEGAL = 0x00;
+    public static final int IS_TRAINING = 0x01;
+    public static final int IS_TRAINED = 0x01 << 1;
 
     private TextView mLayersText;
     private TextView mLearningRateText;
@@ -46,9 +53,13 @@ public class ModelDetailActivity extends AppCompatActivity {
     private TextView mEvaluateText;
     private LineChart mChart;
 
+    private MenuItem mInterruptItem;
+    private MenuItem mDeleteItem;
+
     private int mIntentType;
-    private boolean mIsFirst;
+    private boolean mIsFirst = true;
     private final List<Entry> mAccuracyData = new ArrayList<>();
+    @Nullable private Model mModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,7 +145,32 @@ public class ModelDetailActivity extends AppCompatActivity {
     }
 
     private void handleTrainingIntent(@NonNull Intent intent) {
-        mIsFirst = true;
+        final boolean interrupt = intent.getBooleanExtra(INTERRUPT_ACTION, false);
+
+        if (interrupt) {
+            showInterruptDialog();
+        }
+    }
+
+    private void showInterruptDialog() {
+        final Activity that = this;
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.text_dialog_interrupt_title)
+                .setMessage(R.string.text_dialog_interrupt_msg)
+                .setPositiveButton(R.string.text_dialog_interrupt_positive, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Global.getInstance()
+                                .getBus()
+                                .post(new MSNEvent<>(MSNEvent.TRAIN_INTERRUPT));
+
+                        if (!that.isFinishing()) {
+                            finishAfterTransition();
+                        }
+                    }
+                }).setNegativeButton(R.string.text_dialog_interrupt_negative, null)
+                .show();
     }
 
     @SuppressWarnings("unused")
@@ -155,6 +191,7 @@ public class ModelDetailActivity extends AppCompatActivity {
 
             case TrainEvent.EVALUATE:
             case TrainEvent.ERROR:
+            case TrainEvent.INTERRUPTED:
             default:
                 break;
         }
@@ -167,7 +204,10 @@ public class ModelDetailActivity extends AppCompatActivity {
             return;
         }
 
+        mModel = model;
         setUpTrainCompleteValues(model);
+
+        mInterruptItem.setVisible(false);
     }
 
     private void handleTrainingEvent(@NonNull TrainEvent event) {
@@ -176,6 +216,8 @@ public class ModelDetailActivity extends AppCompatActivity {
         if (model == null) {
             return;
         }
+
+        mModel = model;
 
         if (mIsFirst) {
             setUpNormalValues(model);
@@ -199,8 +241,8 @@ public class ModelDetailActivity extends AppCompatActivity {
     }
 
     private void setUpTrainCompleteValues(@NonNull Model model) {
-        mTimeUsedText.setText(String.valueOf(model.getTimeUsed()));
-        mEvaluateText.setText(String.valueOf(model.getEvaluate()));
+        mTimeUsedText.setText(AUtil.formatTimeUsed(model.getTimeUsed()));
+        mEvaluateText.setText(AUtil.format2Percent(model.getEvaluate()));
     }
 
     private boolean setUpChart(@NonNull Model model) {
@@ -250,6 +292,7 @@ public class ModelDetailActivity extends AppCompatActivity {
     }
 
     private void handleTrainedIntent(@NonNull Intent intent) {
+        mIsFirst = false;
         final long id = intent.getLongExtra(TRAINED_ID, -1);
         final Model model;
 
@@ -280,6 +323,10 @@ public class ModelDetailActivity extends AppCompatActivity {
             showNoData();
             return;
         }
+
+        mModel = model;
+        mInterruptItem.setVisible(false);
+        mDeleteItem.setVisible(true);
 
         displayTrainedModel(model);
     }
@@ -344,10 +391,21 @@ public class ModelDetailActivity extends AppCompatActivity {
         super.onNewIntent(intent);
         setIntent(intent);
 
-        mIntentType = intent.getIntExtra(INTENT_TYPE, ILLEGAL);
-        mAccuracyData.clear();
-        mIsFirst = true;
-        resetAllText();
+        final int newType = intent.getIntExtra(INTENT_TYPE, ILLEGAL);
+        final boolean reset;
+
+        if (newType != mIntentType) {
+            mIntentType = newType;
+            reset = true;
+        } else {
+            reset = newType != IS_TRAINING;
+        }
+
+        if (reset) {
+            mAccuracyData.clear();
+            mIsFirst = true;
+            resetAllText();
+        }
 
         intentSwitch(mIntentType, intent);
     }
@@ -367,5 +425,44 @@ public class ModelDetailActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         unregisterEvenBus();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater()
+                .inflate(R.menu.ac_model_detail_menu, menu);
+
+        mInterruptItem = menu.findItem(R.id.interrupt);
+        mDeleteItem = menu.findItem(R.id.delete);
+
+        if (mIntentType == IS_TRAINING) {
+            mInterruptItem.setVisible(true);
+            mDeleteItem.setVisible(false);
+        } else if (mIntentType == IS_TRAINED) {
+            mInterruptItem.setVisible(false);
+            mDeleteItem.setVisible(true);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        final int id = item.getItemId();
+
+        switch (id) {
+            case R.id.interrupt:
+                showInterruptDialog();
+                return true;
+
+            case R.id.delete:
+                // TODO: 05/10/2017
+                return true;
+
+            default:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

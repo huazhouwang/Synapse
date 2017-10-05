@@ -12,4 +12,5 @@
     <dimen name="page_padding_vertical">16dp</dimen>
     <dimen name="page_padding_horizontal">16dp</dimen>
     <dimen name="list_item_vertical_gap">8dp</dimen>
+    <dimen name="model_detail_above_line_margin">16dp</dimen>
 </resources>

@@ -291,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         notifyAdapterChange();
                         requestDownload();
                     }
-                }).setNegativeButton(R.string.text_dialog_download_negavite, null)
+                }).setNegativeButton(R.string.text_dialog_download_negative, null)
                 .show();
     }
 

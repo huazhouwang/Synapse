@@ -29,7 +29,7 @@
     <string name="text_dialog_download_msg">Total Size: 11 MB\n\nRecommend to connect wifi first</string>
     <string name="text_dialog_download_title">Download</string>
     <string name="text_dialog_download_positive">Confirm</string>
-    <string name="text_dialog_download_negavite">Cancel</string>
+    <string name="text_dialog_download_negative">Cancel</string>
     <string name="text_default_learning_rate">3</string>
     <string name="text_default_epochs">10</string>
     <string name="text_default_hidden_size">30</string>
@@ -42,9 +42,9 @@
     <string name="text_wait_for_train">Training, please wait</string>
     <string name="text_train_interrupt">Interrupt</string>
     <string name="template_train_complete_title">Model %s has trained completely</string>
-    <string name="template_train_complete_content" formatted="false">Time used: %s | Evaluate Accuracy: %s%%</string>
-    <string name="tmplate_train_start_title">Model: %s</string>
-    <string name="template_train_update_content" formatted="false">Epoch: %s | Accuracy: %.2f%%</string>
+    <string name="template_train_complete_content" formatted="false">Time used: %s | Evaluate Accuracy: %s</string>
+    <string name="template_train_start_title">Model: %s</string>
+    <string name="template_train_update_content" formatted="false">Epoch: %s | Accuracy: %s</string>
     <string name="text_star_tip">STAR PROJECT</string>
     <string name="text_rate_tip">RATE APPLICATION</string>
     <string name="text_tip_layers">Layers</string>
@@ -58,4 +58,9 @@
     <string name="text_dialog_no_data_msg">Will return to previous page</string>
     <string name="text_dialog_no_data_title">Data no found</string>
     <string name="text_dialog_no_data_negative">Return</string>
+    <string name="text_dialog_interrupt_title">Interrupt Training?</string>
+    <string name="text_dialog_interrupt_msg">Would not save the trained data!</string>
+    <string name="text_dialog_interrupt_positive">confirm</string>
+    <string name="text_dialog_interrupt_negative">Cancel</string>
+    <string name="action_delete">delete</string>
 </resources>

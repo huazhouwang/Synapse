@@ -18,6 +18,6 @@
     <color name="chart_left_axis">#536DFE</color>
     <color name="chart_highlight">#212121</color>
 
-    <color name="icon">#757575</color>
+    <color name="icon">#FFFFFF</color>
     <color name="divider">#BDBDBD</color>
 </resources>

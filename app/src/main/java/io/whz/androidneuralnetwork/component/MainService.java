@@ -47,6 +47,7 @@ import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
+import io.whz.androidneuralnetwork.util.AUtil;
 import io.whz.androidneuralnetwork.util.FileUtil;
 import io.whz.androidneuralnetwork.util.Precondition;
 
@@ -113,6 +114,7 @@ public class MainService extends Service {
     }
 
     private void reset() {
+        stopNotify();
         mAction = IDLE;
         stopSelf();
     }
@@ -229,7 +231,7 @@ public class MainService extends Service {
                 break;
 
             case MSNEvent.TRAIN_INTERRUPT:
-                handleInterruptTrainEvent(event);
+                handleInterruptRequest(event);
                 break;
 
             default:
@@ -237,7 +239,7 @@ public class MainService extends Service {
         }
     }
 
-    private void handleInterruptTrainEvent(@NonNull MSNEvent event) {
+    private void handleInterruptRequest(@NonNull MSNEvent event) {
         interruptTraining();
     }
 
@@ -334,7 +336,15 @@ public class MainService extends Service {
             case TrainEvent.ERROR:
                 handleTrainError(event);
                 break;
+
+            case TrainEvent.INTERRUPTED:
+                handleInterrupted(event);
+                break;
         }
+    }
+
+    private void handleInterrupted(TrainEvent event) {
+        reset();
     }
 
     private void handleStartEvaluate() {
@@ -371,12 +381,8 @@ public class MainService extends Service {
             e.printStackTrace();
         }
 
-        final long timeUsed = Math.max(model.getTimeUsed(), 0L);
-        final String time = String.format(Locale.getDefault(), "%02d:%02d:%02d",
-                timeUsed / (3600000), timeUsed / (60000) % 60, timeUsed / 1000 % 60);
-
-        final String accuracy = String.format(Locale.getDefault(),
-                "%.2f", model.getEvaluate() * 100);
+        final String time = AUtil.formatTimeUsed(model.getTimeUsed());
+        final String accuracy = AUtil.format2Percent(model.getEvaluate());
 
         mTrainNotifyBuilder = null;
 
@@ -386,7 +392,7 @@ public class MainService extends Service {
 
         final PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        final NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
 
         builder.setContentTitle(String.format(getString(R.string.template_train_complete_title), model.getName()))
                 .setContentText(String.format(getString(R.string.template_train_complete_content), time, accuracy))
@@ -457,9 +463,15 @@ public class MainService extends Service {
 
         final PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        mTrainNotifyBuilder = new NotificationCompat.Builder(this);
+        final Intent interruptIntent = new Intent(this, ModelDetailActivity.class);
+        interruptIntent.putExtra(ModelDetailActivity.INTENT_TYPE, ModelDetailActivity.IS_TRAINING);
+        interruptIntent.putExtra(ModelDetailActivity.INTERRUPT_ACTION, true);
 
-        mTrainNotifyBuilder.setContentTitle(String.format(getString(R.string.tmplate_train_start_title), model.getName()))
+        final PendingIntent interruptPending = PendingIntent.getActivity(this, 10, interruptIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mTrainNotifyBuilder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
+
+        mTrainNotifyBuilder.setContentTitle(String.format(getString(R.string.template_train_start_title), model.getName()))
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setColor(ContextCompat.getColor(this, R.color.color_accent))
                 .setWhen(System.currentTimeMillis())
@@ -467,7 +479,7 @@ public class MainService extends Service {
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setContentIntent(pending)
-                .addAction(R.drawable.ic_block_24dp, getString(R.string.text_train_interrupt), null);// TODO: 04/10/2017 interrupt intent
+                .addAction(R.drawable.ic_block_24dp, getString(R.string.text_train_interrupt), interruptPending);
 
         startForeground(FOREGROUND_SERVER, mTrainNotifyBuilder.build());
     }
@@ -482,7 +494,7 @@ public class MainService extends Service {
 
         mTrainNotifyBuilder.setContentText(String.format(
                 Locale.getDefault(), getString(R.string.template_train_update_content),
-                String.valueOf(model.getStepEpoch()), model.getLastAccuracy() * 100))
+                String.valueOf(model.getStepEpoch()), AUtil.format2Percent(model.getLastAccuracy())))
                 .setProgress(model.getEpochs(), model.getStepEpoch(), false);
 
         mNotifyManager.notify(FOREGROUND_SERVER, mTrainNotifyBuilder.build());
@@ -643,6 +655,11 @@ public class MainService extends Service {
             mModel.setTimeUsed(timeUsed);
 
             mEventBus.postSticky(new TrainEvent<>(TrainEvent.EVALUATE));
+        }
+
+        @Override
+        public void onInterrupted() {
+            mEventBus.postSticky(new TrainEvent<>(TrainEvent.INTERRUPTED));
         }
 
         @Override
