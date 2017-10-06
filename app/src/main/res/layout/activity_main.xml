@@ -18,7 +18,7 @@
         android:paddingEnd="@dimen/page_padding_horizontal"
         android:clipToPadding="false"
         android:layout_gravity="center"
-        tools:listitem="@layout/data_set"
+        tools:listitem="@layout/data_set_item"
         />
 
     <android.support.design.widget.FloatingActionButton

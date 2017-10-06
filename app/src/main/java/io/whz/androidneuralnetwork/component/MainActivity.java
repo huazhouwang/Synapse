@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -19,6 +20,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LayoutAnimationController;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -30,11 +33,16 @@ import java.util.List;
 
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.Global;
+import io.whz.androidneuralnetwork.element.VerticalGap;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.pojo.constant.PreferenceKey;
+import io.whz.androidneuralnetwork.pojo.dao.Model;
+import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.DataSetViewBinder;
+import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainedModelViewBinder;
 import io.whz.androidneuralnetwork.pojo.multiple.item.DataSetItem;
+import io.whz.androidneuralnetwork.pojo.multiple.item.TrainedModelItem;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 import me.drakeet.multitype.MultiTypeAdapter;
 
@@ -55,14 +63,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 
-        requireExternalStorage();
-
         mRecyclerView = findViewById(R.id.rv);
         mRecyclerView.setAdapter(mButler.getAdapter());
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.addItemDecoration(new VerticalGap(getResources().getDimensionPixelOffset(R.dimen.list_item_vertical_gap)));
 
         final FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(this);
+
+        requireExternalStorage();
     }
 
     private boolean checkDownloadManager() {
@@ -169,9 +178,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (ready) {
             dataSetReady();
+
+            final LayoutAnimationController controller =
+                    AnimationUtils.loadLayoutAnimation(this, R.anim.layout_animation_from_bottom);
+
+            mRecyclerView.setLayoutAnimation(controller);
+            mRecyclerView.scheduleLayoutAnimation();
         } else {
             dataSetUnready();
         }
+
 
         mButler.notifyDataSetChanged();
     }
@@ -182,6 +198,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mButler.setDataSet(item);
 
         // TODO: 06/10/2017
+        addAllTrainedModelItems();
+    }
+
+    private void addAllTrainedModelItems() {
+        List<Model> models = null;
+
+        try {
+            models = Global.getInstance()
+                    .getSession()
+                    .getModelDao()
+                    .queryBuilder()
+                    .orderDesc(ModelDao.Properties.CreatedTime)
+                    .list();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (models == null
+                || models.isEmpty()) {
+            return;
+        }
+
+        final List<TrainedModelItem> items = new ArrayList<>(models.size());
+
+        for (Model model : models) {
+            items.add(new TrainedModelItem(model));
+        }
+
+        mButler.setTrainedModes(items);
     }
 
     private void dataSetUnready() {
@@ -262,8 +307,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final boolean success = event.obj != null ? (Boolean) event.obj : false;
         @StringRes final int res;
 
-        final DataSetItem dataSet = mButler.getDataSet();
-
         if (success) {
             markDataSetReadyNow();
             res = R.string.text_decompress_success;
@@ -302,7 +345,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             return;
                         }
 
-                        mButler.getDataSet().change(DataSetItem.PENDING);
+                        final DataSetItem item = mButler.getDataSet();
+                        if (item != null) {
+                            item.change(DataSetItem.PENDING);
+                        }
+
                         mButler.notifyDataSetChanged();
 
                         requestDownload();
@@ -358,6 +405,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         private final List<Object> mItems;
 
         private DataSetItem mDataSet;
+        private List<TrainedModelItem> mTrainedModes;
 
         ItemsButler() {
             mItems = new ArrayList<>();
@@ -370,12 +418,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         private void registerItems(@NonNull MultiTypeAdapter adapter) {
             adapter.register(DataSetItem.class, new DataSetViewBinder());
+            adapter.register(TrainedModelItem.class, new TrainedModelViewBinder());
         }
 
         RecyclerView.Adapter getAdapter() {
             return mAdapter;
         }
 
+        @Nullable
         DataSetItem getDataSet() {
             return mDataSet;
         }
@@ -384,8 +434,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             this.mDataSet = dataSet;
         }
 
+        @Nullable
+        List<TrainedModelItem> getTrainedModes() {
+            return mTrainedModes;
+        }
+
+        void setTrainedModes(@NonNull List<TrainedModelItem> items) {
+            mTrainedModes = items;
+        }
+
         void clear() {
             mDataSet = null;
+            mTrainedModes = null;
         }
 
         private void solveItemChange() {
@@ -393,6 +453,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (mDataSet != null) {
                 mItems.add(mDataSet);
+            }
+
+            if (mTrainedModes != null
+                    && !mTrainedModes.isEmpty()) {
+                mItems.addAll(mTrainedModes);
             }
         }
 

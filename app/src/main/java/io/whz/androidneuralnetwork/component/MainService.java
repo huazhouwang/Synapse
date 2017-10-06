@@ -622,15 +622,14 @@ public class MainService extends Service {
 
         @Override
         public void onTrainComplete() {
-            final long timeUsed = System.currentTimeMillis() - mStartTime;
-            mModel.setTimeUsed(timeUsed);
+            if (mInterruptSign.get()) {
+                mEventBus.postSticky(new TrainEvent<>(TrainEvent.INTERRUPTED));
+            } else {
+                final long timeUsed = System.currentTimeMillis() - mStartTime;
+                mModel.setTimeUsed(timeUsed);
 
-            mEventBus.postSticky(new TrainEvent<>(TrainEvent.EVALUATE));
-        }
-
-        @Override
-        public void onInterrupted() {
-            mEventBus.postSticky(new TrainEvent<>(TrainEvent.INTERRUPTED));
+                mEventBus.postSticky(new TrainEvent<>(TrainEvent.EVALUATE));
+            }
         }
 
         @Override

@@ -106,7 +106,7 @@ public class NeuralNetwork {
                 final double rate = evaluate(mValidation);
 
                 if (!mCallback.onUpdate(i, rate)) {
-                    mCallback.onInterrupted();
+                    mCallback.onTrainComplete();
                     return;
                 }
             }

@@ -22,7 +22,7 @@ public class DataSetViewBinder extends ItemViewBinder<DataSetItem, DataSetViewBi
     @NonNull
     @Override
     protected DataSetHolder onCreateViewHolder(@NonNull LayoutInflater layoutInflater, @NonNull ViewGroup viewGroup) {
-        final View v = layoutInflater.inflate(R.layout.data_set, viewGroup, false);
+        final View v = layoutInflater.inflate(R.layout.data_set_item, viewGroup, false);
         final DataSetHolder holder = new DataSetHolder(v);
         holder.download.setOnClickListener(this);
 
