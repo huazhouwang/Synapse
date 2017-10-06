@@ -169,7 +169,7 @@ public class MainService extends Service {
 
         unregisterDownloadReceiver();
 
-        final Uri baseUri = Global.getInstance().getBaseMnistUri();
+        final Uri baseUri = Global.getInstance().getBaseDownloadUri();
         final File downloadDir = Global.getInstance().getDirs().download;
         final Set<Long> ids = new HashSet<>();
 
@@ -260,7 +260,6 @@ public class MainService extends Service {
         if (success) {
             decompress();
         } else {
-            FileUtil.clear(Global.getInstance().getDirs().download);
             reset();
         }
     }
@@ -270,9 +269,8 @@ public class MainService extends Service {
         stopNotify();
 
         if (success) {
-            FileUtil.clear(Global.getInstance().getDirs().decompress);
-        } else {
-            FileUtil.clear(Global.getInstance().getDirs().download);
+            final Dir dir = Global.getInstance().getDirs();
+            FileUtil.clear(dir.download, dir.decompress);
         }
 
         Global.getInstance()
@@ -474,7 +472,7 @@ public class MainService extends Service {
     }
 
     private static class DecompressRunnable implements Runnable {
-        private static final int QUIT_SIGN = Integer.MIN_VALUE;
+        private static final int QUIT_SIGN = -1;
         private static final String DECOMPRESSED_LABEL_SUFFIX = ".label";
         private static final String DECOMPRESSED_IMAGE_SUFFIX = ".image";
         private final String mImageFileName;

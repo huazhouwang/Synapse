@@ -1,5 +1,6 @@
 package io.whz.androidneuralnetwork.component;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,8 +12,7 @@ import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
+import android.view.animation.AnticipateInterpolator;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -189,32 +189,31 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
         final Intent intent = new Intent(this, MainService.class);
         intent.putExtra(MainService.ACTION_KEY, MainService.ACTION_TRAIN);
         intent.putExtra(MainService.EXTRAS_NEURAL_CONFIG, model);
-
         startService(intent);
 
-        final Animation out = AnimationUtils.loadAnimation(this, R.anim.side_top_fade_out);
+        final int height = mContainer.getHeight();
+        final Activity that = this;
 
-        out.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {}
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                NeuralModelActivity.this.finish();
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-        });
-
-        mContainer.startAnimation(out);
+        mContainer.animate()
+                .y(-height)
+                .alpha(0F)
+                .setInterpolator(new AnticipateInterpolator())
+                .setDuration(300)
+                .withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!that.isFinishing()) {
+                            that.finish();
+                        }
+                    }
+                }).start();
     }
 
     private Model checkInputs() {
         final String name = String.valueOf(mNameInput.getText());
 
         if (TextUtils.isEmpty(name.trim())) {
-            showSnackbar("Empty name is illegal");
+            showSnackBar("Empty name is illegal");
             return null;
         } else {
             // TODO: 01/10/2017 check unique name
@@ -226,10 +225,10 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
             final String size = String.valueOf(mHiddenSizeInputs.get(i).getText());
 
             if (TextUtils.isEmpty(size)) {
-                showSnackbar(getString(R.string.text_error_empty_hidden));
+                showSnackBar(getString(R.string.text_error_empty_hidden));
                 return null;
             } else if ((hiddenSizes[i] = solveInt(size)) <= 0) {
-                showSnackbar(getString(R.string.text_error_zero_hidden_size));
+                showSnackBar(getString(R.string.text_error_zero_hidden_size));
 
                 return null;
             }
@@ -238,14 +237,14 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
         final double leaningRate = solveDouble(String.valueOf(mLearningRateInput.getText()));
 
         if (leaningRate <= 0) {
-            showSnackbar(getString(R.string.text_error_zero_learning_rate));
+            showSnackBar(getString(R.string.text_error_zero_learning_rate));
             return null;
         }
 
         final int epochs = solveInt(String.valueOf(mEpochsInput.getText()));
 
         if (epochs <= 0) {
-            showSnackbar(getString(R.string.text_error_zero_epochs));
+            showSnackBar(getString(R.string.text_error_zero_epochs));
             return null;
         }
 
@@ -286,7 +285,7 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
         return res;
     }
 
-    private void showSnackbar(@NonNull String text) {
+    private void showSnackBar(@NonNull String text) {
         Snackbar.make(mContainer, text, Snackbar.LENGTH_SHORT)
                 .show();
     }

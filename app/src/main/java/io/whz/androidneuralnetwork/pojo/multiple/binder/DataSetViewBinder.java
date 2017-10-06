@@ -54,6 +54,13 @@ public class DataSetViewBinder extends ItemViewBinder<DataSetItem, DataSetViewBi
     }
 
     @Override
+    protected void onViewDetachedFromWindow(@NonNull DataSetHolder holder) {
+        super.onViewDetachedFromWindow(holder);
+
+        holder.download.clearAnimation();
+    }
+
+    @Override
     public void onClick(View view) {
         EventBus.getDefault()
                 .post(new MANEvent<Void>(MANEvent.CLICK_DOWNLOAD));

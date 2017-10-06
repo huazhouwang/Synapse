@@ -1,11 +1,11 @@
 package io.whz.androidneuralnetwork.element;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.whz.androidneuralnetwork.component.App;
+import io.whz.androidneuralnetwork.util.Precondition;
 
 public class Singleton<T> {
     private static final String TAG = App.TAG + "-Singleton";
@@ -15,15 +15,20 @@ public class Singleton<T> {
         mReference = new AtomicReference<>();
     }
 
-    public Singleton<T> bind(@NonNull T object) {
-        if (mReference.compareAndSet(null, object)) {
-            Log.w(TAG, "Reference has already referred to an object");
+    public Singleton<T> setAndLock(@NonNull T object) {
+        if (!mReference.compareAndSet(null, object)) {
+            new UnsupportedOperationException("Already locked, can't set new instance again")
+                    .printStackTrace();
         }
 
         return this;
     }
 
+    public boolean isSet() {
+        return mReference.get() != null;
+    }
+
     public T get() {
-        return mReference.get();
+        return Precondition.checkNotNull(mReference.get(), "You should bind before get instance");
     }
 }

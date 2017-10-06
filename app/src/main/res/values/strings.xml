@@ -35,9 +35,9 @@
     <string name="text_error_zero_hidden_size">Zero hidden size is illegal</string>
     <string name="text_error_zero_learning_rate">Zero learning rate is illegal</string>
     <string name="text_error_zero_epochs">Zero epochs is illegal</string>
-    <string name="text_wait_for_download">Downloading, please wait</string>
-    <string name="text_wait_for_test">Testing, Please wait</string>
-    <string name="text_wait_for_train">Training, please wait</string>
+    <string name="text_wait_for_download">Service is downloading, please wait</string>
+    <string name="text_wait_for_test">Service is testing, Please wait</string>
+    <string name="text_wait_for_train">Service is training, please wait</string>
     <string name="text_train_interrupt">Interrupt</string>
     <string name="template_train_complete_title">Model %s has trained completely</string>
     <string name="template_train_complete_content" formatted="false">Time used: %s | Evaluate Accuracy: %s</string>
@@ -63,4 +63,7 @@
     <string name="action_delete">delete</string>
     <string name="text_dialog_delete_model_msg">Would you want to delete %s model?</string>
     <string name="text_dialog_delete_model_title">Delete Model</string>
+    <string name="text_dialog_lack_download_manager_title">Can\'t find DownloadManager</string>
+    <string name="text_dialog_lack_download_manager_msg">I\'m sorry We need to use DownloadManger to download data set</string>
+    <string name="text_dialog_lack_download_manager_negative">Finish</string>
 </resources>

@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/page_padding_vertical"
+    android:paddingBottom="@dimen/page_padding_vertical"
+    android:paddingStart="@dimen/container_padding_horizontal"
+    android:paddingEnd="@dimen/container_padding_horizontal"
+    tools:context=".component.ModelDetailActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:baselineAligned="false">
+        <android.support.v7.widget.CardView
+            android:layout_width="160dp"
+            android:layout_height="60dp">
+            <RelativeLayout
+                android:id="@+id/item1_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <View
+                    android:id="@+id/item1"
+                    android:layout_width="7dp"
+                    android:layout_height="40dp"
+                    android:background="#9c27b0"
+                    />
+
+                <TextView
+                    style="@style/DetailTipValueStyle"
+                    android:id="@+id/item1_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@id/item1"
+                    android:layout_toEndOf="@+id/item1"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/text_value_unable"
+                    android:ellipsize="marquee"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:textAlignment="inherit"
+                    />
+
+                <TextView
+                    style="@style/DetailTipKeyStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@+id/item1_text"
+                    android:layout_alignBottom="@+id/item1"
+                    android:text="@string/text_tip_layers"
+                    />
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+        
+
+        <RelativeLayout
+            android:id="@+id/item2_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingEnd="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/detail_item_background"
+            android:backgroundTint="#2196f3"
+            >
+
+            <View
+                android:id="@+id/item2"
+                android:layout_width="7dp"
+                android:layout_height="40dp"
+                android:background="#2196f3"
+                />
+
+            <TextView
+                style="@style/DetailTipValueStyle"
+                android:id="@+id/item2_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@id/item2"
+                android:layout_toEndOf="@+id/item2"
+                android:layout_marginStart="8dp"
+                android:text="@string/text_value_unable"
+                />
+
+            <TextView
+                style="@style/DetailTipKeyStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/item2_text"
+                android:layout_alignBottom="@+id/item2"
+                android:text="@string/text_tip_learning_rate"
+                />
+        </RelativeLayout>
+        </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:layout_marginTop="@dimen/model_detail_above_line_margin"
+        >
+        <RelativeLayout
+            android:id="@+id/item3_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            >
+
+            <View
+                android:id="@+id/item3"
+                android:layout_width="7dp"
+                android:layout_height="40dp"
+                android:background="#4caf50"
+                />
+
+            <TextView
+                style="@style/DetailTipValueStyle"
+                android:id="@+id/item3_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@id/item3"
+                android:layout_toEndOf="@+id/item3"
+                android:layout_marginStart="8dp"
+                android:text="@string/text_value_unable"
+                />
+
+            <TextView
+                style="@style/DetailTipKeyStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/item3_text"
+                android:layout_alignBottom="@+id/item3"
+                android:text="@string/text_tip_epochs"
+                />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/item4_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart="16dp"
+            android:paddingEnd="0dp"
+            >
+
+            <View
+                android:id="@+id/item4"
+                android:layout_width="7dp"
+                android:layout_height="40dp"
+                android:background="#cddc39"
+                />
+
+            <TextView
+                style="@style/DetailTipValueStyle"
+                android:id="@+id/item4_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@id/item4"
+                android:layout_toEndOf="@+id/item4"
+                android:layout_marginStart="8dp"
+                android:text="@string/text_value_unable"
+                />
+
+            <TextView
+                style="@style/DetailTipKeyStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/item4_text"
+                android:layout_alignBottom="@+id/item4"
+                android:text="@string/text_tip_data_size"
+                />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:layout_marginTop="@dimen/model_detail_above_line_margin"
+        >
+        <RelativeLayout
+            android:id="@+id/item5_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            >
+
+            <View
+                android:id="@+id/item5"
+                android:layout_width="7dp"
+                android:layout_height="40dp"
+                android:background="#ffc107"
+                />
+
+            <TextView
+                style="@style/DetailTipValueStyle"
+                android:id="@+id/item5_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@id/item5"
+                android:layout_toEndOf="@+id/item5"
+                android:layout_marginStart="8dp"
+                android:text="@string/text_value_unable"
+                />
+
+            <TextView
+                style="@style/DetailTipKeyStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/item5_text"
+                android:layout_alignBottom="@+id/item5"
+                android:text="@string/text_time_used"
+                />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/item6_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart="16dp"
+            android:paddingEnd="0dp">
+
+            <View
+                android:id="@+id/item6"
+                android:layout_width="7dp"
+                android:layout_height="40dp"
+                android:background="#ff5722"
+                />
+
+            <TextView
+                style="@style/DetailTipValueStyle"
+                android:id="@+id/item6_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@id/item6"
+                android:layout_toEndOf="@+id/item6"
+                android:layout_marginStart="8dp"
+                android:text="@string/text_value_unable"
+                />
+
+            <TextView
+                style="@style/DetailTipKeyStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/item6_text"
+                android:layout_alignBottom="@+id/item6"
+                android:text="@string/text_tip_evaluate"
+                />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/record_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/text_primary"
+        android:layout_marginTop="32dp"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        android:textAllCaps="true"
+        android:text="Training Record:"
+        />
+
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/line_chart"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="8dp"
+        />
+</LinearLayout>

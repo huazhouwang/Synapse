@@ -26,63 +26,72 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.Global;
-import io.whz.androidneuralnetwork.element.Preference;
+import io.whz.androidneuralnetwork.neural.MNISTUtil;
+import io.whz.androidneuralnetwork.pojo.constant.PreferenceKey;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.DataSetViewBinder;
 import io.whz.androidneuralnetwork.pojo.multiple.item.DataSetItem;
 import io.whz.androidneuralnetwork.transition.FabTransform;
-import io.whz.androidneuralnetwork.util.FileUtil;
 import me.drakeet.multitype.MultiTypeAdapter;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int REQUEST_EXTERNAL_STORAGE = 0x01;
     private static final String TAG = App.TAG + "-MainActivity";
 
-    private final MultiTypeAdapter mAdapter = new MultiTypeAdapter();
-    private RecyclerView mRecyclerView;
-    private FloatingActionButton mFab;
+    private final ItemsButler mButler = new ItemsButler();
 
-    private final DataSetItem mDataSetItem = new DataSetItem();
+    private RecyclerView mRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        checkDownloadManager();
-        checkExternalStorage();
+        if (!checkDownloadManager()) {
+            return;
+        }
+
+        requireExternalStorage();
 
         mRecyclerView = findViewById(R.id.rv);
-        mFab = findViewById(R.id.fab);
-
-        mFab.setOnClickListener(this);
-
-        registerItems();
-        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setAdapter(mButler.getAdapter());
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        final FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(this);
     }
 
-    private void checkDownloadManager() {
+    private boolean checkDownloadManager() {
         if (getSystemService(DOWNLOAD_SERVICE) == null) {
-            // TODO: 18/09/2017 没有 DownloadManager ,提醒后退出
-            finish();
+            showNeedDownloadManagerDialog();
+            return false;
         }
+        
+        return true;
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    private void showNeedDownloadManagerDialog() {
+        final Activity that = this;
+        
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.text_dialog_lack_download_manager_title)
+                .setMessage(R.string.text_dialog_lack_download_manager_msg)
+                .setNegativeButton(R.string.text_dialog_lack_download_manager_negative, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (!that.isFinishing()) {
+                            finish();
+                        }
+                    }
+                }).show();
     }
 
-    private void checkExternalStorage() {
-        if (Global.getInstance().isRootDirSet()){
+    private void requireExternalStorage() {
+        if (Global.getInstance().isDirSet()){
             solveData();
             return;
         }
@@ -110,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         .setRootDir(dir);
 
                                 external = true;
+                                break;
                             }
                         }
                     }
@@ -127,60 +137,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void notifyAdapterChange() {
-        final List<Object> items = new ArrayList<>();
-
-        items.add(mDataSetItem);
-
-        mAdapter.setItems(items);
-        mAdapter.notifyDataSetChanged();
-    }
-
     public boolean isDataSetReady() {
-        final Set<String> unreadyFiles = new HashSet<>(Arrays.asList(Global.getInstance().getDataSet()));
+        final boolean ready = Global.getInstance()
+                .getPreference()
+                .getBoolean(PreferenceKey.IS_DATA_SET_READY, false);
 
-        final File downloadDir = Global.getInstance().getDirs().download;
-        FileUtil.makeDirs(downloadDir);
-
-        final File[] files = downloadDir.listFiles();
-
-        if (files != null && files.length != 0) {
-            for (File file : files) {
-                unreadyFiles.remove(file.getName());
-            }
+        if (!ready) {
+            return false;
         }
 
-        return unreadyFiles.isEmpty();
+        final File[] files = Global.getInstance().getDirs().train.listFiles();
+
+        if (files == null
+                || files.length != (MNISTUtil.MAX_TRAINING_SIZE / MNISTUtil.PRE_FILE_SIZE)) {
+            Global.getInstance()
+                    .getPreference()
+                    .edit()
+                    .putBoolean(PreferenceKey.IS_DATA_SET_READY, false)
+                    .apply();
+
+            return false;
+        }
+
+        return true;
     }
 
     private void solveData() {
-        changeDownloadState(isDataSetReady());
-    }
+        mButler.clear();
 
-    private void changeDownloadState(boolean isDownloaded) {
-        mDataSetItem.change(isDownloaded ? DataSetItem.READY : DataSetItem.UNREADY);
-        notifyAdapterChange();
-    }
+        final boolean ready = isDataSetReady();
 
-    private void showFirstTip() {
-        final String key = "first_time_v1";
-
-        if (!Preference.getInstance()
-                .getBoolean(key, true)) {
-            return;
+        if (ready) {
+            dataSetReady();
+        } else {
+            dataSetUnready();
         }
 
-        Preference.getInstance()
-                .edit()
-                .putBoolean(key, false)
-                .apply();
-
-
-        // TODO: 16/09/2017 show tip dialog
+        mButler.notifyDataSetChanged();
     }
 
-    private void registerItems() {
-        mAdapter.register(DataSetItem.class, new DataSetViewBinder());
+    private void dataSetReady() {
+        final DataSetItem item = new DataSetItem();
+        item.change(DataSetItem.READY);
+        mButler.setDataSet(item);
+
+        // TODO: 06/10/2017
+    }
+
+    private void dataSetUnready() {
+        final DataSetItem item = new DataSetItem();
+        item.change(DataSetItem.UNREADY);
+        mButler.setDataSet(item);
     }
 
     @Override
@@ -206,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (what) {
             case MANEvent.CLICK_DOWNLOAD:
-                showConfirmDialog(this);
+                showDownloadRequestDialog(this);
                 break;
 
             case MANEvent.DOWNLOAD_COMPLETE:
@@ -243,8 +250,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @StringRes int res = R.string.text_download_success;
 
         if (!success) {
-            mDataSetItem.change(DataSetItem.UNREADY);
-            notifyAdapterChange();
+            solveData();
             res = R.string.text_download_error;
         }
 
@@ -256,17 +262,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final boolean success = event.obj != null ? (Boolean) event.obj : false;
         @StringRes final int res;
 
+        final DataSetItem dataSet = mButler.getDataSet();
+
         if (success) {
-            mDataSetItem.change(DataSetItem.READY);
+            markDataSetReadyNow();
             res = R.string.text_decompress_success;
         } else {
-            mDataSetItem.change(DataSetItem.UNREADY);
             res = R.string.text_decompress_error;
         }
 
-        notifyAdapterChange();
+        solveData();
         Snackbar.make(mRecyclerView, res, Snackbar.LENGTH_SHORT)
                 .show();
+    }
+
+    private void markDataSetReadyNow() {
+        Global.getInstance()
+                .getPreference()
+                .edit()
+                .putBoolean(PreferenceKey.IS_DATA_SET_READY, true)
+                .apply();
     }
 
     private void requestDownload() {
@@ -276,19 +291,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startService(intent);
     }
 
-    private void showConfirmDialog(@NonNull final Activity activity) {
-        new AlertDialog.Builder(activity)
+    private void showDownloadRequestDialog(@NonNull final Activity that) {
+        new AlertDialog.Builder(that)
                 .setTitle(R.string.text_dialog_download_title)
                 .setMessage(R.string.text_dialog_download_msg)
                 .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        if (activity.isFinishing()) {
+                        if (that.isFinishing()) {
                             return;
                         }
 
-                        mDataSetItem.change(DataSetItem.PENDING);
-                        notifyAdapterChange();
+                        mButler.getDataSet().change(DataSetItem.PENDING);
+                        mButler.notifyDataSetChanged();
+
                         requestDownload();
                     }
                 }).setNegativeButton(R.string.dialog_negative, null)
@@ -303,21 +319,86 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.fab:
                 startNeuralNetworkConfig(view);
                 break;
+
             default:
                 break;
         }
     }
 
-    private void startNeuralNetworkConfig(@NonNull View view) {
-        final Intent intent = new Intent(this, NeuralModelActivity.class);
+    /**
+     * Transition animation may cause exception
+     */
+    private void startNeuralNetworkConfig(@NonNull final View view) {
+        view.setClickable(false);
+        view.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                view.setClickable(true);
+            }
+        }, 1000);
 
-        FabTransform.addExtras(intent,
-                ContextCompat.getColor(this, R.color.color_accent),
-                R.drawable.ic_add_white_24dp);
+        try {
+            final Intent intent = new Intent(this, NeuralModelActivity.class);
 
-        final ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(
-                this, view, getString(R.string.transition_neural_config));
+            FabTransform.addExtras(intent,
+                    ContextCompat.getColor(this, R.color.color_accent),
+                    R.drawable.ic_add_white_24dp);
 
-        startActivity(intent, options.toBundle());
+            final ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(
+                    this, view, getString(R.string.transition_neural_config));
+
+            startActivity(intent, options.toBundle());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static final class ItemsButler {
+        private final RecyclerView.Adapter mAdapter;
+        private final List<Object> mItems;
+
+        private DataSetItem mDataSet;
+
+        ItemsButler() {
+            mItems = new ArrayList<>();
+
+            final MultiTypeAdapter adapter = new MultiTypeAdapter(mItems);
+            registerItems(adapter);
+
+            mAdapter = adapter;
+        }
+
+        private void registerItems(@NonNull MultiTypeAdapter adapter) {
+            adapter.register(DataSetItem.class, new DataSetViewBinder());
+        }
+
+        RecyclerView.Adapter getAdapter() {
+            return mAdapter;
+        }
+
+        DataSetItem getDataSet() {
+            return mDataSet;
+        }
+
+        void setDataSet(DataSetItem dataSet) {
+            this.mDataSet = dataSet;
+        }
+
+        void clear() {
+            mDataSet = null;
+        }
+
+        private void solveItemChange() {
+            mItems.clear();
+
+            if (mDataSet != null) {
+                mItems.add(mDataSet);
+            }
+        }
+
+        void notifyDataSetChanged() {
+            solveItemChange();
+            mAdapter.notifyDataSetChanged();
+        }
     }
 }

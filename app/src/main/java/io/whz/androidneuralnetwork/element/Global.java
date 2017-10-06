@@ -1,5 +1,6 @@
 package io.whz.androidneuralnetwork.element;
 
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
@@ -8,75 +9,83 @@ import org.greenrobot.eventbus.EventBus;
 import java.io.File;
 
 import io.whz.androidneuralnetwork.pojo.dao.DaoSession;
+import io.whz.androidneuralnetwork.util.Precondition;
 
 
 public class Global {
-    private final Uri mBaseMnistUri;
+    private final Uri mBaseDownloadUri;
     private final String[] mDataSet;
+
     private final Singleton<EventBus> mBus;
     private final Singleton<DaoSession> mSession;
     private final Singleton<Dir> mDirs;
+    private final Singleton<SharedPreferences> mPreference;
 
     private Global() {
-        mBaseMnistUri = Uri.parse("http://yann.lecun.com/exdb/mnist");
-        mBus = new Singleton<>();
-        mSession = new Singleton<>();
-        mDirs = new Singleton<>();
+        mBaseDownloadUri = Uri.parse("http://yann.lecun.com/exdb/mnist");
         mDataSet = new String[]{
                 "train-images-idx3-ubyte.gz",
                 "train-labels-idx1-ubyte.gz",
                 "t10k-images-idx3-ubyte.gz",
                 "t10k-labels-idx1-ubyte.gz",
         };
+
+        mBus = new Singleton<>();
+        mSession = new Singleton<>();
+        mDirs = new Singleton<>();
+        mPreference = new Singleton<>();
     }
 
     public String[] getDataSet() {
         return mDataSet;
     }
 
-    public EventBus getBus() {
-        if (mBus.get() == null) {
-            mBus.bind(EventBus.getDefault());
-        }
+    public Uri getBaseDownloadUri() {
+        return mBaseDownloadUri;
+    }
 
+    public void setPreference(@NonNull SharedPreferences preference) {
+        mPreference.setAndLock(Precondition.checkNotNull(preference));
+    }
+
+    public SharedPreferences getPreference() {
+        return mPreference.get();
+    }
+
+    public void setBus(@NonNull EventBus bus) {
+        mBus.setAndLock(Precondition.checkNotNull(bus));
+    }
+
+    public EventBus getBus() {
         return mBus.get();
     }
 
-    public Uri getBaseMnistUri() {
-        return mBaseMnistUri;
-    }
-
     public void setSession(@NonNull DaoSession session) {
-        mSession.bind(session);
+        mSession.setAndLock(session);
     }
 
     public DaoSession getSession() {
         return mSession.get();
     }
 
-    public void setRootDir(@NonNull File dir) {
-
-        final Dir dirs = new Dir(dir);
-        mDirs.bind(dirs);
-    }
-
-    public File getRootDir() {
-        return mDirs.get().root;
+    public void setRootDir(@NonNull File root) {
+        final Dir dirs = new Dir(root);
+        mDirs.setAndLock(dirs);
     }
 
     public Dir getDirs() {
         return mDirs.get();
     }
 
-    public boolean isRootDirSet() {
-        return mDirs.get() != null && mDirs.get().root != null;
+    public boolean isDirSet() {
+        return mDirs.isSet();
     }
 
     public static Global getInstance() {
         return Holder.sInstance;
     }
 
-    private static class Holder {
-        private static final Global sInstance = new Global();
+    private interface Holder {
+        Global sInstance = new Global();
     }
 }

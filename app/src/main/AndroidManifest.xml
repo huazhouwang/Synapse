@@ -18,7 +18,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".component.MainActivity"
-            android:configChanges="orientation|keyboard"
+            android:screenOrientation="portrait"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,13 +32,13 @@
             android:exported="false"
             android:theme="@style/AppTheme.Translucent.NeuralNetworkConfig"
             android:windowSoftInputMode="adjustResize"
-            android:configChanges="orientation|keyboard"
+            android:screenOrientation="portrait"
             />
 
         <activity
             android:name=".component.ModelDetailActivity"
             android:exported="false"
-            android:configChanges="orientation|keyboard"
+            android:screenOrientation="portrait"
             android:launchMode="singleTop" />
 
         <service
