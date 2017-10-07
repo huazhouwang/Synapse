@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -16,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -39,10 +41,13 @@ import io.whz.androidneuralnetwork.pojo.constant.PreferenceKey;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
+import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.DataSetViewBinder;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainedModelViewBinder;
+import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainingModelViewBinder;
 import io.whz.androidneuralnetwork.pojo.multiple.item.DataSetItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.TrainedModelItem;
+import io.whz.androidneuralnetwork.pojo.multiple.item.TrainingModelItem;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 import me.drakeet.multitype.MultiTypeAdapter;
 
@@ -89,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new AlertDialog.Builder(this)
                 .setTitle(R.string.text_dialog_lack_download_manager_title)
                 .setMessage(R.string.text_dialog_lack_download_manager_msg)
-                .setNegativeButton(R.string.text_dialog_lack_download_manager_negative, new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.text_dialog_finish_action, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         if (!that.isFinishing()) {
@@ -177,31 +182,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final boolean ready = isDataSetReady();
 
         if (ready) {
-            dataSetReady();
-
             final LayoutAnimationController controller =
                     AnimationUtils.loadLayoutAnimation(this, R.anim.layout_animation_from_bottom);
 
             mRecyclerView.setLayoutAnimation(controller);
             mRecyclerView.scheduleLayoutAnimation();
+
+            dataSetReady();
         } else {
             dataSetUnready();
         }
-
-
-        mButler.notifyDataSetChanged();
     }
 
     private void dataSetReady() {
-        final DataSetItem item = new DataSetItem();
-        item.change(DataSetItem.READY);
-        mButler.setDataSet(item);
-
-        // TODO: 06/10/2017
-        addAllTrainedModelItems();
+        mButler.setDataSet(getDataSetItem(DataSetItem.READY))
+                .setTrainedModes(getAllTrainedModelItems())
+                .notifyDataSetChanged();
     }
 
-    private void addAllTrainedModelItems() {
+    @NonNull
+    @CheckResult
+    private DataSetItem getDataSetItem(@DataSetItem.State int state) {
+        return new DataSetItem(state);
+    }
+
+    @CheckResult
+    @Nullable
+    private List<TrainedModelItem> getAllTrainedModelItems() {
         List<Model> models = null;
 
         try {
@@ -217,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (models == null
                 || models.isEmpty()) {
-            return;
+            return null;
         }
 
         final List<TrainedModelItem> items = new ArrayList<>(models.size());
@@ -226,13 +233,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             items.add(new TrainedModelItem(model));
         }
 
-        mButler.setTrainedModes(items);
+        return items;
     }
 
     private void dataSetUnready() {
-        final DataSetItem item = new DataSetItem();
-        item.change(DataSetItem.UNREADY);
-        mButler.setDataSet(item);
+        mButler.setDataSet(getDataSetItem(DataSetItem.UNREADY))
+                .notifyDataSetChanged();
     }
 
     @Override
@@ -249,6 +255,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         EventBus.getDefault()
                 .unregister(this);
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(sticky = true, priority = -1, threadMode = ThreadMode.MAIN)
+    public void onTraining(@NonNull TrainEvent event) {
+        @TrainEvent.Type final int what = event.what;
+
+        switch (what) {
+            case TrainEvent.START:
+            case TrainEvent.UPDATE:
+                final Model model = (Model) event.obj;
+                mButler.setTrainingModel(getTrainingModelItem(model))
+                        .notifyDataSetChanged();
+                break;
+
+            case TrainEvent.COMPLETE:
+                mButler.setTrainingModel(getTrainingModelItem(null))
+                        .setTrainedModes(getAllTrainedModelItems())
+                        .notifyDataSetChanged();
+
+                Global.getInstance()
+                        .getBus()
+                        .removeStickyEvent(event);
+                break;
+
+            case TrainEvent.EVALUATE:
+            case TrainEvent.ERROR:
+            case TrainEvent.INTERRUPTED:
+            default:
+                break;
+        }
+    }
+
+    @CheckResult
+    @Nullable
+    private TrainingModelItem getTrainingModelItem(@Nullable Model model) {
+        final TrainingModelItem item;
+
+        if (model == null) {
+            item = null;
+        } else {
+            item = new TrainingModelItem(model);
+        }
+
+        return item;
     }
 
     @SuppressWarnings("unused")
@@ -295,7 +346,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @StringRes int res = R.string.text_download_success;
 
         if (!success) {
-            solveData();
+            mButler.setDataSet(getDataSetItem(DataSetItem.UNREADY))
+                    .notifyDataSetChanged();
             res = R.string.text_download_error;
         }
 
@@ -309,12 +361,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (success) {
             markDataSetReadyNow();
+            solveData();
             res = R.string.text_decompress_success;
         } else {
+            mButler.setDataSet(getDataSetItem(DataSetItem.UNREADY))
+                    .notifyDataSetChanged();
             res = R.string.text_decompress_error;
         }
 
-        solveData();
         Snackbar.make(mRecyclerView, res, Snackbar.LENGTH_SHORT)
                 .show();
     }
@@ -345,12 +399,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             return;
                         }
 
-                        final DataSetItem item = mButler.getDataSet();
-                        if (item != null) {
-                            item.change(DataSetItem.PENDING);
-                        }
-
-                        mButler.notifyDataSetChanged();
+                        mButler.setDataSet(getDataSetItem(DataSetItem.PENDING))
+                                .notifyDataSetChanged();
 
                         requestDownload();
                     }
@@ -400,17 +450,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private static final class ItemsButler {
+    private static final class ItemsButler{
         private final RecyclerView.Adapter mAdapter;
-        private final List<Object> mItems;
+        private final List<Object> mOldItems;
+        private final List<Object> mCurItems;
+        private final DiffUtil.Callback mDiffCallback;
 
         private DataSetItem mDataSet;
+        private TrainingModelItem mTrainingModel;
         private List<TrainedModelItem> mTrainedModes;
 
         ItemsButler() {
-            mItems = new ArrayList<>();
+            mOldItems = new ArrayList<>();
+            mCurItems = new ArrayList<>();
+            mDiffCallback = new DiffCallback();
 
-            final MultiTypeAdapter adapter = new MultiTypeAdapter(mItems);
+            final MultiTypeAdapter adapter = new MultiTypeAdapter(mCurItems);
             registerItems(adapter);
 
             mAdapter = adapter;
@@ -419,51 +474,80 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         private void registerItems(@NonNull MultiTypeAdapter adapter) {
             adapter.register(DataSetItem.class, new DataSetViewBinder());
             adapter.register(TrainedModelItem.class, new TrainedModelViewBinder());
+            adapter.register(TrainingModelItem.class, new TrainingModelViewBinder());
         }
 
         RecyclerView.Adapter getAdapter() {
             return mAdapter;
         }
 
-        @Nullable
-        DataSetItem getDataSet() {
-            return mDataSet;
+        ItemsButler setDataSet(@Nullable DataSetItem dataSet) {
+            mDataSet = dataSet;
+            return this;
         }
 
-        void setDataSet(DataSetItem dataSet) {
-            this.mDataSet = dataSet;
+        ItemsButler setTrainingModel(@Nullable TrainingModelItem item) {
+            mTrainingModel = item;
+            return this;
         }
 
-        @Nullable
-        List<TrainedModelItem> getTrainedModes() {
-            return mTrainedModes;
-        }
-
-        void setTrainedModes(@NonNull List<TrainedModelItem> items) {
+        ItemsButler setTrainedModes(@Nullable List<TrainedModelItem> items) {
             mTrainedModes = items;
+            return this;
         }
 
-        void clear() {
+        ItemsButler clear() {
             mDataSet = null;
             mTrainedModes = null;
+            return this;
         }
 
         private void solveItemChange() {
-            mItems.clear();
+            mOldItems.clear();
+            mOldItems.addAll(mCurItems);
+            mCurItems.clear();
 
             if (mDataSet != null) {
-                mItems.add(mDataSet);
+                mCurItems.add(mDataSet);
+            }
+
+            if (mTrainingModel != null) {
+                mCurItems.add(mTrainingModel);
             }
 
             if (mTrainedModes != null
                     && !mTrainedModes.isEmpty()) {
-                mItems.addAll(mTrainedModes);
+                mCurItems.addAll(mTrainedModes);
             }
         }
 
         void notifyDataSetChanged() {
             solveItemChange();
-            mAdapter.notifyDataSetChanged();
+
+            DiffUtil.calculateDiff(mDiffCallback, true)
+                    .dispatchUpdatesTo(mAdapter);
+        }
+
+        private class DiffCallback extends DiffUtil.Callback {
+            @Override
+            public int getOldListSize() {
+                return mOldItems.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return mCurItems.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int i, int i1) {
+                return mOldItems.get(i).getClass().equals(mCurItems.get(i1).getClass());
+            }
+
+            @Override
+            public boolean areContentsTheSame(int i, int i1) {
+                return mOldItems.get(i).equals(mCurItems.get(i1));
+            }
         }
     }
 }

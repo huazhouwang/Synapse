@@ -52,7 +52,12 @@ import io.whz.androidneuralnetwork.util.FileUtil;
 import io.whz.androidneuralnetwork.util.Precondition;
 
 public class MainService extends Service {
-    private static final int FOREGROUND_SERVER = 0x1111;
+//    private static final int FOREGROUND_SERVER = 0x1111;
+
+    private static final int RQC_DECOMPRESS = 0x01;
+    private static final int RQC_TRAIN_START = 0x01 << 1;
+    private static final int RQC_TRAIN_INTERRUPT = 0x01 << 2;
+
     private static final String TAG = App.TAG + "-MainService";
 
     public static final String EXTRAS_NEURAL_CONFIG = "extras_neural_config";
@@ -114,7 +119,7 @@ public class MainService extends Service {
     }
 
     private void reset() {
-        stopNotify();
+        stopForeground(true);
         mAction = IDLE;
         stopSelf();
     }
@@ -266,7 +271,6 @@ public class MainService extends Service {
 
     private void handleDecompressComplete(@NonNull MSNEvent event) {
         final boolean success = event.obj != null ? (Boolean) event.obj : false;
-        stopNotify();
 
         if (success) {
             final Dir dir = Global.getInstance().getDirs();
@@ -282,7 +286,7 @@ public class MainService extends Service {
 
     private void showDecompressNotification() {
         final Intent intent = new Intent(this, MainActivity.class);
-        final PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        final PendingIntent pending = PendingIntent.getActivity(this, RQC_DECOMPRESS, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
 
@@ -294,7 +298,7 @@ public class MainService extends Service {
                 .setProgress(0, 0, true)
                 .setContentIntent(pending);
 
-        startForeground(FOREGROUND_SERVER, builder.build());
+        startForeground(RQC_DECOMPRESS, builder.build());
     }
 
     private void decompress() {
@@ -350,35 +354,21 @@ public class MainService extends Service {
                 .setProgress(0, 0, true);
         mTrainNotifyBuilder.mActions.clear();
 
-        mNotifyManager.notify(FOREGROUND_SERVER, mTrainNotifyBuilder.build());
+        mNotifyManager.notify(RQC_TRAIN_START, mTrainNotifyBuilder.build());
     }
 
     private void handleTrainError(TrainEvent event) {
         reset();
     }
 
-    private void stopNotify() {
-        mNotifyManager.cancel(FOREGROUND_SERVER);
-        stopForeground(true);
-    }
-
     private void handleTrainCompleteEvent(TrainEvent event) {
-        stopNotify();
-
         final Model model = (Model) event.obj;
 
         if (model == null) {
             return;
         }
 
-        long id = -1L;
-
-        try {
-            id = saveModel(model);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        final long id = model.getId();
         final String time = StringFormatUtil.formatTimeUsed(model.getTimeUsed());
         final String accuracy = StringFormatUtil.format2Percent(model.getEvaluate());
 
@@ -386,9 +376,9 @@ public class MainService extends Service {
 
         final Intent intent = new Intent(this, ModelDetailActivity.class);
         intent.putExtra(ModelDetailActivity.INTENT_TYPE, ModelDetailActivity.IS_TRAINED);
-        intent.putExtra(ModelDetailActivity.TRAINED_ID, id);
+        intent.putExtra(ModelDetailActivity.TRAINED_ID, model.getId());
 
-        final PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        final PendingIntent pending = PendingIntent.getActivity(this, (int)id, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
 
@@ -403,23 +393,8 @@ public class MainService extends Service {
                 .setAutoCancel(true)
                 .setFullScreenIntent(pending, true);
 
-        mNotifyManager.notify(FOREGROUND_SERVER + 1, builder.build());
-
+        mNotifyManager.notify((int) id, builder.build());
         reset();
-    }
-
-    private long saveModel(@NonNull Model model) {
-        final String hiddenSizeString = StringFormatUtil.mergeIntArray2String(model.getHiddenSizes());
-        final String accuracyString = StringFormatUtil.mergeDoubleList2String(model.getAccuracies());
-
-        model.setHiddenSizeString(hiddenSizeString);
-        model.setAccuracyString(accuracyString);
-        model.setCreatedTime(System.currentTimeMillis());
-
-        return Global.getInstance()
-                .getSession()
-                .getModelDao()
-                .insert(model);
     }
 
     private void handleTrainStartEvent(@NonNull TrainEvent event) {
@@ -432,13 +407,13 @@ public class MainService extends Service {
         final Intent intent = new Intent(this, ModelDetailActivity.class);
         intent.putExtra(ModelDetailActivity.INTENT_TYPE, ModelDetailActivity.IS_TRAINING);
 
-        final PendingIntent pending = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        final PendingIntent pending = PendingIntent.getActivity(this, RQC_TRAIN_START, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         final Intent interruptIntent = new Intent(this, ModelDetailActivity.class);
         interruptIntent.putExtra(ModelDetailActivity.INTENT_TYPE, ModelDetailActivity.IS_TRAINING);
         interruptIntent.putExtra(ModelDetailActivity.INTERRUPT_ACTION, true);
 
-        final PendingIntent interruptPending = PendingIntent.getActivity(this, 10, interruptIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        final PendingIntent interruptPending = PendingIntent.getActivity(this, RQC_TRAIN_INTERRUPT, interruptIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         mTrainNotifyBuilder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
 
@@ -452,10 +427,9 @@ public class MainService extends Service {
                 .setContentIntent(pending)
                 .addAction(R.drawable.ic_block_24dp, getString(R.string.text_train_interrupt), interruptPending);
 
-        startForeground(FOREGROUND_SERVER, mTrainNotifyBuilder.build());
+        startForeground(RQC_TRAIN_START, mTrainNotifyBuilder.build());
     }
 
-    @SuppressWarnings("unchecked")
     private void handleTrainUpdateEvent(@NonNull TrainEvent event) {
         final Model model = (Model) event.obj;
 
@@ -468,7 +442,7 @@ public class MainService extends Service {
                 String.valueOf(model.getStepEpoch()), StringFormatUtil.format2Percent(model.getLastAccuracy())))
                 .setProgress(model.getEpochs(), model.getStepEpoch(), false);
 
-        mNotifyManager.notify(FOREGROUND_SERVER, mTrainNotifyBuilder.build());
+        mNotifyManager.notify(RQC_TRAIN_START, mTrainNotifyBuilder.build());
     }
 
     private static class DecompressRunnable implements Runnable {
@@ -588,7 +562,7 @@ public class MainService extends Service {
             final int len;
 
             if ((len = files.length) == 0) {
-                mEventBus.postSticky(new TrainEvent<>(TrainEvent.ERROR));
+                mEventBus.postSticky(new TrainEvent<>(TrainEvent.ERROR, R.string.text_error_lack_training_data));
                 return;
             }
 
@@ -635,8 +609,33 @@ public class MainService extends Service {
         @Override
         public void onEvaluateComplete(double evaluate) {
             mModel.setEvaluate(evaluate);
-            mEventBus.postSticky(new TrainEvent<>(TrainEvent.COMPLETE, mModel));
+
+            try {
+                final long id = saveModel(mModel);
+                mModel.setId(id);
+
+                mEventBus.postSticky(new TrainEvent<>(TrainEvent.COMPLETE, mModel));
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                mEventBus.postSticky(new TrainEvent<>(TrainEvent.ERROR, R.string.text_error_fail_to_save_model));
+            }
         }
+
+        private long saveModel(@NonNull Model model) {
+            final String hiddenSizeString = StringFormatUtil.mergeIntArray2String(model.getHiddenSizes());
+            final String accuracyString = StringFormatUtil.mergeDoubleList2String(model.getAccuracies());
+
+            model.setHiddenSizeString(hiddenSizeString);
+            model.setAccuracyString(accuracyString);
+            model.setCreatedTime(System.currentTimeMillis());
+
+            return Global.getInstance()
+                    .getSession()
+                    .getModelDao()
+                    .insert(model);
+        }
+
     }
 
     private static File[] allotFiles(int trainingSize) {

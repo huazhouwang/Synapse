@@ -64,6 +64,10 @@
     <string name="text_dialog_delete_model_msg">Would you want to delete %s model?</string>
     <string name="text_dialog_delete_model_title">Delete Model</string>
     <string name="text_dialog_lack_download_manager_title">Can\'t find DownloadManager</string>
-    <string name="text_dialog_lack_download_manager_msg">I\'m sorry We need to use DownloadManger to download data set</string>
-    <string name="text_dialog_lack_download_manager_negative">Finish</string>
+    <string name="text_dialog_lack_download_manager_msg">Sorry, we need DownloadManger to download the data set</string>
+    <string name="text_error_fail_to_save_model">Fail to save model</string>
+    <string name="text_error_lack_training_data">Lack of training data</string>
+    <string name="text_dialog_train_error_title">Something wrong</string>
+    <string name="text_dialog_train_error_msg">Sorry, may be you should try again</string>
+    <string name="text_dialog_finish_action">Finish</string>
 </resources>

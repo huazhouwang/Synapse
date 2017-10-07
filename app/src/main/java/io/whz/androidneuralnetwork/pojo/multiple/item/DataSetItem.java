@@ -15,7 +15,15 @@ public class DataSetItem {
     public static final int READY = 0x01 << 2;
 
     @State
-    private int mState = UNREADY;
+    private int mState;
+
+    public DataSetItem() {
+        mState = UNREADY;
+    }
+
+    public DataSetItem(@State int state) {
+        mState = state;
+    }
 
     public void change(@State int state) {
         mState = state;
@@ -24,5 +32,11 @@ public class DataSetItem {
     @State
     public int state() {
         return mState;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof DataSetItem)
+                && ((DataSetItem) obj).state() == this.state();
     }
 }

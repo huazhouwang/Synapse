@@ -21,6 +21,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -129,10 +130,11 @@ public class ModelDetailActivity extends AppCompatActivity {
     }
 
     private void registerEventBus() {
-        if (mIntentType == IS_TRAINING) {
-            Global.getInstance()
-                    .getBus()
-                    .register(this);
+        final EventBus bus = Global.getInstance().getBus();
+
+        if (mIntentType == IS_TRAINING
+                && !bus.isRegistered(this)) {
+            bus.register(this);
         }
     }
 
@@ -189,12 +191,28 @@ public class ModelDetailActivity extends AppCompatActivity {
                 handleTrainCompleteEvent(event);
                 break;
 
-            case TrainEvent.EVALUATE:
             case TrainEvent.ERROR:
+                handleTrainErrorEvent(event);
+                break;
+
+            case TrainEvent.EVALUATE:
             case TrainEvent.INTERRUPTED:
             default:
                 break;
         }
+    }
+
+    private void handleTrainErrorEvent(@NonNull TrainEvent event) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.text_dialog_train_error_title)
+                .setMessage(R.string.text_dialog_train_error_msg)
+                .setCancelable(false)
+                .setNegativeButton(R.string.text_dialog_finish_action, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finishAfterTransition();
+                    }
+                }).show();
     }
 
     private void handleTrainCompleteEvent(@NonNull TrainEvent event) {
@@ -209,7 +227,7 @@ public class ModelDetailActivity extends AppCompatActivity {
 
         if (mInterruptItem != null) {
             mInterruptItem.setVisible(false);
-            mDeleteItem.setVisible(false);
+            mDeleteItem.setVisible(true);
         }
     }
 
@@ -298,15 +316,19 @@ public class ModelDetailActivity extends AppCompatActivity {
     private void handleTrainedIntent(@NonNull Intent intent) {
         mIsFirst = false;
         final long id = intent.getLongExtra(TRAINED_ID, -1);
-        final Model model;
+        final ModelDao dao = Global.getInstance().getSession().getModelDao();
+        Model model = null;
 
-        if (id == -1L) {
-            final List<Model> list = Global.getInstance()
-                    .getSession()
-                    .getModelDao()
-                    .queryBuilder()
-                    .orderDesc(ModelDao.Properties.CreatedTime)
-                    .listLazy();
+        if (id < 0) {
+            List<Model> list = null;
+
+            try {
+                list = dao.queryBuilder()
+                        .orderDesc(ModelDao.Properties.CreatedTime)
+                        .listLazy();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             if (list != null && !list.isEmpty()) {
                 model = list.get(list.size() - 1);
@@ -315,12 +337,13 @@ public class ModelDetailActivity extends AppCompatActivity {
                 return;
             }
         } else {
-            model = Global.getInstance()
-                    .getSession()
-                    .getModelDao()
-                    .queryBuilder()
-                    .where(ModelDao.Properties.Id.eq(id))
-                    .unique();
+            try {
+                model = dao.queryBuilder()
+                        .where(ModelDao.Properties.Id.eq(id))
+                        .unique();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         if (model == null) {
@@ -342,15 +365,10 @@ public class ModelDetailActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.text_dialog_no_data_title)
                 .setMessage(R.string.text_dialog_no_data_msg)
+                .setCancelable(false)
                 .setNegativeButton(R.string.text_dialog_no_data_negative, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        finishAfterTransition();
-                    }
-                })
-                .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialogInterface) {
                         finishAfterTransition();
                     }
                 }).show();
