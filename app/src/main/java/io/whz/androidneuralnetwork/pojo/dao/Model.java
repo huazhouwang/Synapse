@@ -12,6 +12,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.whz.androidneuralnetwork.matrix.Matrix;
+
 @Entity
 public class Model implements Serializable {
     public static final long serialVersionUID = 0xff;
@@ -21,14 +23,16 @@ public class Model implements Serializable {
 
     @Unique
     private String name;
-    private String hiddenSizeString;
-    private String accuracyString;
     private long createdTime;
     private double learningRate;
     private int epochs;
     private int dataSize;
     private long timeUsed;
     private double evaluate;
+    private byte[] hiddenSizeBytes;
+    private byte[] accuracyBytes;
+    private byte[] biasBytes;
+    private byte[] weightBytes;
 
     @Transient
     private int stepEpoch;
@@ -39,20 +43,29 @@ public class Model implements Serializable {
     @Transient
     private int[] hiddenSizes;
 
-    @Generated(hash = 725346043)
-    public Model(Long id, String name, String hiddenSizeString,
-            String accuracyString, long createdTime, double learningRate,
-            int epochs, int dataSize, long timeUsed, double evaluate) {
+    @Transient
+    private Matrix[] biases;
+
+    @Transient
+    private Matrix[] weights;
+
+    @Generated(hash = 132951014)
+    public Model(Long id, String name, long createdTime, double learningRate,
+            int epochs, int dataSize, long timeUsed, double evaluate,
+            byte[] hiddenSizeBytes, byte[] accuracyBytes, byte[] biasBytes,
+            byte[] weightBytes) {
         this.id = id;
         this.name = name;
-        this.hiddenSizeString = hiddenSizeString;
-        this.accuracyString = accuracyString;
         this.createdTime = createdTime;
         this.learningRate = learningRate;
         this.epochs = epochs;
         this.dataSize = dataSize;
         this.timeUsed = timeUsed;
         this.evaluate = evaluate;
+        this.hiddenSizeBytes = hiddenSizeBytes;
+        this.accuracyBytes = accuracyBytes;
+        this.biasBytes = biasBytes;
+        this.weightBytes = weightBytes;
     }
 
     @Generated(hash = 2118404446)
@@ -95,6 +108,22 @@ public class Model implements Serializable {
         this.stepEpoch = stepEpoch;
     }
 
+    public Matrix[] getWeights() {
+        return weights;
+    }
+
+    public void setWeights(Matrix[] weights) {
+        this.weights = weights;
+    }
+
+    public Matrix[] getBiases() {
+        return biases;
+    }
+
+    public void setBiases(Matrix[] biases) {
+        this.biases = biases;
+    }
+
     public Long getId() {
         return this.id;
     }
@@ -109,22 +138,6 @@ public class Model implements Serializable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getHiddenSizeString() {
-        return this.hiddenSizeString;
-    }
-
-    public void setHiddenSizeString(String hiddenSizeString) {
-        this.hiddenSizeString = hiddenSizeString;
-    }
-
-    public String getAccuracyString() {
-        return this.accuracyString;
-    }
-
-    public void setAccuracyString(String accuracyString) {
-        this.accuracyString = accuracyString;
     }
 
     public long getCreatedTime() {
@@ -174,4 +187,37 @@ public class Model implements Serializable {
     public void setEvaluate(double evaluate) {
         this.evaluate = evaluate;
     }
+
+    public byte[] getHiddenSizeBytes() {
+        return this.hiddenSizeBytes;
+    }
+
+    public void setHiddenSizeBytes(byte[] hiddenSizeBytes) {
+        this.hiddenSizeBytes = hiddenSizeBytes;
+    }
+
+    public byte[] getAccuracyBytes() {
+        return this.accuracyBytes;
+    }
+
+    public void setAccuracyBytes(byte[] accuracyBytes) {
+        this.accuracyBytes = accuracyBytes;
+    }
+
+    public byte[] getBiasBytes() {
+        return this.biasBytes;
+    }
+
+    public void setBiasBytes(byte[] biasBytes) {
+        this.biasBytes = biasBytes;
+    }
+
+    public byte[] getWeightBytes() {
+        return this.weightBytes;
+    }
+
+    public void setWeightBytes(byte[] weightBytes) {
+        this.weightBytes = weightBytes;
+    }
 }
+

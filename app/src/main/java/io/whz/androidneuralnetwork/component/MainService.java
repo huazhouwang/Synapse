@@ -47,6 +47,7 @@ import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
+import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.StringFormatUtil;
 import io.whz.androidneuralnetwork.util.FileUtil;
 import io.whz.androidneuralnetwork.util.Precondition;
@@ -549,6 +550,7 @@ public class MainService extends Service {
         private final AtomicBoolean mInterruptSign;
         private final EventBus mEventBus;
         private long mStartTime;
+        private NeuralNetwork mNeural;
 
         private TrainRunnable(@NonNull Model model, @NonNull AtomicBoolean breakSign) {
             mModel = model;
@@ -569,9 +571,9 @@ public class MainService extends Service {
             final DataSet training = new DataSet(Arrays.copyOf(files, len - 1));
             final DataSet validation = new DataSet(files[len - 1]);
             final DataSet test = new DataSet(Global.getInstance().getDirs().test.listFiles());
-            final NeuralNetwork network = new NeuralNetwork(mModel.getHiddenSizes());
 
-            network.train(mModel.getEpochs(), mModel.getLearningRate(), training, validation, test, this);
+            mNeural = new NeuralNetwork(mModel.getHiddenSizes());
+            mNeural.train(mModel.getEpochs(), mModel.getLearningRate(), training, validation, test, this);
         }
 
         @Override
@@ -609,6 +611,9 @@ public class MainService extends Service {
         @Override
         public void onEvaluateComplete(double evaluate) {
             mModel.setEvaluate(evaluate);
+            mModel.setCreatedTime(System.currentTimeMillis());
+            mModel.setWeights(mNeural.getWeights());
+            mModel.setBiases(mNeural.getBiases());
 
             try {
                 final long id = saveModel(mModel);
@@ -623,19 +628,26 @@ public class MainService extends Service {
         }
 
         private long saveModel(@NonNull Model model) {
-            final String hiddenSizeString = StringFormatUtil.mergeIntArray2String(model.getHiddenSizes());
-            final String accuracyString = StringFormatUtil.mergeDoubleList2String(model.getAccuracies());
+            final Model model2Saved = new Model();
 
-            model.setHiddenSizeString(hiddenSizeString);
-            model.setAccuracyString(accuracyString);
-            model.setCreatedTime(System.currentTimeMillis());
+            model2Saved.setName(model.getName());
+            model2Saved.setLearningRate(model.getLearningRate());
+            model2Saved.setEpochs(model.getEpochs());
+            model2Saved.setDataSize(model.getDataSize());
+            model2Saved.setTimeUsed(model.getTimeUsed());
+            model2Saved.setEvaluate(model.getEvaluate());
+            model2Saved.setCreatedTime(model.getCreatedTime());
+
+            model2Saved.setHiddenSizeBytes(DbHelper.convert2ByteArray(model.getHiddenSizes()));
+            model2Saved.setAccuracyBytes(DbHelper.convert2ByteArray(model.getAccuracies()));
+            model2Saved.setWeightBytes(DbHelper.convert2ByteArray(model.getWeights()));
+            model2Saved.setBiasBytes(DbHelper.convert2ByteArray(model.getBiases()));
 
             return Global.getInstance()
                     .getSession()
                     .getModelDao()
-                    .insert(model);
+                    .insert(model2Saved);
         }
-
     }
 
     private static File[] allotFiles(int trainingSize) {

@@ -70,4 +70,6 @@
     <string name="text_dialog_train_error_title">Something wrong</string>
     <string name="text_dialog_train_error_msg">Sorry, may be you should try again</string>
     <string name="text_dialog_finish_action">Finish</string>
+    <string name="text_error_repeat_name">Already contains %s model</string>
+    <string name="text_model_detail_interrupt_waiting">Try to interrupt, please way...</string>
 </resources>

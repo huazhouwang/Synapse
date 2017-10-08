@@ -29,6 +29,10 @@
         <item name="android:windowAnimationStyle">@null</item>
     </style>
 
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+    </style>
+
     <style name="DialogButton" parent="@style/TextAppearance.AppCompat.Widget.Button.Borderless.Colored" >
         <!--<item name="android:textColor">@color/color_accent</item>-->
     </style>

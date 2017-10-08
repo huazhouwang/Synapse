@@ -17,6 +17,7 @@ import io.whz.androidneuralnetwork.pojo.neural.Digit;
 import io.whz.androidneuralnetwork.pojo.neural.Figure;
 
 public class MNISTUtil {
+    private static final int MASK = 0xFF;
     private static final int LABEL_MAGIC = 2049;
     private static final int IMAGE_MAGIC = 2051;
     private static final int BATCH_MAGIC = 2052;
@@ -228,7 +229,7 @@ public class MNISTUtil {
                 curNum = inputStream.readInt();
                 inputStream.read(buffer);
 
-                digits[i] = new Digit(curNum, convert(buffer));
+                digits[i] = new Digit(curNum, convertMnistImage2Darkness(buffer));
             }
 
             return digits;
@@ -247,30 +248,31 @@ public class MNISTUtil {
         }
     }
 
-    public static double[] convert(byte[] bytes) {
+    /**
+     * In Mnist, 0 represents the white color, and 255 represents the black color
+     *
+     */
+    private static double[] convertMnistImage2Darkness(@NonNull byte[] bytes) {
         final double[] doubles = new double[bytes.length];
 
         for (int i = 0, len = bytes.length; i < len; ++i) {
-            doubles[i] = 0xFF & bytes[i];
+            doubles[i] = (double) (MASK & bytes[i]) / MASK;
         }
 
         return doubles;
     }
 
-    public static String getLayerSizes(@NonNull int[] hiddenSizes) {
-        final StringBuilder builder = new StringBuilder();
-        final String spilt = " × ";
+    /**
+     * In android bitmap, 0 represents the black color, and 255 represents the white color
+     */
+    public static double[] convertBitmap2Darkness(@NonNull int[] pixels) {
+        final double[] res = new double[pixels.length];
 
-        builder.append(NeuralNetwork.INPUT_LAYER_NUMBER)
-                .append(spilt);
-
-        for (int size : hiddenSizes) {
-            builder.append(size)
-                    .append(spilt);
+        for (int i = 0, len = pixels.length; i < len; ++i) {
+            res[i] = (double)(MASK - (MASK & pixels[i])) / MASK;
         }
 
-        builder.append(NeuralNetwork.OUTPUT_LAYER_NUMBER);
-
-        return builder.toString();
+        return res;
     }
+
 }

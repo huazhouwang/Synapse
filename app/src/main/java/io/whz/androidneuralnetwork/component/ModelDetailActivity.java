@@ -7,7 +7,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -30,11 +32,11 @@ import java.util.List;
 
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.Global;
-import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
+import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.StringFormatUtil;
 
 public class ModelDetailActivity extends AppCompatActivity {
@@ -77,6 +79,21 @@ public class ModelDetailActivity extends AppCompatActivity {
 
         prepareChart();
         handleIntent();
+        setUpActionBar();
+    }
+
+    private void setUpActionBar() {
+        final ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowHomeEnabled(true);
+        }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finishAfterTransition();
+        return true;
     }
 
     private void prepareChart() {
@@ -168,7 +185,8 @@ public class ModelDetailActivity extends AppCompatActivity {
                                 .post(new MSNEvent<>(MSNEvent.TRAIN_INTERRUPT));
 
                         if (!that.isFinishing()) {
-                            finishAfterTransition();
+                            Snackbar.make(mChart, R.string.text_model_detail_interrupt_waiting, Snackbar.LENGTH_INDEFINITE)
+                                    .show();
                         }
                     }
                 }).setNegativeButton(R.string.dialog_negative, null)
@@ -195,8 +213,11 @@ public class ModelDetailActivity extends AppCompatActivity {
                 handleTrainErrorEvent(event);
                 break;
 
-            case TrainEvent.EVALUATE:
             case TrainEvent.INTERRUPTED:
+                finishAfterTransition();
+                break;
+
+            case TrainEvent.EVALUATE:
             default:
                 break;
         }
@@ -256,7 +277,7 @@ public class ModelDetailActivity extends AppCompatActivity {
 
     private void setUpNormalValues(@NonNull Model model) {
         setTitle(model.getName());
-        mLayersText.setText(MNISTUtil.getLayerSizes(model.getHiddenSizes()));
+        mLayersText.setText(StringFormatUtil.formatLayerSizes(model.getHiddenSizes()));
         mLearningRateText.setText(String.valueOf(model.getLearningRate()));
         mEpochsText.setText(String.valueOf(model.getEpochs()));
         mDataSizeText.setText(String.valueOf(model.getDataSize()));
@@ -375,14 +396,11 @@ public class ModelDetailActivity extends AppCompatActivity {
     }
 
     private void displayTrainedModel(@NonNull Model model) {
-        final String hiddenSizeString = model.getHiddenSizeString();
-        final String accuracyString = model.getAccuracyString();
+        final int[] hiddenSizes = DbHelper.byteArray2IntArray(model.getHiddenSizeBytes());
+        final List<Double> accuracies = DbHelper.byteArray2DoubleList(model.getAccuracyBytes());
 
-        final int[] hiddenSizes = StringFormatUtil.splitString2IntArray(hiddenSizeString);
-        final List<Double> accuracies = StringFormatUtil.splitString2DoubleList(accuracyString);
-
-        model.setHiddenSizes(hiddenSizes);
-        model.addAllAccuracy(accuracies);
+        model.setHiddenSizes(hiddenSizes == null ? new int[0] : hiddenSizes);
+        model.addAllAccuracy(accuracies == null ? new ArrayList<Double>() : accuracies);
 
         setUpNormalValues(model);
         setUpTrainCompleteValues(model);

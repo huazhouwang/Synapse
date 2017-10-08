@@ -271,6 +271,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case TrainEvent.COMPLETE:
+            case TrainEvent.ERROR:
+            case TrainEvent.INTERRUPTED:
                 mButler.setTrainingModel(getTrainingModelItem(null))
                         .setTrainedModes(getAllTrainedModelItems())
                         .notifyDataSetChanged();
@@ -281,8 +283,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case TrainEvent.EVALUATE:
-            case TrainEvent.ERROR:
-            case TrainEvent.INTERRUPTED:
             default:
                 break;
         }

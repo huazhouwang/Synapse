@@ -118,25 +118,15 @@ public class DataSet {
     private Digit[] nextDigits(@NonNull File file) {
         final Digit[] res = MNISTUtil.readBatches(file);
 
-        if (res != null && res.length != 0) {
-            normalize(res);
-        }
-
-        return res;
+        return res == null ? null : normalize(res);
     }
 
-    private void normalize(@NonNull Digit[] digits) {
-        for (Digit digit : digits) {
-            final double[] pixels = digit.colors;
-
-            for (int j = 0, jLen = pixels.length; j < jLen; ++j) {
-                pixels[j] /= 0xFF;
-            }
-        }
-
+    private Digit[] normalize(@NonNull Digit[] digits) {
         final List<Digit> tmp = new ArrayList<>(Arrays.asList(digits));
         Collections.shuffle(tmp);
         tmp.toArray(digits);
+
+        return digits;
     }
 
     public void shuffle() {

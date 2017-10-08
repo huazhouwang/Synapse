@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.whz.androidneuralnetwork.R;
+import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
+import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 
 public class NeuralModelActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
@@ -31,6 +33,7 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
 
     private final List<TextView> mHiddenSizeInputs = new ArrayList<>();
 
+    private View mPage;
     private ViewGroup mHiddenGroup;
     private ViewGroup mContainer;
     private LayoutInflater mInflater;
@@ -51,6 +54,7 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
         mInflater = LayoutInflater.from(this);
         mDataSizeTemplate = getString(R.string.template_data_size);
 
+        mPage = findViewById(R.id.page);
         mContainer = findViewById(R.id.container);
         mNameInput = findViewById(R.id.input_name);
         mHiddenGroup = findViewById(R.id.layout_hidden_layers);
@@ -194,6 +198,8 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
         final int height = mContainer.getHeight();
         final Activity that = this;
 
+        mPage.setClickable(false);
+
         mContainer.animate()
                 .y(-height)
                 .alpha(0F)
@@ -216,7 +222,23 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
             showSnackBar("Empty name is illegal");
             return null;
         } else {
-            // TODO: 01/10/2017 check unique name
+            boolean hasAlready = false;
+
+            try {
+                hasAlready = Global.getInstance()
+                        .getSession()
+                        .getModelDao()
+                        .queryBuilder()
+                        .where(ModelDao.Properties.Name.eq(name))
+                        .count() > 0;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if (hasAlready) {
+                showSnackBar(String.format(getString(R.string.text_error_repeat_name), name));
+                return null;
+            }
         }
 
         final int[] hiddenSizes = new int[mHiddenSizeInputs.size()];

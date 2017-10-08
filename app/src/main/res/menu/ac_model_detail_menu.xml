@@ -7,7 +7,7 @@
         android:id="@+id/interrupt"
         android:icon="@drawable/ic_block_24dp"
         android:title="@string/text_train_interrupt"
-        app:showAsAction="always"
+        app:showAsAction="never"
         android:visible="false"
         tools:visible="true"
         />
@@ -16,7 +16,7 @@
         android:id="@+id/delete"
         android:title="@string/action_delete"
         android:icon="@drawable/ic_delete_forever_24dp"
-        app:showAsAction="ifRoom"
+        app:showAsAction="never"
         android:visible="false"
         tools:visible="true"
         />

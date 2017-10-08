@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import io.whz.androidneuralnetwork.neural.NeuralNetwork;
+
 public class StringFormatUtil {
     private static final String SPLIT_ITEM = ":";
 
@@ -64,6 +66,23 @@ public class StringFormatUtil {
         }
 
         builder.deleteCharAt(builder.length() - 1);
+
+        return builder.toString();
+    }
+
+    public static String formatLayerSizes(@NonNull int[] hiddenSizes) {
+        final StringBuilder builder = new StringBuilder();
+        final String spilt = " × ";
+
+        builder.append(NeuralNetwork.INPUT_LAYER_NUMBER)
+                .append(spilt);
+
+        for (int size : hiddenSizes) {
+            builder.append(size)
+                    .append(spilt);
+        }
+
+        builder.append(NeuralNetwork.OUTPUT_LAYER_NUMBER);
 
         return builder.toString();
     }

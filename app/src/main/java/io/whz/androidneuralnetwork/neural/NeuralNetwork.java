@@ -18,8 +18,8 @@ public class NeuralNetwork {
     public static final int INPUT_LAYER_NUMBER = 784;
     public static final int OUTPUT_LAYER_NUMBER = 10;
 
-    private final Matrix[] mBiases;
     private final Matrix[] mWeights;
+    private final Matrix[] mBiases;
 
     public NeuralNetwork(@NonNull int... hiddenLayerSizes) {
         Precondition.checkNotNull(hiddenLayerSizes, "Hidden layers must not be null!");
@@ -34,6 +34,14 @@ public class NeuralNetwork {
 
         mBiases = newBiasesMatrix(totalSizes);
         mWeights = newWeightsMatrices(totalSizes);
+    }
+
+    public NeuralNetwork(@NonNull Matrix[] weights, @NonNull Matrix[] biases) {
+        Precondition.checkNotNull(weights);
+        Precondition.checkNotNull(biases);
+
+        mWeights = weights;
+        mBiases = biases;
     }
 
     private Matrix[] newWeightsMatrices(int[] totalSize) {
@@ -58,6 +66,14 @@ public class NeuralNetwork {
         Arrays.fill(cols, 1);
 
         return MatrixUtil.randns(rows, cols);
+    }
+
+    public Matrix[] getBiases() {
+        return mBiases;
+    }
+
+    public Matrix[] getWeights() {
+        return mWeights;
     }
 
     public void train(int epochs, double learningRate,
