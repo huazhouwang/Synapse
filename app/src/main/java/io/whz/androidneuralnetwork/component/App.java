@@ -17,7 +17,6 @@ public class App extends Application {
     private static final String DB_NAME = "global-db";
     private static final String PREFERENCE_NAME = "global-preferences";
 
-
     private final Global mGlobal = Global.getInstance();
 
     @Override

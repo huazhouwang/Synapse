@@ -1,9 +1,13 @@
 package io.whz.androidneuralnetwork.pojo.event;
 
-abstract class NormalEvent<T> {
-    public final T obj;
+abstract class NormalEvent<T> extends TypeEvent<T>{
+    private static final int WHAT = 0xFF;
 
     NormalEvent(T obj) {
-        this.obj = obj;
+        super(WHAT, obj);
+    }
+
+    private NormalEvent() {
+        super(WHAT);
     }
 }

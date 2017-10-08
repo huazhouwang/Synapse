@@ -41,6 +41,7 @@ import io.whz.androidneuralnetwork.pojo.constant.PreferenceKey;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
+import io.whz.androidneuralnetwork.pojo.event.ModelDeletedEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.DataSetViewBinder;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainedModelViewBinder;
@@ -255,6 +256,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         EventBus.getDefault()
                 .unregister(this);
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(sticky = true, priority = -1, threadMode = ThreadMode.MAIN)
+    public void onModelDeleted(@NonNull ModelDeletedEvent event) {
+        final Model model = event.obj;
+
+        if (model == null) {
+            return;
+        }
+
+        Global.getInstance()
+                .getBus()
+                .removeStickyEvent(event);
+
+        mButler.setTrainedModes(getAllTrainedModelItems())
+                .notifyDataSetChanged();
     }
 
     @SuppressWarnings("unused")

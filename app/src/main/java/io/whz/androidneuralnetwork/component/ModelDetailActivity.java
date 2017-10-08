@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -35,6 +36,7 @@ import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
+import io.whz.androidneuralnetwork.pojo.event.ModelDeletedEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
 import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.StringFormatUtil;
@@ -104,7 +106,6 @@ public class ModelDetailActivity extends AppCompatActivity {
         mChart.setHighlightPerDragEnabled(true);
         mChart.setPinchZoom(true);
         mChart.setDrawGridBackground(false);
-        mChart.setBackgroundColor(Color.TRANSPARENT);
         mChart.getLegend().setEnabled(true);
         mChart.getAxisRight().setEnabled(false);
 
@@ -112,9 +113,23 @@ public class ModelDetailActivity extends AppCompatActivity {
         leftAxis.setTextColor(ContextCompat.getColor(this, R.color.chart_left_axis));
         leftAxis.setAxisMinimum(0F);
         leftAxis.setAxisMaximum(1F);
-        leftAxis.setLabelCount(5, true);
-        leftAxis.setDrawGridLines(true);
-        leftAxis.setDrawAxisLine(false);
+        leftAxis.setDrawGridLines(false);
+        leftAxis.setDrawAxisLine(true);
+
+        final LimitLine upLine = new LimitLine(0.9F, "Great");
+        upLine.setLineWidth(2F);
+        upLine.enableDashedLine(5F, 5F, 5F);
+        upLine.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
+        upLine.setLineColor(Color.GREEN);
+
+        final LimitLine downLine = new LimitLine(0.5F, "Bad");
+        downLine.setLineWidth(2F);
+        downLine.enableDashedLine(5F, 5F, 5F);
+        downLine.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+        downLine.setLineColor(Color.RED);
+
+        leftAxis.addLimitLine(upLine);
+        leftAxis.addLimitLine(downLine);
     }
 
     private void handleIntent() {
@@ -269,9 +284,11 @@ public class ModelDetailActivity extends AppCompatActivity {
             final int lastIndex = accuracies.size() - 1;
 
             mAccuracyData.add(new Entry(lastIndex, (float) (double) accuracies.get(lastIndex)));
-            mChart.getData().notifyDataChanged();
-            mChart.notifyDataSetChanged();
-            mChart.invalidate();
+
+            mChart.moveViewToAnimated(lastIndex, (float) (double)accuracies.get(lastIndex), YAxis.AxisDependency.LEFT, 100);
+//            mChart.getData().notifyDataChanged();
+//            mChart.notifyDataSetChanged();
+//            mChart.invalidate();
         }
     }
 
@@ -302,6 +319,8 @@ public class ModelDetailActivity extends AppCompatActivity {
         }
 
         final LineDataSet set = new LineDataSet(mAccuracyData, getString(R.string.text_chart_left_axis));
+
+        set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
         set.setColor(ContextCompat.getColor(this, R.color.chart_left_axis));
         set.setCircleColor(ContextCompat.getColor(this, R.color.chart_left_axis));
@@ -312,6 +331,8 @@ public class ModelDetailActivity extends AppCompatActivity {
         set.setLineWidth(2F);
         set.setCircleRadius(3F);
         set.setFillColor(Color.CYAN);
+        set.setDrawFilled(true);
+        set.setFillDrawable(ContextCompat.getDrawable(this, R.drawable.bg_chart_fill_gradient));
 
         final LineData group = new LineData(set);
         group.setDrawValues(false);
@@ -320,6 +341,7 @@ public class ModelDetailActivity extends AppCompatActivity {
 
         mChart.setData(group);
         mChart.invalidate();
+        startChartAnimate();
 
         return true;
     }
@@ -330,8 +352,11 @@ public class ModelDetailActivity extends AppCompatActivity {
         axis.setAxisMinimum(0F);
         axis.setAxisMaximum(epochs - 1);
         axis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        axis.setDrawAxisLine(false);
+        axis.setDrawAxisLine(true);
         axis.setDrawGridLines(false);
+        axis.setGranularity(1F);
+
+        mChart.getAxisRight().setDrawAxisLine(true);
     }
 
     private void handleTrainedIntent(@NonNull Intent intent) {
@@ -407,6 +432,10 @@ public class ModelDetailActivity extends AppCompatActivity {
         setUpChart(model);
     }
 
+    private void startChartAnimate() {
+        mChart.animateY(300);
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -440,6 +469,7 @@ public class ModelDetailActivity extends AppCompatActivity {
         mDataSizeText.setText(unable);
         mTimeUsedText.setText(unable);
         mEvaluateText.setText(unable);
+        mChart.clear();
     }
 
     @Override
@@ -487,7 +517,7 @@ public class ModelDetailActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void deleteModel(@Nullable Model model) {
+    private void deleteModel(@Nullable final Model model) {
         if (model == null
                 || model.getId() == null) {
             finishAfterTransition();
@@ -508,6 +538,10 @@ public class ModelDetailActivity extends AppCompatActivity {
                                     .getSession()
                                     .getModelDao()
                                     .deleteByKey(id);
+
+                            Global.getInstance()
+                                    .getBus()
+                                    .postSticky(new ModelDeletedEvent(model));
                         } catch (Exception e) {
                             e.printStackTrace();
                         } finally {
