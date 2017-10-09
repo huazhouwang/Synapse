@@ -18,7 +18,7 @@
         android:paddingEnd="@dimen/page_padding_horizontal"
         android:clipToPadding="false"
         android:layout_gravity="center"
-        tools:listitem="@layout/data_set_item"
+        tools:listitem="@layout/item_welcome"
         />
 
     <android.support.design.widget.FloatingActionButton
@@ -27,6 +27,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:src="@drawable/ic_add_white_24dp"
+        android:visibility="gone"
+        tools:visibility="visible"
         app:fabSize="normal"
         app:layout_anchor="@+id/rv"
         app:layout_anchorGravity="right|bottom" />

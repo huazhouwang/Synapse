@@ -1,12 +1,9 @@
 <resources>
     <string name="app_name">Synapse</string>
-    <string name="training_data_number">60000</string>
     <string name="mnist_title">MNIST</string>
-    <string name="test_data_number">10000</string>
-    <string name="download">Download</string>
+    <string name="data_unready">Download</string>
     <string name="data_ready">Ready</string>
-    <string name="decompress">Decompressing</string>
-    <string name="downloading">Downloading</string>
+    <string name="data_waiting">Waiting</string>
     <string name="try_again">Try again</string>
     <string name="action_add_new_layer">Click here to add a new layer</string>
     <string name="hint_new_hidden_size">New Hidden Layer Size</string>
@@ -72,4 +69,9 @@
     <string name="text_dialog_finish_action">Finish</string>
     <string name="text_error_repeat_name">Already contains %s model</string>
     <string name="text_model_detail_interrupt_waiting">Try to interrupt, please way...</string>
+    <string name="text_dialog_external_not_found_title">External Storage Not Found</string>
+    <string name="text_dialog_external_not_found_msg">Sorry, we can\'t find external storage in your device</string>
+    <string name="text_dialog_need_external_title">Need External Storage</string>
+    <string name="text_dialog_need_external_msg">In order to make sure there is sufficient storage to save data set, please allow the external storage permission</string>
+    <string name="text_welcome_text">Now we need to download MNIST database of handwritten digits, total size is 11 M, so please make sure you have enough storage and switch to WIFI mode. Have a great time!</string>
 </resources>

@@ -1,23 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="color_primary">#C7011F</color>
-    <color name="color_primary_dark">#6F0011</color>
-    <color name="color_accent">#536DFE</color>
-    <color name="text_primary">#212121</color>
-    <color name="secondary_text">#757575</color>
-    <color name="window_background">#FAFAFA</color>
-    <color name="scrim">#99323232</color>
-    <color name="state_download">#2196F3</color>
-    <color name="state_downloaded">#BDBDBD</color>
+    <color name="green$1">#00c853</color>
+    <color name="red$1">#D32F2F</color>
+    <color name="red$2">#b71c1c</color>
+    <color name="white$1">#FFFFFF</color>
+    <color name="white$2">#FAFAFA</color>
+    <color name="black$1">#000000</color>
+    <color name="black$2">#212121</color>
+    <color name="gray$1">#757575</color>
+    <color name="gray$2">#BDBDBD</color>
+    <color name="blue$1">#536DFE</color>
+    <color name="purple$1">#7C4DFF</color>
+    <color name="translucency$1">#99323232</color>
+
+
+    <color name="color_primary">@color/red$1</color>
+    <color name="color_primary_dark">@color/red$2</color>
+    <color name="color_accent">@color/purple$1</color>
+    <color name="icon">@color/white$1</color>
+    <color name="divider">@color/gray$2</color>
+    <color name="text_primary">@color/black$2</color>
+    <color name="text_white">@color/white$1</color>
+    <color name="secondary_text">@color/gray$1</color>
+    <color name="action_delete_layer">@color/red$1</color>
+    <color name="data_ready_text">@color/green$1</color>
+    <color name="data_waiting_text">@color/white$1</color>
+    <color name="data_unready_text">@color/blue$1</color>
+    <color name="scrim">@color/translucency$1</color>
+
+
+
+
+
+
+
+
+
+
+    
+    <color name="window_background">@color/white$2</color>
     <color name="notify_decompress">#BDBDBD</color>
     <color name="normal_link">#4183C4</color>
-
-    <color name="action_delete_layer">#C7011F</color>
     <color name="action_add_new_layer">#2196F3</color>
-
     <color name="chart_left_axis">#536DFE</color>
     <color name="chart_highlight">#212121</color>
-
-    <color name="icon">#FFFFFF</color>
-    <color name="divider">#BDBDBD</color>
 </resources>

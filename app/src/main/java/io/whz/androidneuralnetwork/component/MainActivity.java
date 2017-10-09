@@ -43,14 +43,17 @@ import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.event.ModelDeletedEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
-import io.whz.androidneuralnetwork.pojo.multiple.binder.DataSetViewBinder;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainedModelViewBinder;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainingModelViewBinder;
-import io.whz.androidneuralnetwork.pojo.multiple.item.DataSetItem;
+import io.whz.androidneuralnetwork.pojo.multiple.binder.WelcomeViewBinder;
 import io.whz.androidneuralnetwork.pojo.multiple.item.TrainedModelItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.TrainingModelItem;
+import io.whz.androidneuralnetwork.pojo.multiple.item.WelcomeItem;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 import me.drakeet.multitype.MultiTypeAdapter;
+
+import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
+import static io.whz.androidneuralnetwork.R.id.fab;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int REQUEST_EXTERNAL_STORAGE = 0x01;
@@ -59,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final ItemsButler mButler = new ItemsButler();
 
     private RecyclerView mRecyclerView;
+    private FloatingActionButton mFab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,9 +77,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mRecyclerView.setAdapter(mButler.getAdapter());
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addItemDecoration(new VerticalGap(getResources().getDimensionPixelOffset(R.dimen.list_item_vertical_gap)));
-
-        final FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(this);
+        mFab = findViewById(fab);
+        mFab.setOnClickListener(this);
 
         requireExternalStorage();
     }
@@ -106,13 +109,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void requireExternalStorage() {
-        if (Global.getInstance().isDirSet()){
+        if (Global.getInstance().isDirSet()) {
             solveData();
-            return;
-        }
+        } else if (checkStoragePermission()) {
+            final File root;
 
-        ActivityCompat.requestPermissions(this, new String[]{
-                Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE);
+            if ((root = getExternalFilesDir(null)) != null) {
+                Global.getInstance().setRootDir(root);
+                solveData();
+            } else {
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.text_dialog_external_not_found_title)
+                        .setMessage(R.string.text_dialog_external_not_found_msg)
+                        .setCancelable(false)
+                        .setNegativeButton(R.string.text_dialog_finish_action, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                finish();
+                            }
+                        }).show();
+            }
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.text_dialog_need_external_title)
+                    .setMessage(R.string.text_dialog_need_external_msg)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            if (!MainActivity.this.isFinishing()) {
+                                ActivityCompat.requestPermissions(MainActivity.this, new String[]{
+                                        Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE);
+                            }
+                        }
+                    }).setNegativeButton(R.string.text_dialog_finish_action, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    finish();
+                }
+            }).show();
+        }
+    }
+
+    private boolean checkStoragePermission() {
+        return ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PERMISSION_GRANTED;
     }
 
     @Override
@@ -121,8 +162,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (requestCode) {
             case REQUEST_EXTERNAL_STORAGE:
-                boolean external = false;
-
                 if (grantResults.length > 0) {
                     for (int i = 0, len = grantResults.length; i < len; ++i) {
                         if (grantResults[i] == PackageManager.PERMISSION_GRANTED
@@ -133,18 +172,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 Global.getInstance()
                                         .setRootDir(dir);
 
-                                external = true;
-                                break;
+                                solveData();
+                                return;
                             }
                         }
                     }
                 }
 
-                if (!external) {
-                    Global.getInstance().setRootDir(getCacheDir());
-                }
-
-                solveData();
+                requireExternalStorage();
                 break;
 
             default:
@@ -152,10 +187,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public boolean isDataSetReady() {
-        final boolean ready = Global.getInstance()
+    private boolean checkDataReadyRoughly() {
+        return Global.getInstance()
                 .getPreference()
                 .getBoolean(PreferenceKey.IS_DATA_SET_READY, false);
+    }
+
+    public boolean isDataSetReady() {
+        final boolean ready = checkDataReadyRoughly();
 
         if (!ready) {
             return false;
@@ -196,15 +235,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void dataSetReady() {
-        mButler.setDataSet(getDataSetItem(DataSetItem.READY))
+        mFab.setVisibility(View.VISIBLE);
+        mFab.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_from_bottom));
+
+        mButler.setWelcome(null)
                 .setTrainedModes(getAllTrainedModelItems())
                 .notifyDataSetChanged();
     }
 
     @NonNull
     @CheckResult
-    private DataSetItem getDataSetItem(@DataSetItem.State int state) {
-        return new DataSetItem(state);
+    private WelcomeItem getDataSetItem(@WelcomeItem.State int state) {
+        return new WelcomeItem(state);
     }
 
     @CheckResult
@@ -238,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void dataSetUnready() {
-        mButler.setDataSet(getDataSetItem(DataSetItem.UNREADY))
+        mButler.setWelcome(getDataSetItem(WelcomeItem.UNREADY))
                 .notifyDataSetChanged();
     }
 
@@ -364,7 +406,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @StringRes int res = R.string.text_download_success;
 
         if (!success) {
-            mButler.setDataSet(getDataSetItem(DataSetItem.UNREADY))
+            mButler.setWelcome(getDataSetItem(WelcomeItem.UNREADY))
                     .notifyDataSetChanged();
             res = R.string.text_download_error;
         }
@@ -379,10 +421,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (success) {
             markDataSetReadyNow();
-            solveData();
+
+            mButler.setWelcome(new WelcomeItem(WelcomeItem.READY))
+                    .notifyDataSetChanged();
+
+            mRecyclerView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (!MainActivity.this.isFinishing()) {
+                        solveData();
+                    }
+                }
+            }, 1500);
+
             res = R.string.text_decompress_success;
         } else {
-            mButler.setDataSet(getDataSetItem(DataSetItem.UNREADY))
+            mButler.setWelcome(getDataSetItem(WelcomeItem.UNREADY))
                     .notifyDataSetChanged();
             res = R.string.text_decompress_error;
         }
@@ -417,7 +471,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             return;
                         }
 
-                        mButler.setDataSet(getDataSetItem(DataSetItem.PENDING))
+                        mButler.setWelcome(getDataSetItem(WelcomeItem.WAITING))
                                 .notifyDataSetChanged();
 
                         requestDownload();
@@ -431,7 +485,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final int id = view.getId();
 
         switch (id) {
-            case R.id.fab:
+            case fab:
                 startNeuralNetworkConfig(view);
                 break;
 
@@ -474,7 +528,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         private final List<Object> mCurItems;
         private final DiffUtil.Callback mDiffCallback;
 
-        private DataSetItem mDataSet;
+        private WelcomeItem mWelcome;
         private TrainingModelItem mTrainingModel;
         private List<TrainedModelItem> mTrainedModes;
 
@@ -490,7 +544,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         private void registerItems(@NonNull MultiTypeAdapter adapter) {
-            adapter.register(DataSetItem.class, new DataSetViewBinder());
+            adapter.register(WelcomeItem.class, new WelcomeViewBinder());
             adapter.register(TrainedModelItem.class, new TrainedModelViewBinder());
             adapter.register(TrainingModelItem.class, new TrainingModelViewBinder());
         }
@@ -499,8 +553,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return mAdapter;
         }
 
-        ItemsButler setDataSet(@Nullable DataSetItem dataSet) {
-            mDataSet = dataSet;
+        ItemsButler setWelcome(@Nullable WelcomeItem item) {
+            mWelcome = item;
             return this;
         }
 
@@ -515,7 +569,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         ItemsButler clear() {
-            mDataSet = null;
+            mWelcome = null;
             mTrainedModes = null;
             return this;
         }
@@ -525,8 +579,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mOldItems.addAll(mCurItems);
             mCurItems.clear();
 
-            if (mDataSet != null) {
-                mCurItems.add(mDataSet);
+            if (mWelcome != null) {
+                mCurItems.add(mWelcome);
             }
 
             if (mTrainingModel != null) {

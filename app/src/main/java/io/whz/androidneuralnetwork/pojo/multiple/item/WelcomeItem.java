@@ -5,23 +5,23 @@ import android.support.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-public class DataSetItem {
+public class WelcomeItem {
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({UNREADY, PENDING, READY})
+    @IntDef({UNREADY, WAITING, READY})
     public @interface State {}
 
     public static final int UNREADY = 0x01;
-    public static final int PENDING = 0x01 << 1;
+    public static final int WAITING = 0x01 << 1;
     public static final int READY = 0x01 << 2;
 
     @State
     private int mState;
 
-    public DataSetItem() {
+    public WelcomeItem() {
         mState = UNREADY;
     }
 
-    public DataSetItem(@State int state) {
+    public WelcomeItem(@State int state) {
         mState = state;
     }
 
@@ -36,7 +36,7 @@ public class DataSetItem {
 
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof DataSetItem)
-                && ((DataSetItem) obj).state() == this.state();
+        return (obj instanceof WelcomeItem)
+                && ((WelcomeItem) obj).state() == this.state();
     }
 }
