@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="green$1">#00c853</color>
+    <color name="pink_$1">#e91e63</color>
     <color name="red$1">#D32F2F</color>
     <color name="red$2">#b71c1c</color>
     <color name="white$1">#FFFFFF</color>
@@ -11,6 +12,7 @@
     <color name="gray$2">#BDBDBD</color>
     <color name="blue$1">#536DFE</color>
     <color name="purple$1">#7C4DFF</color>
+    <color name="transparent">@android:color/transparent</color>
     <color name="translucency$1">#99323232</color>
 
 
@@ -24,24 +26,46 @@
     <color name="secondary_text">@color/gray$1</color>
     <color name="action_delete_layer">@color/red$1</color>
     <color name="data_ready_text">@color/green$1</color>
-    <color name="data_waiting_text">@color/white$1</color>
-    <color name="data_unready_text">@color/blue$1</color>
+    <color name="data_waiting_text">@color/color_accent</color>
+    <color name="data_unready_text">@color/white$1</color>
     <color name="scrim">@color/translucency$1</color>
 
 
-
-
-
-
-
-
-
-
-    
     <color name="window_background">@color/white$2</color>
     <color name="notify_decompress">#BDBDBD</color>
     <color name="normal_link">#4183C4</color>
     <color name="action_add_new_layer">#2196F3</color>
     <color name="chart_left_axis">#536DFE</color>
     <color name="chart_highlight">#212121</color>
+
+
+    <color name="item_chart_bg$1">#D33230</color>
+    <color name="item_chart_fg$1">#F15751</color>
+
+    <color name="item_chart_bg$2">#6A1B9A</color>
+    <color name="item_chart_fg$2">#BA69C8</color>
+
+    <color name="item_chart_bg$3">#E75205</color>
+    <color name="item_chart_fg$3">#EB8403</color>
+
+    <color name="item_chart_bg$4">#015699</color>
+    <color name="item_chart_fg$4">#0593DA</color>
+
+    <color name="item_chart_bg$5">#70A138</color>
+    <color name="item_chart_fg$5">#C0EC90</color>
+
+    <color name="item_chart_bg$6">#FD3E83</color>
+    <color name="item_chart_fg$6">#FA8CE5</color>
+
+    <color name="item_chart_bg$7">#E1400E</color>
+    <color name="item_chart_fg$7">#FD8B66</color>
+
+    <color name="item_chart_bg$8">#8B1152</color>
+    <color name="item_chart_fg$8">#D81D5C</color>
+
+    <color name="item_chart_bg$9">#036065</color>
+    <color name="item_chart_fg$9">#03A4B8</color>
+
+    <color name="item_chart_bg$10">#FF7100</color>
+    <color name="item_chart_fg$10">#FCC32C</color>
 </resources>

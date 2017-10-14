@@ -23,8 +23,8 @@
     <string name="text_decompress_error">Something wrong, please try again</string>
     <string name="text_decompress_success">All data is ready, enjoy yourself</string>
     <string name="text_notification_decompress">Decompressing</string>
-    <string name="text_dialog_download_msg">Total Size: 11 MB\n\nRecommend to connect wifi first</string>
-    <string name="text_dialog_download_title">Download</string>
+    <string name="text_dialog_need_wifi_msg">Please connect wifi first</string>
+    <string name="text_dialog_need_wifi_title">Note</string>
     <string name="text_default_learning_rate">3</string>
     <string name="text_default_epochs">10</string>
     <string name="text_default_hidden_size">30</string>
@@ -57,7 +57,7 @@
     <string name="text_dialog_interrupt_msg">Would not save the trained data!</string>
     <string name="dialog_positive">confirm</string>
     <string name="dialog_negative">Cancel</string>
-    <string name="action_delete">delete</string>
+    <string name="action_delete">Delete</string>
     <string name="text_dialog_delete_model_msg">Would you want to delete %s model?</string>
     <string name="text_dialog_delete_model_title">Delete Model</string>
     <string name="text_dialog_lack_download_manager_title">Can\'t find DownloadManager</string>
@@ -68,10 +68,13 @@
     <string name="text_dialog_train_error_msg">Sorry, may be you should try again</string>
     <string name="text_dialog_finish_action">Finish</string>
     <string name="text_error_repeat_name">Already contains %s model</string>
-    <string name="text_model_detail_interrupt_waiting">Try to interrupt, please way...</string>
+    <string name="text_model_detail_interrupt_waiting">Try to interrupt, please way…</string>
     <string name="text_dialog_external_not_found_title">External Storage Not Found</string>
     <string name="text_dialog_external_not_found_msg">Sorry, we can\'t find external storage in your device</string>
     <string name="text_dialog_need_external_title">Need External Storage</string>
-    <string name="text_dialog_need_external_msg">In order to make sure there is sufficient storage to save data set, please allow the external storage permission</string>
+    <string name="text_dialog_need_external_msg">We must make sure there is sufficient storage to save data set, please allow the external storage permission</string>
     <string name="text_welcome_text">Now we need to download MNIST database of handwritten digits, total size is 11 M, so please make sure you have enough storage and switch to WIFI mode. Have a great time!</string>
+    <string name="text_dialog_download_direct">Download</string>
+    <string name="text_dialog_download_setting_network">Setting</string>
+    <string name="text_dialog_network_unavailable">Unavailable Network</string>
 </resources>

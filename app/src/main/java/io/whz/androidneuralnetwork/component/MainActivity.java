@@ -3,10 +3,14 @@ package io.whz.androidneuralnetwork.component;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityOptions;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -43,9 +47,11 @@ import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.event.ModelDeletedEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
+import io.whz.androidneuralnetwork.pojo.multiple.binder.PlayViewBinder;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainedModelViewBinder;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainingModelViewBinder;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.WelcomeViewBinder;
+import io.whz.androidneuralnetwork.pojo.multiple.item.PlayItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.TrainedModelItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.TrainingModelItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.WelcomeItem;
@@ -80,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mFab = findViewById(fab);
         mFab.setOnClickListener(this);
 
-        requireExternalStorage();
+        checkPermissionOrSolveData();
     }
 
     private boolean checkDownloadManager() {
@@ -108,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }).show();
     }
 
-    private void requireExternalStorage() {
+    private void checkPermissionOrSolveData() {
         if (Global.getInstance().isDirSet()) {
             solveData();
         } else if (checkStoragePermission()) {
@@ -129,7 +135,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         }).show();
             }
-        } else {
+        } else if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             new AlertDialog.Builder(this)
                     .setTitle(R.string.text_dialog_need_external_title)
                     .setMessage(R.string.text_dialog_need_external_msg)
@@ -138,8 +145,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             if (!MainActivity.this.isFinishing()) {
-                                ActivityCompat.requestPermissions(MainActivity.this, new String[]{
-                                        Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE);
+                                requestExternalStoragePermission();
                             }
                         }
                     }).setNegativeButton(R.string.text_dialog_finish_action, new DialogInterface.OnClickListener() {
@@ -148,7 +154,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     finish();
                 }
             }).show();
+        } else {
+            requestExternalStoragePermission();
         }
+    }
+
+    private void requestExternalStoragePermission() {
+        ActivityCompat.requestPermissions(MainActivity.this, new String[]{
+                Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_EXTERNAL_STORAGE);
     }
 
     private boolean checkStoragePermission() {
@@ -162,24 +175,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (requestCode) {
             case REQUEST_EXTERNAL_STORAGE:
-                if (grantResults.length > 0) {
-                    for (int i = 0, len = grantResults.length; i < len; ++i) {
-                        if (grantResults[i] == PackageManager.PERMISSION_GRANTED
-                                && Manifest.permission.WRITE_EXTERNAL_STORAGE.equals(permissions[i])) {
-                            final File dir =  getExternalFilesDir(null);
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    final File dir =  getExternalFilesDir(null);
 
-                            if (dir != null) {
-                                Global.getInstance()
-                                        .setRootDir(dir);
+                    if (dir != null) {
+                        Global.getInstance()
+                                .setRootDir(dir);
 
-                                solveData();
-                                return;
-                            }
-                        }
+                        solveData();
+                        break;
                     }
                 }
 
-                requireExternalStorage();
+                checkPermissionOrSolveData();
                 break;
 
             default:
@@ -239,6 +248,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mFab.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_from_bottom));
 
         mButler.setWelcome(null)
+                .setPlayItem(new PlayItem())
                 .setTrainedModes(getAllTrainedModelItems())
                 .notifyDataSetChanged();
     }
@@ -384,9 +394,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 handleRejectMsg(event);
                 break;
 
+            case MANEvent.CLICK_PLAY:
+                handlePlayButtonClick(event);
+                break;
+
+            case MANEvent.CLICK_TRAINED:
+                handleTrainedItemClick(event);
+                break;
+
             default:
                 break;
         }
+    }
+
+    private void handleTrainedItemClick(MANEvent event) {
+        final Long id = (Long) event.obj;
+
+        if (id == null) {
+            return;
+        }
+
+        final Intent intent = new Intent(this, ModelDetailActivity.class);
+        intent.putExtra(ModelDetailActivity.INTENT_TYPE, ModelDetailActivity.IS_TRAINED);
+        intent.putExtra(ModelDetailActivity.TRAINED_ID, id);
+
+        startActivity(intent);
+    }
+
+    private void handlePlayButtonClick(MANEvent event) {
+        final Intent intent = new Intent(this, PlayActivity.class);
+
+        startActivity(intent);
     }
 
     private void handleRejectMsg(MANEvent event) {
@@ -420,8 +458,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @StringRes final int res;
 
         if (success) {
-            markDataSetReadyNow();
-
             mButler.setWelcome(new WelcomeItem(WelcomeItem.READY))
                     .notifyDataSetChanged();
 
@@ -445,15 +481,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .show();
     }
 
-    private void markDataSetReadyNow() {
-        Global.getInstance()
-                .getPreference()
-                .edit()
-                .putBoolean(PreferenceKey.IS_DATA_SET_READY, true)
-                .apply();
-    }
-
     private void requestDownload() {
+        mButler.setWelcome(getDataSetItem(WelcomeItem.WAITING))
+                .notifyDataSetChanged();
+
         final Intent intent = new Intent(this, MainService.class);
         intent.putExtra(MainService.ACTION_KEY, MainService.ACTION_DOWNLOAD);
 
@@ -461,23 +492,60 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void showDownloadRequestDialog(@NonNull final Activity that) {
-        new AlertDialog.Builder(that)
-                .setTitle(R.string.text_dialog_download_title)
-                .setMessage(R.string.text_dialog_download_msg)
-                .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (that.isFinishing()) {
-                            return;
+        final ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo network = manager.getActiveNetworkInfo();
+
+        if (network == null
+                || !network.isConnected()) {
+            new AlertDialog.Builder(that)
+                    .setTitle(R.string.text_dialog_network_unavailable)
+                    .setMessage(R.string.text_dialog_need_wifi_msg)
+                    .setPositiveButton(R.string.text_dialog_download_setting_network, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            toSetting();
                         }
+                    }).show();
+        } else if (network.getType() == ConnectivityManager.TYPE_WIFI) {
+            requestDownload();
+        } else {
+            new AlertDialog.Builder(that)
+                    .setTitle(R.string.text_dialog_need_wifi_title)
+                    .setMessage(R.string.text_dialog_need_wifi_msg)
+                    .setPositiveButton(R.string.text_dialog_download_direct, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            if (that.isFinishing()) {
+                                return;
+                            }
 
-                        mButler.setWelcome(getDataSetItem(WelcomeItem.WAITING))
-                                .notifyDataSetChanged();
+                            requestDownload();
+                        }
+                    }).setNegativeButton(R.string.text_dialog_download_setting_network, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    toSetting();
+                }
+            }).show();
+        }
+    }
 
-                        requestDownload();
-                    }
-                }).setNegativeButton(R.string.dialog_negative, null)
-                .show();
+    private void toSetting() {
+        try {
+            final Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean isWifi() {
+        final ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo network = manager.getActiveNetworkInfo();
+
+        return network != null
+                && network.getType() == ConnectivityManager.TYPE_WIFI
+                && network.isAvailable();
     }
 
     @Override
@@ -522,13 +590,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private static final class ItemsButler{
+    private static final class ItemsButler {
         private final RecyclerView.Adapter mAdapter;
         private final List<Object> mOldItems;
         private final List<Object> mCurItems;
         private final DiffUtil.Callback mDiffCallback;
 
         private WelcomeItem mWelcome;
+        private PlayItem mPlayItem;
         private TrainingModelItem mTrainingModel;
         private List<TrainedModelItem> mTrainedModes;
 
@@ -547,6 +616,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             adapter.register(WelcomeItem.class, new WelcomeViewBinder());
             adapter.register(TrainedModelItem.class, new TrainedModelViewBinder());
             adapter.register(TrainingModelItem.class, new TrainingModelViewBinder());
+            adapter.register(PlayItem.class, new PlayViewBinder());
         }
 
         RecyclerView.Adapter getAdapter() {
@@ -555,6 +625,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ItemsButler setWelcome(@Nullable WelcomeItem item) {
             mWelcome = item;
+            return this;
+        }
+
+        ItemsButler setPlayItem(@Nullable PlayItem item) {
+            mPlayItem = item;
             return this;
         }
 
@@ -585,6 +660,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (mTrainingModel != null) {
                 mCurItems.add(mTrainingModel);
+            }
+
+            if (mPlayItem != null) {
+                mCurItems.add(mPlayItem);
             }
 
             if (mTrainedModes != null

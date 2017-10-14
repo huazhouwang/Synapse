@@ -15,17 +15,9 @@ public class WelcomeItem {
     public static final int READY = 0x01 << 2;
 
     @State
-    private int mState;
-
-    public WelcomeItem() {
-        mState = UNREADY;
-    }
+    private final int mState;
 
     public WelcomeItem(@State int state) {
-        mState = state;
-    }
-
-    public void change(@State int state) {
         mState = state;
     }
 

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardBackgroundColor="@color/transparent"
@@ -12,53 +13,41 @@
     <android.support.v7.widget.AppCompatImageView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@drawable/sun_red"
+        android:src="@drawable/paper_red"
         android:adjustViewBounds="true" />
 
     <LinearLayout
         style="@style/MainItemLayoutStyle"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical" >
 
         <TextView
             style="@style/MainItemTitleStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Welcome" />
+            android:text="Play Time" />
 
         <TextView
             style="@style/MainItemSmallTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="@string/text_welcome_text" />
+            android:layout_marginTop="8dp"
+            android:text="Here now you can play with trained models, enjoy yourself." />
 
     </LinearLayout>
 
-    <Button
+    <ImageView
         style="?android:borderlessButtonStyle"
-        android:id="@+id/download"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/play"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="8dp"
-        android:text="@string/data_unready"
-        android:textColor="@color/data_unready_text"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        />
-
-    <ProgressBar
-        style="?android:attr/progressBarStyleHorizontal"
-        android:id="@+id/progress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:indeterminate="true"
-        android:visibility="gone"
-        tools:visibility="visible"
+        android:layout_marginBottom="16dp"
+        android:background="@null"
+        app:srcCompat="@drawable/ic_arrow_forward_24dp"
+        app:tint="@color/icon"
         />
 
 </android.support.v7.widget.CardView>

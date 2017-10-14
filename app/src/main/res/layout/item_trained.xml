@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.whz.androidneuralnetwork.element.AutoFitWidthCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="300dp"
+    app:cardBackgroundColor="@color/transparent"
+    tools:layout_gravity="center">
+
+    <io.whz.androidneuralnetwork.element.AutoFitWidthLineChart
+        android:id="@+id/line_chart"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:background="@drawable/paper_red"
+        />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        >
+
+        <TextView
+            android:id="@+id/name"
+            style="@style/MainItemTitleStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="30sp"
+            android:text="Model Name"
+            />
+
+        <TextView
+            android:id="@+id/layers"
+            style="@style/MainItemMediumTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/name"
+            android:maxLines="1"
+            android:text="784 x 30 x 10"
+            />
+
+        <TextView
+            android:id="@+id/time_used"
+            style="@style/MainItemXSmallTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="T: 00:12:00"
+            />
+
+        <TextView
+            android:id="@+id/data_size"
+            style="@style/MainItemXSmallTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/time_used"
+            android:text="D: 4000"
+            />
+
+
+        <TextView
+            android:id="@+id/learning_rate"
+            style="@style/MainItemXSmallTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/data_size"
+            android:text="L: 3"
+            />
+
+        <TextView
+            android:id="@+id/epochs"
+            style="@style/MainItemXSmallTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/learning_rate"
+            android:text="E: 10"
+            />
+
+        <TextView
+            android:id="@+id/evaluate"
+            style="@style/MainItemTitleStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="-8dp"
+            android:textSize="32sp"
+            android:fontFamily="monospace"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:text="78%"
+            />
+    </RelativeLayout>
+</io.whz.androidneuralnetwork.element.AutoFitWidthCardView>

@@ -43,14 +43,15 @@ import io.whz.androidneuralnetwork.neural.DataSet;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.neural.NeuralNetwork;
 import io.whz.androidneuralnetwork.neural.TrainCallback;
+import io.whz.androidneuralnetwork.pojo.constant.PreferenceKey;
+import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
-import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.util.DbHelper;
-import io.whz.androidneuralnetwork.util.StringFormatUtil;
 import io.whz.androidneuralnetwork.util.FileUtil;
 import io.whz.androidneuralnetwork.util.Precondition;
+import io.whz.androidneuralnetwork.util.StringFormatUtil;
 
 public class MainService extends Service {
 //    private static final int FOREGROUND_SERVER = 0x1111;
@@ -276,6 +277,8 @@ public class MainService extends Service {
         if (success) {
             final Dir dir = Global.getInstance().getDirs();
             FileUtil.clear(dir.download, dir.decompress);
+
+            markDataSetReadyNow();
         }
 
         Global.getInstance()
@@ -283,6 +286,14 @@ public class MainService extends Service {
                 .post(new MANEvent<>(MANEvent.DECOMPRESS_COMPLETE, success));
 
         reset();
+    }
+
+    private void markDataSetReadyNow() {
+        Global.getInstance()
+                .getPreference()
+                .edit()
+                .putBoolean(PreferenceKey.IS_DATA_SET_READY, true)
+                .apply();
     }
 
     private void showDecompressNotification() {
@@ -371,7 +382,7 @@ public class MainService extends Service {
 
         final long id = model.getId();
         final String time = StringFormatUtil.formatTimeUsed(model.getTimeUsed());
-        final String accuracy = StringFormatUtil.format2Percent(model.getEvaluate());
+        final String accuracy = StringFormatUtil.formatPercent(model.getEvaluate());
 
         mTrainNotifyBuilder = null;
 
@@ -440,7 +451,7 @@ public class MainService extends Service {
 
         mTrainNotifyBuilder.setContentText(String.format(
                 Locale.getDefault(), getString(R.string.template_train_update_content),
-                String.valueOf(model.getStepEpoch()), StringFormatUtil.format2Percent(model.getLastAccuracy())))
+                String.valueOf(model.getStepEpoch()), StringFormatUtil.formatPercent(model.getLastAccuracy())))
                 .setProgress(model.getEpochs(), model.getStepEpoch(), false);
 
         mNotifyManager.notify(RQC_TRAIN_START, mTrainNotifyBuilder.build());

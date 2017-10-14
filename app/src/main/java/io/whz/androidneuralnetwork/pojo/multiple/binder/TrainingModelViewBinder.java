@@ -16,14 +16,14 @@ public class TrainingModelViewBinder extends ItemViewBinder<TrainingModelItem, T
     @NonNull
     @Override
     protected TrainingModelViewHolder onCreateViewHolder(@NonNull LayoutInflater layoutInflater, @NonNull ViewGroup viewGroup) {
-        final View view = layoutInflater.inflate(R.layout.trained_model_item, viewGroup, false);
+        final View view = layoutInflater.inflate(R.layout.item_training, viewGroup, false);
 
         return new TrainingModelViewHolder(view);
     }
 
     @Override
     protected void onBindViewHolder(@NonNull TrainingModelViewHolder trainingModelViewHolder, @NonNull TrainingModelItem trainingModelItem) {
-        trainingModelViewHolder.name.setText(String.valueOf(trainingModelItem.getModel().getStepEpoch()));
+        trainingModelViewHolder.name.setText(String.valueOf(trainingModelItem.getModel().getName()));
     }
 
     static class TrainingModelViewHolder extends RecyclerView.ViewHolder {

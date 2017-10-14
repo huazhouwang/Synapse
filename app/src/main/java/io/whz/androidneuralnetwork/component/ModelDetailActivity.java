@@ -302,7 +302,7 @@ public class ModelDetailActivity extends AppCompatActivity {
 
     private void setUpTrainCompleteValues(@NonNull Model model) {
         mTimeUsedText.setText(StringFormatUtil.formatTimeUsed(model.getTimeUsed()));
-        mEvaluateText.setText(StringFormatUtil.format2Percent(model.getEvaluate()));
+        mEvaluateText.setText(StringFormatUtil.formatPercent(model.getEvaluate()));
     }
 
     private boolean setUpChart(@NonNull Model model) {

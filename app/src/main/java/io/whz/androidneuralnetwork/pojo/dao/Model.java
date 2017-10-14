@@ -85,6 +85,7 @@ public class Model implements Serializable {
     }
 
     public void addAllAccuracy(@NonNull List<Double> accuracies) {
+        this.accuracies.clear();
         this.accuracies.addAll(accuracies);
     }
 
