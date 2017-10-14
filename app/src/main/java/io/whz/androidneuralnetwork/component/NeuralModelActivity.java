@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.text.method.ReplacementTransformationMethod;
 import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,6 +65,7 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
         mTrainingSize = findViewById(R.id.seek_bar);
         mAddNewHidden = findViewById(R.id.action_add_new_layer);
 
+        mNameInput.setTransformationMethod(new InputLowerToUpper());
         prepareSeekBar(mTrainingSize, mDataSizeText);
         mAddNewHidden.setOnClickListener(this);
         addNewHiddenLayer();
@@ -216,13 +218,14 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
     }
 
     private Model checkInputs() {
-        final String name = String.valueOf(mNameInput.getText());
+        String name = String.valueOf(mNameInput.getText());
 
         if (TextUtils.isEmpty(name.trim())) {
             showSnackBar("Empty name is illegal");
             return null;
         } else {
             boolean hasAlready = false;
+            name = name.toUpperCase();
 
             try {
                 hasAlready = Global.getInstance()
@@ -310,5 +313,24 @@ public class NeuralModelActivity extends AppCompatActivity implements View.OnCli
     private void showSnackBar(@NonNull String text) {
         Snackbar.make(mContainer, text, Snackbar.LENGTH_SHORT)
                 .show();
+    }
+
+    private static class InputLowerToUpper extends ReplacementTransformationMethod {
+        @Override
+        protected char[] getOriginal() {
+            return new char[]{
+                    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j','k','l',
+                    'm','n','o','p','q','r','s','t','u','v','w','x','y','z'
+            };
+        }
+
+        @Override
+        protected char[] getReplacement() {
+            return new char[]{
+                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J','K','L',
+                    'M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'
+            };
+        }
+
     }
 }
