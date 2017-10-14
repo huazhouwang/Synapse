@@ -75,7 +75,7 @@ public class TrainedModelViewBinder extends ItemViewBinder<TrainedModelItem, Tra
 
         Global.getInstance()
                 .getBus()
-                .post(new MANEvent<>(MANEvent.CLICK_TRAINED, id));
+                .post(new MANEvent<>(MANEvent.JUMP_TO_TRAINED, id));
     }
 
     private void prepareChart(@NonNull LineChart chart) {
@@ -144,9 +144,9 @@ public class TrainedModelViewBinder extends ItemViewBinder<TrainedModelItem, Tra
     private void renderModel(TrainedModelViewHolder holder, Model model) {
         holder.name.setText(model.getName());
         holder.layers.setText(StringFormatUtil.formatLayerSizes(model.getHiddenSizes()));
-        holder.epochs.setText(String.format("E: %s", String.valueOf(model.getEpochs())));
-        holder.learningRate.setText(String.format("L: %s", String.valueOf(model.getLearningRate())));
-        holder.dataSize.setText(String.format("D: %s", String.valueOf(model.getDataSize())));
+        holder.epochs.setText(String.format("E: %s", model.getEpochs()));
+        holder.learningRate.setText(String.format("L: %s", model.getLearningRate()));
+        holder.dataSize.setText(String.format("D: %s", model.getDataSize()));
         holder.timeUsed.setText(String.format("T: %s", StringFormatUtil.formatTimeUsed(model.getDataSize())));
         holder.evaluate.setText(String.format("%s%%", (int)(model.getEvaluate() * 100)));
     }
@@ -173,7 +173,7 @@ public class TrainedModelViewBinder extends ItemViewBinder<TrainedModelItem, Tra
             learningRate = itemView.findViewById(R.id.learning_rate);
             dataSize = itemView.findViewById(R.id.data_size);
             timeUsed = itemView.findViewById(R.id.time_used);
-            evaluate = itemView.findViewById(R.id.evaluate);
+            evaluate = itemView.findViewById(R.id.accuracy);
         }
 
         private static TrainedModelViewHolder newInstance(@NonNull LayoutInflater layoutInflater,

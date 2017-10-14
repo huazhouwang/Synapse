@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:src="@drawable/ic_add_white_24dp"
-        android:visibility="gone"
+        android:visibility="invisible"
         tools:visibility="visible"
         app:fabSize="normal"
         app:layout_anchor="@+id/rv"

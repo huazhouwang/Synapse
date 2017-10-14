@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="30sp"
-            android:text="Model Name"
+            tools:text="Model Name"
             />
 
         <TextView
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/name"
             android:maxLines="1"
-            android:text="784 x 30 x 10"
+            tools:text="784 x 30 x 10"
             />
 
         <TextView
@@ -49,7 +49,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:text="T: 00:12:00"
+            tools:text="T: 00:12:00"
             />
 
         <TextView
@@ -58,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/time_used"
-            android:text="D: 4000"
+            tools:text="D: 4000"
             />
 
 
@@ -68,7 +68,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/data_size"
-            android:text="L: 3"
+            tools:text="L: 3"
             />
 
         <TextView
@@ -77,20 +77,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/learning_rate"
-            android:text="E: 10"
+            tools:text="E: 10"
             />
 
         <TextView
-            android:id="@+id/evaluate"
-            style="@style/MainItemTitleStyle"
+            android:id="@+id/accuracy"
+            style="@style/MainItemPercentStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="-8dp"
-            android:textSize="32sp"
-            android:fontFamily="monospace"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
-            android:text="78%"
+            android:layout_alignBaseline="@+id/time_used"
+            tools:text="78%"
             />
     </RelativeLayout>
 </io.whz.androidneuralnetwork.element.AutoFitWidthCardView>

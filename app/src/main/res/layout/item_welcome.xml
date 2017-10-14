@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
+<io.whz.androidneuralnetwork.element.AutoFitWidthCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -11,8 +11,8 @@
 
     <android.support.v7.widget.AppCompatImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:src="@drawable/sun_red"
+        android:layout_height="match_parent"
+        android:src="@drawable/red_sun"
         android:adjustViewBounds="true" />
 
     <LinearLayout
@@ -57,8 +57,9 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:indeterminate="true"
+        android:theme="@style/WhiteProgressTheme"
         android:visibility="gone"
         tools:visibility="visible"
         />
 
-</android.support.v7.widget.CardView>
+</io.whz.androidneuralnetwork.element.AutoFitWidthCardView>

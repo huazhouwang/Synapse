@@ -77,4 +77,5 @@
     <string name="text_dialog_download_direct">Download</string>
     <string name="text_dialog_download_setting_network">Setting</string>
     <string name="text_dialog_network_unavailable">Unavailable Network</string>
+    <string name="text_item_training_tip">TRAINING...</string>
 </resources>

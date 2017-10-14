@@ -20,6 +20,10 @@
         <item name="android:maxLines">1</item>
     </style>
 
+    <style name="MainItemPercentStyle" parent="MainItemTitleStyle">
+        <item name="fontFamily">monospace</item>
+    </style>
+
     <style name="MainItemTextStyle">
         <item name="android:textColor">@color/text_white</item>
         <item name="android:fontFamily">sans-serif-condensed</item>
@@ -37,6 +41,9 @@
         <item name="android:textSize">18sp</item>
     </style>
 
+    <style name="WhiteProgressTheme" parent="Theme.AppCompat.Light" >
+        <item name="colorAccent">@color/white$1</item>
+    </style>
 
     <style name="CircleProgressTheme" parent="Theme.AppCompat.Light">
         <item name="colorAccent">@color/color_accent</item>

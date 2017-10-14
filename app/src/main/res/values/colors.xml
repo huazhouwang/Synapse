@@ -26,8 +26,8 @@
     <color name="secondary_text">@color/gray$1</color>
     <color name="action_delete_layer">@color/red$1</color>
     <color name="data_ready_text">@color/green$1</color>
-    <color name="data_waiting_text">@color/color_accent</color>
-    <color name="data_unready_text">@color/white$1</color>
+    <color name="data_waiting_text">@color/white$1</color>
+    <color name="data_unready_text">@color/color_accent</color>
     <color name="scrim">@color/translucency$1</color>
 
 

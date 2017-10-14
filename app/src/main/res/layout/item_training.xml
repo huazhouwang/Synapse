@@ -1,16 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<io.whz.androidneuralnetwork.element.AutoFitWidthCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="300dp"
+    app:cardBackgroundColor="@color/transparent"
+    tools:layout_gravity="center">
 
-    <TextView
-        android:id="@+id/name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:text="dddd"
+    <android.support.v7.widget.AppCompatImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:srcCompat="@drawable/blue_ripple"
         />
 
-</LinearLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:clipToPadding="false"
+        >
+
+        <TextView
+            android:id="@+id/name"
+            style="@style/MainItemTitleStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:textSize="30sp"
+            tools:text="Model Name"
+            />
+
+        <TextView
+            android:id="@+id/layers"
+            style="@style/MainItemMediumTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/name"
+            android:maxLines="1"
+            tools:text="784 x 30 x 10"
+            />
+
+        <TextView
+            android:id="@+id/data_size"
+            style="@style/MainItemXSmallTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            tools:text="D: 4000"
+            />
+
+
+        <TextView
+            android:id="@+id/learning_rate"
+            style="@style/MainItemXSmallTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/data_size"
+            tools:text="L: 3"
+            />
+
+        <TextView
+            android:id="@+id/epochs"
+            style="@style/MainItemXSmallTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/learning_rate"
+            tools:text="E: 10"
+            />
+
+        <TextView
+            android:id="@+id/step"
+            style="@style/MainItemXSmallTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/epochs"
+            tools:text="S: 1"
+            />
+
+        <TextView
+            android:id="@+id/accuracy"
+            style="@style/MainItemPercentStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_alignEnd="@+id/data_size"
+            android:layout_alignBaseline="@+id/data_size"
+            tools:text="78%"
+            />
+    </RelativeLayout>
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleHorizontal"
+        android:id="@+id/progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:theme="@style/WhiteProgressTheme"
+        android:indeterminate="false"
+        android:max="100"
+        android:visibility="visible"
+        />
+</io.whz.androidneuralnetwork.element.AutoFitWidthCardView>

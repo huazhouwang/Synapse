@@ -17,21 +17,21 @@ import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.multiple.item.WelcomeItem;
 import me.drakeet.multitype.ItemViewBinder;
 
-public class WelcomeViewBinder extends ItemViewBinder<WelcomeItem, WelcomeViewBinder.DataSetHolder>
+public class WelcomeViewBinder extends ItemViewBinder<WelcomeItem, WelcomeViewBinder.WelcomeHolder>
         implements View.OnClickListener {
 
     @NonNull
     @Override
-    protected DataSetHolder onCreateViewHolder(@NonNull LayoutInflater layoutInflater, @NonNull ViewGroup viewGroup) {
-        final View v = layoutInflater.inflate(R.layout.item_welcome, viewGroup, false);
-        final DataSetHolder holder = new DataSetHolder(v);
+    protected WelcomeHolder onCreateViewHolder(@NonNull LayoutInflater layoutInflater, @NonNull ViewGroup viewGroup) {
+        final WelcomeHolder holder = WelcomeHolder.newInstance(layoutInflater, viewGroup);
+
         holder.download.setOnClickListener(this);
 
         return holder;
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull DataSetHolder holder, @NonNull WelcomeItem dataSet) {
+    protected void onBindViewHolder(@NonNull WelcomeHolder holder, @NonNull WelcomeItem dataSet) {
         final Resources resources = holder.download.getResources();
         TransitionManager.beginDelayedTransition((ViewGroup) holder.itemView);
 
@@ -65,15 +65,20 @@ public class WelcomeViewBinder extends ItemViewBinder<WelcomeItem, WelcomeViewBi
                 .post(new MANEvent<Void>(MANEvent.CLICK_DOWNLOAD));
     }
 
-    static class DataSetHolder extends RecyclerView.ViewHolder {
+    static class WelcomeHolder extends RecyclerView.ViewHolder {
         final TextView download;
         final View progress;
 
-        DataSetHolder(View itemView) {
+        WelcomeHolder(View itemView) {
             super(itemView);
 
             download = itemView.findViewById(R.id.download);
             progress = itemView.findViewById(R.id.progress);
+        }
+
+        static WelcomeHolder newInstance(@NonNull LayoutInflater layoutInflater, @NonNull ViewGroup viewGroup) {
+            final View v = layoutInflater.inflate(R.layout.item_welcome, viewGroup, false);
+            return new WelcomeHolder(v);
         }
     }
 }

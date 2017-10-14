@@ -56,6 +56,7 @@ import io.whz.androidneuralnetwork.pojo.multiple.item.TrainedModelItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.TrainingModelItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.WelcomeItem;
 import io.whz.androidneuralnetwork.transition.FabTransform;
+import io.whz.androidneuralnetwork.util.Precondition;
 import me.drakeet.multitype.MultiTypeAdapter;
 
 import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
@@ -244,8 +245,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void dataSetReady() {
-        mFab.setVisibility(View.VISIBLE);
-        mFab.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_from_bottom));
+        mRecyclerView.addOnScrollListener(new FabVisibleHandler(mFab));
+        mFab.show();
 
         mButler.setWelcome(null)
                 .setPlayItem(new PlayItem())
@@ -329,11 +330,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @SuppressWarnings("unused")
     @Subscribe(sticky = true, priority = -1, threadMode = ThreadMode.MAIN)
-    public void onTraining(@NonNull TrainEvent event) {
+    public void onTraining(@NonNull final TrainEvent event) {
         @TrainEvent.Type final int what = event.what;
 
         switch (what) {
             case TrainEvent.START:
+                mRecyclerView.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        final Model model = (Model) event.obj;
+                        mButler.setTrainingModel(getTrainingModelItem(model))
+                                .notifyDataSetChanged();
+                    }
+                }, 300);
+
+                mRecyclerView.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mRecyclerView.smoothScrollToPosition(0);
+                    }
+                }, 400);
+                break;
+
             case TrainEvent.UPDATE:
                 final Model model = (Model) event.obj;
                 mButler.setTrainingModel(getTrainingModelItem(model))
@@ -375,7 +393,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNormalEvent(MANEvent event) {
-        final int what = event.what;
+        @MANEvent.Event final int what = event.what;
 
         switch (what) {
             case MANEvent.CLICK_DOWNLOAD:
@@ -394,12 +412,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 handleRejectMsg(event);
                 break;
 
-            case MANEvent.CLICK_PLAY:
-                handlePlayButtonClick(event);
+            case MANEvent.JUMP_TO_PLAY:
+                handleJump2Play(event);
                 break;
 
-            case MANEvent.CLICK_TRAINED:
-                handleTrainedItemClick(event);
+            case MANEvent.JUMP_TO_TRAINED:
+                handleJump2Trained(event);
+                break;
+
+            case MANEvent.JUMP_TO_TRAINING:
+                handleJump2Training(event);
                 break;
 
             default:
@@ -407,7 +429,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void handleTrainedItemClick(MANEvent event) {
+    private void handleJump2Training(MANEvent event) {
+        final Intent intent = new Intent(this, ModelDetailActivity.class);
+        intent.putExtra(ModelDetailActivity.INTENT_TYPE, ModelDetailActivity.IS_TRAINING);
+
+        startActivity(intent);
+    }
+
+    private void handleJump2Trained(MANEvent event) {
         final Long id = (Long) event.obj;
 
         if (id == null) {
@@ -421,7 +450,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivity(intent);
     }
 
-    private void handlePlayButtonClick(MANEvent event) {
+    private void handleJump2Play(MANEvent event) {
         final Intent intent = new Intent(this, PlayActivity.class);
 
         startActivity(intent);
@@ -698,6 +727,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public boolean areContentsTheSame(int i, int i1) {
                 return mOldItems.get(i).equals(mCurItems.get(i1));
+            }
+        }
+    }
+
+    private static final class FabVisibleHandler extends RecyclerView.OnScrollListener {
+        private static final int RESPOND_RANGE = 10;
+
+        private final FloatingActionButton mFab;
+
+        FabVisibleHandler(@NonNull FloatingActionButton fab) {
+            mFab = Precondition.checkNotNull(fab);
+        }
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            if (Math.abs(dy) > RESPOND_RANGE) {
+                if (dy < 0
+                        && !mFab.isShown()) {
+                    mFab.show();
+                } else if (dy > 0
+                        && mFab.isShown()){
+                    mFab.hide();
+                }
             }
         }
     }

@@ -6,11 +6,11 @@ import io.whz.androidneuralnetwork.pojo.dao.Model;
 
 public class TrainingModelItem {
     private final Model mModel;
-    private final int mCurStep;
+    private final int mStepSnapShot;
 
     public TrainingModelItem(@NonNull Model model) {
         mModel = model;
-        mCurStep = model.getStepEpoch();
+        mStepSnapShot = model.getStepEpoch();
     }
 
     public Model getModel() {
@@ -20,6 +20,6 @@ public class TrainingModelItem {
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof TrainingModelItem)
-                && ((TrainingModelItem) obj).mCurStep == this.mCurStep;
+                && ((TrainingModelItem) obj).mStepSnapShot == this.mStepSnapShot;
     }
 }

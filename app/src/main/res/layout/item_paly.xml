@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
+<io.whz.androidneuralnetwork.element.AutoFitWidthCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -12,7 +12,7 @@
 
     <android.support.v7.widget.AppCompatImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:src="@drawable/paper_red"
         android:adjustViewBounds="true" />
 
@@ -46,8 +46,9 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:background="@null"
+        android:clickable="false"
         app:srcCompat="@drawable/ic_arrow_forward_24dp"
         app:tint="@color/icon"
         />
 
-</android.support.v7.widget.CardView>
+</io.whz.androidneuralnetwork.element.AutoFitWidthCardView>

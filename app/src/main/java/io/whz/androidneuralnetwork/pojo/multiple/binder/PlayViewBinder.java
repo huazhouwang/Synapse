@@ -12,35 +12,37 @@ import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.multiple.item.PlayItem;
 import me.drakeet.multitype.ItemViewBinder;
 
-public class PlayViewBinder extends ItemViewBinder<PlayItem, PlayViewBinder.PlayViewHolder> {
+public class PlayViewBinder extends ItemViewBinder<PlayItem, PlayViewBinder.PlayViewHolder>
+        implements View.OnClickListener {
 
     @NonNull
     @Override
     protected PlayViewHolder onCreateViewHolder(@NonNull LayoutInflater layoutInflater, @NonNull ViewGroup viewGroup) {
-        final View view = layoutInflater.inflate(R.layout.item_paly, viewGroup, false);
+        final PlayViewHolder holder = PlayViewHolder.newInstance(layoutInflater, viewGroup);
 
-        return new PlayViewHolder(view);
+        holder.itemView.setOnClickListener(this);
+
+        return holder;
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull PlayViewHolder playViewHolder, @NonNull PlayItem playItem) {
+    protected void onBindViewHolder(@NonNull PlayViewHolder playViewHolder, @NonNull PlayItem playItem) {}
+
+    @Override
+    public void onClick(View view) {
+        Global.getInstance()
+                .getBus()
+                .post(new MANEvent<>(MANEvent.JUMP_TO_PLAY));
     }
 
-    static class PlayViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        final View play;
-
+    static class PlayViewHolder extends RecyclerView.ViewHolder {
         PlayViewHolder(View itemView) {
             super(itemView);
-
-            play = itemView.findViewById(R.id.play);
-            play.setOnClickListener(this);
         }
 
-        @Override
-        public void onClick(View view) {
-            Global.getInstance()
-                    .getBus()
-                    .post(new MANEvent<>(MANEvent.CLICK_PLAY));
+        static PlayViewHolder newInstance(@NonNull LayoutInflater layoutInflater, @NonNull ViewGroup viewGroup) {
+            final View view = layoutInflater.inflate(R.layout.item_paly, viewGroup, false);
+            return new PlayViewHolder(view);
         }
     }
 }
