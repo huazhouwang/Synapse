@@ -41,7 +41,7 @@ public class TrainingModelViewBinder extends ItemViewBinder<TrainingModelItem, T
         holder.step.setText(String.format("S: %s", model.getStepEpoch()));
         holder.layers.setText(StringFormatUtil.formatLayerSizes(model.getHiddenSizes()));
         holder.epochs.setText(String.format("E: %s", model.getEpochs()));
-        holder.learningRate.setText(String.format("L: %s", model.getLearningRate()));
+        holder.learningRate.setText(String.format("R: %s", model.getLearningRate()));
         holder.dataSize.setText(String.format("D: %s", model.getDataSize()));
         holder.progress.setProgress(model.getStepEpoch() * 100 / model.getEpochs());
 

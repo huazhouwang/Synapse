@@ -18,10 +18,8 @@ import android.view.View;
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 
-import static android.view.View.MeasureSpec.EXACTLY;
-
-public class DigitView extends View implements View.OnTouchListener {
-    private static final int OVERLAY_TIME = 3;
+public class DigitView extends View {
+    private static final int OVERLAY_TIME = 5;
     private static final int DIGIT_SIDE = 28;
 
     private final Bitmap mDigitBitmap;
@@ -50,9 +48,9 @@ public class DigitView extends View implements View.OnTouchListener {
         mFgPaint.setAntiAlias(true);
 
         mRicePaint = new Paint();
-        mRicePaint.setColor(Color.GRAY);
-        mRicePaint.setAlpha(153);
-        mRicePaint.setPathEffect(new DashPathEffect(new float[]{5, 5, 5, 5}, 1));
+        mRicePaint.setColor(Color.BLACK);
+        mRicePaint.setAlpha(85);
+        mRicePaint.setPathEffect(new DashPathEffect(new float[]{15, 15, 15, 15}, 1));
         mRicePaint.setAntiAlias(true);
         mRicePaint.setStyle(Paint.Style.STROKE);
         mRicePaint.setStrokeWidth(3);
@@ -100,6 +98,7 @@ public class DigitView extends View implements View.OnTouchListener {
         mEnlargeMatrix.setScale(scale, scale);
         mEnlargeMatrix.invert(mNarrowMatrix);
 
+        mRicePath.reset();
         mRicePath.moveTo(0F, 0F);
         mRicePath.lineTo(finalSize, finalSize);
 
@@ -118,24 +117,13 @@ public class DigitView extends View implements View.OnTouchListener {
     }
 
     private int measureHelper(int spec, int defaultSide) {
-        final int mode = MeasureSpec.getMode(spec);
         final int size = MeasureSpec.getSize(spec);
-
-        final int res;
-
-        if (mode == EXACTLY) {
-            res = Math.max(defaultSide, size);
-        } else {
-            res = defaultSide;
-        }
-
-        return res;
+        return Math.max(defaultSide, size);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        setOnTouchListener(this);
         reset();
     }
 
@@ -153,17 +141,17 @@ public class DigitView extends View implements View.OnTouchListener {
     }
 
     @Override
-    public boolean onTouch(View view, MotionEvent motionEvent) {
-        final int action = motionEvent.getAction() & MotionEvent.ACTION_MASK;
+    public boolean onTouchEvent(MotionEvent event) {
+        final int action = event.getAction() & MotionEvent.ACTION_MASK;
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                handleDownAction(motionEvent);
+                handleDownAction(event);
                 return true;
 
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_MOVE:
-                handleMoveAction(motionEvent);
+                handleMoveAction(event);
                 return true;
 
             default:

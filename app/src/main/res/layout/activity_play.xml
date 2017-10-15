@@ -1,27 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context="io.whz.androidneuralnetwork.component.PlayActivity">
 
-    <io.whz.androidneuralnetwork.element.DigitView
-        android:id="@+id/digit_view"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/predict"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        <View
+            android:id="@+id/upper_bg_view"
+            android:layout_width="match_parent"
+            android:layout_height="88dp"
+            android:elevation="2dp"
+            android:outlineProvider="bounds"
+            tools:background="@color/red$1"
+            />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Play"
-        android:onClick="play"
-        />
-</LinearLayout>
+        <io.whz.androidneuralnetwork.element.AutoFitWidthLineChart
+            android:id="@+id/chart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:background="@color/item_chart_bg$1"
+            android:elevation="2dp"
+            android:outlineProvider="bounds"
+            />
+
+        <android.support.v7.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="42dp"
+            android:layout_marginEnd="42dp"
+            android:layout_marginTop="-64dp"
+            app:cardBackgroundColor="@color/transparent"
+            app:cardElevation="2dp"
+            >
+            <io.whz.androidneuralnetwork.element.DigitView
+                android:id="@+id/digit_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
+        </android.support.v7.widget.CardView>
+
+        <LinearLayout
+            android:id="@+id/active_layout"
+            android:layout_width="225dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="32dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_white_fillet"
+            android:elevation="1dp"
+            >
+            <TextView
+                android:id="@+id/predict_rate"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="8dp"
+                android:gravity="center"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                tools:text="78%"
+                />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/divider"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp"
+                />
+
+            <TextView
+                android:id="@+id/predict"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                tools:text="4"
+                />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/divider"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp"
+                />
+
+            <android.support.v7.widget.AppCompatImageView
+                android:id="@+id/clear"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:layout_marginStart="8dp"
+                app:srcCompat="@drawable/ic_delete_24dp"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+    <FrameLayout
+        android:fitsSystemWindows="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/tool_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/transparent"
+            app:theme="@style/PlayActivityToolbarStyle"
+            app:popupTheme="@style/PlayActivityToolbarPopStyle"
+            app:titleTextColor="@color/white$1"
+            app:title="Synapse" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/page_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:visibility="gone"
+        >
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            />
+    </FrameLayout>
+</android.support.design.widget.CoordinatorLayout>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/renew"
+        android:title="@string/text_menu_renew"
+        android:icon="@drawable/ic_change_24dp"
+        app:showAsAction="ifRoom"
+        />
+
+    <item
+        android:id="@+id/jump_to_detail"
+        android:title="@string/text_menu_jump_to_detail"
+        app:showAsAction="never"
+        />
+</menu>

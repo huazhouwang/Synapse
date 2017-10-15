@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="io.whz.androidneuralnetwork">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -16,7 +17,10 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:fullBackupContent="false"
+        tools:ignore="GoogleAppIndexingWarning">
+
         <activity
             android:name=".component.MainActivity"
             android:screenOrientation="portrait">
@@ -26,11 +30,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".component.NeuralModelActivity"
             android:exported="false"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.Translucent.NeuralNetworkConfig"
+            android:theme="@style/AppTheme.Translucent.NeuralNetworkConfigActivity"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".component.ModelDetailActivity"
@@ -43,13 +48,12 @@
             android:name=".component.PlayActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar.PlayActivity"
             />
 
         <service
             android:name=".component.MainService"
             android:enabled="true"
             android:exported="false" />
-
     </application>
-
 </manifest>

@@ -28,7 +28,7 @@ import me.drakeet.multitype.ItemViewBinder;
 
 public class TrainedModelViewBinder extends ItemViewBinder<TrainedModelItem, TrainedModelViewBinder.TrainedModelViewHolder>
         implements View.OnClickListener {
-    private static final int[] FG = new int[]{
+    public static final int[] FG = new int[]{
             R.color.item_chart_fg$1,
             R.color.item_chart_fg$2,
             R.color.item_chart_fg$3,
@@ -41,7 +41,7 @@ public class TrainedModelViewBinder extends ItemViewBinder<TrainedModelItem, Tra
             R.color.item_chart_fg$10
     };
 
-    private static final int[] BG = new int[]{
+    public static final int[] BG = new int[]{
             R.color.item_chart_bg$1,
             R.color.item_chart_bg$2,
             R.color.item_chart_bg$3,
@@ -145,7 +145,7 @@ public class TrainedModelViewBinder extends ItemViewBinder<TrainedModelItem, Tra
         holder.name.setText(model.getName());
         holder.layers.setText(StringFormatUtil.formatLayerSizes(model.getHiddenSizes()));
         holder.epochs.setText(String.format("E: %s", model.getEpochs()));
-        holder.learningRate.setText(String.format("L: %s", model.getLearningRate()));
+        holder.learningRate.setText(String.format("R: %s", model.getLearningRate()));
         holder.dataSize.setText(String.format("D: %s", model.getDataSize()));
         holder.timeUsed.setText(String.format("T: %s", StringFormatUtil.formatTimeUsed(model.getDataSize())));
         holder.evaluate.setText(String.format("%s%%", (int)(model.getEvaluate() * 100)));

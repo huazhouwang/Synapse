@@ -45,12 +45,17 @@
         <item name="colorAccent">@color/white$1</item>
     </style>
 
-    <style name="CircleProgressTheme" parent="Theme.AppCompat.Light">
-        <item name="colorAccent">@color/color_accent</item>
-    </style>
-
     <style name="MainItemLayoutStyle">
         <item name="android:padding">16dp</item>
     </style>
 
+    <style name="PlayActivityToolbarStyle" parent="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:textColorPrimary">@color/white$1</item>
+        <item name="colorPrimary">@color/white$1</item>
+    </style>
+
+    <style name="PlayActivityToolbarPopStyle" parent="@style/ThemeOverlay.AppCompat">
+        <item name="android:colorBackground">@color/white$2</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+    </style>
 </resources>

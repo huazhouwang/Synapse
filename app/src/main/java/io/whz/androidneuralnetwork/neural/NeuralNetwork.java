@@ -1,6 +1,7 @@
 package io.whz.androidneuralnetwork.neural;
 
 import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 
 import org.greenrobot.greendao.annotation.NotNull;
 
@@ -227,8 +228,8 @@ public class NeuralNetwork {
         }
     }
 
-    public int predict(@NonNull Matrix input) {
-        return MatrixUtil.argmax(feedForward(mWeights, mBiases, input));
+    public Pair<Integer, Double> predict(@NonNull Matrix input) {
+        return MatrixUtil.findMax(feedForward(mWeights, mBiases, input));
     }
 
     private static Matrix feedForward(@NonNull Matrix[] weights, @NonNull Matrix[] biases,

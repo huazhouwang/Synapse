@@ -14,4 +14,5 @@
     <dimen name="list_item_vertical_gap">8dp</dimen>
     <dimen name="model_detail_above_line_margin">16dp</dimen>
     <dimen name="digit_view_default_side">200dp</dimen>
+    <dimen name="upper_bg_more_space">8dp</dimen>
 </resources>

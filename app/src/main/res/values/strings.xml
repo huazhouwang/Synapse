@@ -78,4 +78,8 @@
     <string name="text_dialog_download_setting_network">Setting</string>
     <string name="text_dialog_network_unavailable">Unavailable Network</string>
     <string name="text_item_training_tip">TRAINING...</string>
+    <string name="text_predict_init">--</string>
+    <string name="text_menu_renew">Renew</string>
+    <string name="text_dialog_model_list_title">Chose a model</string>
+    <string name="text_menu_jump_to_detail">View Detail</string>
 </resources>

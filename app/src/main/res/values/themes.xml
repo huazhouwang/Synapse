@@ -12,7 +12,6 @@
     </style>
 
     <style name="AppTheme.Translucent">
-        <!-- using a semi-transparent window background for the drag-back gesture -->
         <item name="android:windowBackground">@color/scrim</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -24,7 +23,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.Translucent.NeuralNetworkConfig">
+    <style name="AppTheme.Translucent.NeuralNetworkConfigActivity">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowAnimationStyle">@null</item>
@@ -32,5 +31,11 @@
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
+
+    <style name="AppTheme.NoActionBar.PlayActivity">
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+
 </resources>

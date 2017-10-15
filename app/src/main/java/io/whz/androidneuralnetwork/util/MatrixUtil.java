@@ -1,6 +1,7 @@
 package io.whz.androidneuralnetwork.util;
 
 import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 
 import io.whz.androidneuralnetwork.matrix.Matrix;
 
@@ -47,14 +48,20 @@ public class MatrixUtil {
     public static int argmax(Matrix matrix) {
         final double[] doubles = matrix.getArray();
 
-        int res = 0;
+        int index = 0;
 
         for (int i = 1, len = doubles.length; i < len; ++i) {
-            if (doubles[i] > doubles[res]) {
-                res = i;
+            if (doubles[i] > doubles[index]) {
+                index = i;
             }
         }
 
-        return res;
+        return index;
+    }
+
+    public static Pair<Integer, Double> findMax(Matrix matrix) {
+        final int index = argmax(matrix);
+
+        return Pair.create(index, matrix.getArray()[index]);
     }
 }
