@@ -3,7 +3,6 @@ package io.whz.androidneuralnetwork.component;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,14 +13,11 @@ import android.support.v4.util.ArrayMap;
 import android.support.v4.util.Pair;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
@@ -51,7 +47,7 @@ import io.whz.androidneuralnetwork.util.Precondition;
 import static io.whz.androidneuralnetwork.R.id.chart;
 import static io.whz.androidneuralnetwork.R.id.predict;
 
-public class PlayActivity extends AppCompatActivity implements View.OnClickListener {
+public class PlayActivity extends BaseActivity implements View.OnClickListener {
     public static final String ID = "id";
 
     private static final String TAG = App.TAG + "-PlayActivity";
@@ -59,7 +55,6 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     private static final int[] BG = TrainedModelViewBinder.BG;
 
     private Toolbar mToolbar;
-    private View mUpperBgView;
     private LineChart mChart;
     private DigitView mDigitView;
     private TextView mPredictText;
@@ -71,6 +66,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     private NeuralNetwork mNetwork;
     private Model mModel;
     private LineDataSet mLineData;
+    private View mLowerBg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,16 +74,15 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_play);
 
         mToolbar = findViewById(R.id.tool_bar);
-        mUpperBgView = findViewById(R.id.upper_bg_view);
         mChart = findViewById(chart);
         mDigitView = findViewById(R.id.digit_view);
         mPredictText = findViewById(predict);
         mRateText = findViewById(R.id.predict_rate);
         mClear = findViewById(R.id.clear);
         mPageLoading = findViewById(R.id.page_loading);
+        mLowerBg = findViewById(R.id.lower_bg);
 
         initToolbar();
-        resizeUpperBgView();
         init();
     }
 
@@ -153,46 +148,13 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         chart.setScaleEnabled(false);
         chart.setHighlightPerDragEnabled(false);
         chart.setPinchZoom(false);
-        chart.setDrawGridBackground(true);
+        chart.setDrawGridBackground(false);
         chart.getLegend().setEnabled(false);
         chart.getAxisRight().setEnabled(false);
         chart.getXAxis().setEnabled(false);
         chart.getAxisLeft().setEnabled(false);
         chart.getXAxis().setEnabled(false);
         chart.setViewPortOffsets(0, 0, 0, 0);
-    }
-
-    private void resizeUpperBgView() {
-        mUpperBgView.post(new Runnable() {
-            @Override
-            public void run() {
-                final int statusBarHeight = getStatusBarHeight();
-                final int actionBarHeight = getActionBarHeight();
-                final int moreSpace = getResources().getDimensionPixelOffset(R.dimen.upper_bg_more_space);
-
-                final ViewGroup.LayoutParams lp = mUpperBgView.getLayoutParams();
-                lp.height = Math.max(lp.height, statusBarHeight + actionBarHeight + moreSpace);
-
-                mUpperBgView.requestLayout();
-            }
-        });
-    }
-
-    private int getActionBarHeight() {
-        return mToolbar.getHeight();
-    }
-
-    private int getStatusBarHeight() {
-        final Rect rectangle = new Rect();
-        final Window window = getWindow();
-
-        window.getDecorView().getWindowVisibleDisplayFrame(rectangle);
-
-        final int statusBarHeight = rectangle.top;
-        final int contentViewTop = window.findViewById(Window.ID_ANDROID_CONTENT)
-                .getTop();
-
-        return Math.abs(contentViewTop - statusBarHeight);
     }
 
     private void initToolbar() {
@@ -347,6 +309,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             group.setDrawValues(false);
 
             mChart.setData(group);
+            mLowerBg.setAlpha(mLineData.getFillAlpha() / 255F);
         } else {
             mLineData.setValues(entries);
         }
@@ -359,10 +322,9 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         final int fg = ContextCompat.getColor(context, FG[index]);
         set.setColor(fg);
         set.setFillColor(fg);
+        mLowerBg.setBackgroundColor(fg);
 
-        final int bg = ContextCompat.getColor(context, BG[index]);
-        chart.setGridBackgroundColor(bg);
-        mUpperBgView.setBackgroundColor(bg);
+        getWindow().setBackgroundDrawableResource(BG[index]);
     }
 
     @Override

@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.text.method.ReplacementTransformationMethod;
 import android.transition.TransitionManager;
@@ -27,7 +26,7 @@ import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 
-public class NeuralModelActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+public class NeuralModelActivity extends BaseActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private static final int MAX_HIDDEN_SIZE = 5;
     private static final int MAX_PROGRESS = 100;
     private static final float STEP_NUMBER = MNISTUtil.MAX_TRAINING_SIZE / MNISTUtil.PRE_FILE_SIZE;

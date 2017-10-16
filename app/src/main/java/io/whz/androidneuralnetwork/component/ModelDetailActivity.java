@@ -11,7 +11,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -41,7 +40,7 @@ import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
 import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.StringFormatUtil;
 
-public class ModelDetailActivity extends AppCompatActivity {
+public class ModelDetailActivity extends BaseActivity {
     public static final String INTENT_TYPE = "intent_type";
     public static final String TRAINED_ID = "trained_id";
     public static final String INTERRUPT_ACTION = "interrupt_action";

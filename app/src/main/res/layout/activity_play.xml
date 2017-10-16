@@ -6,58 +6,83 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    tools:background="@color/item_chart_bg$1"
     tools:context="io.whz.androidneuralnetwork.component.PlayActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
-        <View
+        <FrameLayout
             android:id="@+id/upper_bg_view"
             android:layout_width="match_parent"
-            android:layout_height="88dp"
-            android:elevation="2dp"
-            android:outlineProvider="bounds"
-            tools:background="@color/red$1"
-            />
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            <io.whz.androidneuralnetwork.element.AutoFitWidthLineChart
+                android:id="@+id/chart"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                />
+        </FrameLayout>
 
-        <io.whz.androidneuralnetwork.element.AutoFitWidthLineChart
-            android:id="@+id/chart"
+        <View
+            android:id="@+id/lower_bg"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:background="@color/item_chart_bg$1"
-            android:elevation="2dp"
-            android:outlineProvider="bounds"
-            />
+            android:layout_height="0dp"
+            android:layout_weight="1.5"/>
+    </LinearLayout>
+
+    <FrameLayout
+        android:fitsSystemWindows="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/tool_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@null"
+            app:theme="@style/PlayActivityToolbarStyle"
+            app:popupTheme="@style/PlayActivityToolbarPopStyle"
+            app:titleTextColor="@color/white$1"
+            app:title="Synapse" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="bottom|center_horizontal"
+        android:paddingBottom="60dp"
+        android:clipToPadding="false">
 
         <android.support.v7.widget.CardView
+            android:id="@+id/digit_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginStart="42dp"
-            android:layout_marginEnd="42dp"
-            android:layout_marginTop="-64dp"
             app:cardBackgroundColor="@color/transparent"
-            app:cardElevation="2dp"
-            >
+            app:cardElevation="5dp"
+            app:cardCornerRadius="15dp">
             <io.whz.androidneuralnetwork.element.DigitView
                 android:id="@+id/digit_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="300dp"
+                android:layout_height="300dp"
                 />
         </android.support.v7.widget.CardView>
 
         <LinearLayout
             android:id="@+id/active_layout"
-            android:layout_width="225dp"
+            android:layout_width="200dp"
             android:layout_height="50dp"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="32dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:background="@drawable/bg_white_fillet"
-            android:elevation="1dp"
+            android:elevation="3dp"
+            app:layout_anchor="@id/lower_bg"
+            app:layout_anchorGravity="bottom|center"
             >
             <TextView
                 android:id="@+id/predict_rate"
@@ -108,21 +133,6 @@
                 />
         </LinearLayout>
     </LinearLayout>
-
-    <FrameLayout
-        android:fitsSystemWindows="true"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/tool_bar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/transparent"
-            app:theme="@style/PlayActivityToolbarStyle"
-            app:popupTheme="@style/PlayActivityToolbarPopStyle"
-            app:titleTextColor="@color/white$1"
-            app:title="Synapse" />
-    </FrameLayout>
 
     <FrameLayout
         android:id="@+id/page_loading"
