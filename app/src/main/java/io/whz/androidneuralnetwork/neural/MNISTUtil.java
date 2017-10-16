@@ -1,7 +1,6 @@
 package io.whz.androidneuralnetwork.neural;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -15,6 +14,7 @@ import java.util.zip.GZIPInputStream;
 
 import io.whz.androidneuralnetwork.pojo.neural.Digit;
 import io.whz.androidneuralnetwork.pojo.neural.Figure;
+import io.whz.androidneuralnetwork.util.Precondition;
 
 public class MNISTUtil {
     private static final int MASK = 0xFF;
@@ -104,28 +104,51 @@ public class MNISTUtil {
         return list;
     }
 
-    public static Figure test(File file) {
+    public static Figure[] readFigures(@NonNull File file) {
+        Precondition.checkNotNull(file);
 
-        byte b = -1;
-        Log.i("test2", (b & 0xff) + "");
+        if (!file.exists()) {
+            return null;
+        }
+
+        DataInputStream inputStream = null;
 
         try {
-            DataInputStream inputStream = new DataInputStream(new FileInputStream(file));
+            inputStream = new DataInputStream(new FileInputStream(file));
 
-            final int magic = inputStream.readInt();
+            if (inputStream.readInt() != BATCH_MAGIC) {
+                return null;
+            }
+
             final int len = inputStream.readInt();
             final int rows = inputStream.readInt();
             final int cols = inputStream.readInt();
-            final int label = inputStream.readInt();
 
-            final byte[] buffer = new byte[28 * 28];
-            inputStream.read(buffer);
+            final Figure[] figures = new Figure[len];
+            final int size = rows * cols;
+            final byte[] buffer = new byte[size];
+            int curNum;
 
-            return new Figure(label, buffer);
+            for (int i = 0; i < len; ++i) {
+                curNum = inputStream.readInt();
+                inputStream.read(buffer);
 
+                figures[i] = new Figure(curNum, buffer.clone());
+            }
+
+            return figures;
         } catch (IOException e) {
             e.printStackTrace();
+
             return null;
+        } finally {
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -275,4 +298,15 @@ public class MNISTUtil {
         return res;
     }
 
+    public static int[] convertByteArray2Bitmap(@NonNull byte[] bytes) {
+        final int[] res = new int[bytes.length];
+        int color;
+
+        for (int i = 0, len = bytes.length; i < len; ++i) {
+            color = MASK - (MASK & bytes[i]);
+            res[i] = color << 16 | color << 8 | color | 0xFF000000;
+        }
+
+        return res;
+    }
 }

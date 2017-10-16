@@ -28,19 +28,24 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.DigitView;
+import io.whz.androidneuralnetwork.element.FigureProvider;
 import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.element.Scheduler;
+import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.neural.NeuralNetwork;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainedModelViewBinder;
+import io.whz.androidneuralnetwork.pojo.neural.Figure;
 import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.Precondition;
 
@@ -59,7 +64,7 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
     private DigitView mDigitView;
     private TextView mPredictText;
     private TextView mRateText;
-    private View mClear;
+    private View mRefresh;
     private View mPageLoading;
 
     private BlockTouchListener mBlockListener;
@@ -67,6 +72,7 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
     private Model mModel;
     private LineDataSet mLineData;
     private View mLowerBg;
+    private FigureProvider mProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +84,7 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
         mDigitView = findViewById(R.id.digit_view);
         mPredictText = findViewById(predict);
         mRateText = findViewById(R.id.predict_rate);
-        mClear = findViewById(R.id.clear);
+        mRefresh = findViewById(R.id.refresh);
         mPageLoading = findViewById(R.id.page_loading);
         mLowerBg = findViewById(R.id.lower_bg);
 
@@ -87,13 +93,12 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void init() {
-        mClear.setOnClickListener(this);
+        mRefresh.setOnClickListener(this);
 
         mBlockListener = new BlockTouchListener(new BlockTouchListener.Callback() {
             @Override
             public void onBlock() {
-                final Pair<Integer, Double> predicting = startPredicting();
-                predicted(predicting);
+                startPredicting();
             }
         }, 500);
 
@@ -109,9 +114,13 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
         showLoading();
         initChart(mChart);
 
+        final File[] files = Global.getInstance().getDirs().test.listFiles();
+        mProvider = new FigureProvider(files[ThreadLocalRandom.current().nextInt(files.length)]);
+
         Scheduler.Secondary.execute(new Runnable() {
             @Override
             public void run() {
+                mProvider.load();
                 initNeural();
             }
         });
@@ -123,14 +132,15 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
         mRateText.setText(String.format("%s%%", (int) (predict.second * 100)));
     }
 
-    private Pair<Integer, Double> startPredicting() {
+    private void startPredicting() {
         try {
-            return mNetwork.predict(mDigitView.getDarkness());
+            final Pair<Integer, Double> predicting = mNetwork.predict(mDigitView.getDarkness());
+            mDigitView.markTrash();
+
+            predicted(predicting);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return Pair.create(0, 0D);
     }
 
     private void showLoading() {
@@ -289,7 +299,6 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void renderModelInfo(@NonNull Model model) {
-        // TODO: 15/10/2017
         mToolbar.setTitle(String.format("Play %s Model", model.getName()));
     }
 
@@ -346,7 +355,7 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
         final int id = item.getItemId();
 
         switch (id) {
-            case R.id.renew:
+            case R.id.refresh:
                 showModelListDialog();
                 return true;
 
@@ -427,13 +436,27 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
         final int id = view.getId();
 
         switch (id) {
-            case R.id.clear:
-                resetDigit();
+            case R.id.refresh:
+                refreshDigit();
                 break;
 
             default:
                 break;
         }
+    }
+
+    private void refreshDigit() {
+        final Figure figure = mProvider.next();
+
+        if (figure == null) {
+            return;
+        }
+
+        final int[] pixels = MNISTUtil.convertByteArray2Bitmap(figure.bytes);
+        mDigitView.reset(pixels);
+        mDigitView.markTrash();
+
+        startPredicting();
     }
 
     private static final class BlockTouchListener implements View.OnTouchListener {

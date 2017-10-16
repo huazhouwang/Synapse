@@ -66,8 +66,8 @@
             app:cardCornerRadius="15dp">
             <io.whz.androidneuralnetwork.element.DigitView
                 android:id="@+id/digit_view"
-                android:layout_width="300dp"
-                android:layout_height="300dp"
+                android:layout_width="310dp"
+                android:layout_height="310dp"
                 />
         </android.support.v7.widget.CardView>
 
@@ -124,12 +124,12 @@
                 />
 
             <android.support.v7.widget.AppCompatImageView
-                android:id="@+id/clear"
+                android:id="@+id/refresh"
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="16dp"
                 android:layout_marginStart="8dp"
-                app:srcCompat="@drawable/ic_delete_24dp"
+                app:srcCompat="@drawable/ic_refresh_24dp"
                 />
         </LinearLayout>
     </LinearLayout>

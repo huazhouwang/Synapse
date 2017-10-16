@@ -19,7 +19,7 @@ import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 
 public class DigitView extends View {
-    private static final int OVERLAY_TIME = 5;
+    private static final int OVERLAY_TIME = 1;
     private static final int DIGIT_SIDE = 28;
 
     private final Bitmap mDigitBitmap;
@@ -34,6 +34,8 @@ public class DigitView extends View {
     private final Pair mNewPair;
     private final Path mRicePath;
 
+    private boolean mIsTrash;
+
     {
         mDigitBitmap = Bitmap.createBitmap(DIGIT_SIDE, DIGIT_SIDE, Bitmap.Config.ARGB_8888);
         mDigitCanvas = new Canvas(mDigitBitmap);
@@ -46,6 +48,7 @@ public class DigitView extends View {
         mFgPaint = new Paint();
         mFgPaint.setColor(Color.BLACK);
         mFgPaint.setAntiAlias(true);
+        mFgPaint.setStrokeWidth(2.5F);
 
         mRicePaint = new Paint();
         mRicePaint.setColor(Color.BLACK);
@@ -59,6 +62,8 @@ public class DigitView extends View {
         mNewPair = new Pair();
 
         mRicePath = new Path();
+
+        mIsTrash = false;
     }
 
     public DigitView(Context context) {
@@ -134,6 +139,12 @@ public class DigitView extends View {
         postInvalidate();
     }
 
+    public void reset(int[] pixels) {
+        mDigitBitmap.setPixels(pixels, 0, mDigitBitmap.getWidth(), 0, 0, mDigitBitmap.getWidth(), mDigitBitmap.getHeight());
+
+        postInvalidate();
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.drawBitmap(mDigitBitmap, mEnlargeMatrix, mFgPaint);
@@ -192,7 +203,16 @@ public class DigitView extends View {
         return io.whz.androidneuralnetwork.matrix.Matrix.array(doubles, DIGIT_SIDE * DIGIT_SIDE);
     }
 
+    public void markTrash() {
+        mIsTrash = true;
+    }
+
     private void handleDownAction(@NonNull MotionEvent motionEvent) {
+        if (mIsTrash) {
+            reset();
+            mIsTrash = false;
+        }
+
         mOldPair.reset();
 
         mNewPair.pos(motionEvent.getX(), motionEvent.getY());

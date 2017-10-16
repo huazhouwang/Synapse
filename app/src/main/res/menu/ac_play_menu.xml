@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/renew"
+        android:id="@+id/refresh"
         android:title="@string/text_menu_renew"
         android:icon="@drawable/ic_change_24dp"
         app:showAsAction="ifRoom"
