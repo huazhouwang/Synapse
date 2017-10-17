@@ -42,17 +42,19 @@ import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.element.Scheduler;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.neural.NeuralNetwork;
+import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainedModelViewBinder;
 import io.whz.androidneuralnetwork.pojo.neural.Figure;
+import io.whz.androidneuralnetwork.track.Track;
 import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.Precondition;
 
 import static io.whz.androidneuralnetwork.R.id.chart;
 import static io.whz.androidneuralnetwork.R.id.predict;
 
-public class PlayActivity extends BaseActivity implements View.OnClickListener {
+public class PlayActivity extends WrapperActivity implements View.OnClickListener {
     public static final String ID = "id";
 
     private static final String TAG = App.TAG + "-PlayActivity";
@@ -99,6 +101,9 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
             @Override
             public void onBlock() {
                 startPredicting();
+
+                Track.getInstance()
+                        .logEvent(TrackCons.Play.PREDICT_HAND_WRITE);
             }
         }, 500);
 
@@ -347,7 +352,7 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
         getMenuInflater()
                 .inflate(R.menu.ac_play_menu, menu);
 
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -355,12 +360,16 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
         final int id = item.getItemId();
 
         switch (id) {
-            case R.id.refresh:
+            case R.id.select_model:
                 showModelListDialog();
+                Track.getInstance()
+                        .logEvent(TrackCons.Play.CLICK_MODEL_SELECTION);
                 return true;
 
             case R.id.jump_to_detail:
                 jumpToDetail();
+                Track.getInstance()
+                        .logEvent(TrackCons.Play.CLICK_VIEW_DETAIL);
                 return true;
 
             default:
@@ -438,6 +447,8 @@ public class PlayActivity extends BaseActivity implements View.OnClickListener {
         switch (id) {
             case R.id.refresh:
                 refreshDigit();
+                Track.getInstance()
+                        .logEvent(TrackCons.Play.PREDICT_MNIST);
                 break;
 
             default:

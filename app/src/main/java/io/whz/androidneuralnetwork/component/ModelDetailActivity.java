@@ -40,7 +40,7 @@ import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
 import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.StringFormatUtil;
 
-public class ModelDetailActivity extends BaseActivity {
+public class ModelDetailActivity extends WrapperActivity {
     public static final String INTENT_TYPE = "intent_type";
     public static final String TRAINED_ID = "trained_id";
     public static final String INTERRUPT_ACTION = "interrupt_action";
@@ -493,7 +493,7 @@ public class ModelDetailActivity extends BaseActivity {
             mDeleteItem.setVisible(true);
         }
 
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

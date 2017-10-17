@@ -11,6 +11,7 @@ import io.whz.androidneuralnetwork.element.ChannelCreator;
 import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.pojo.dao.DaoMaster;
 import io.whz.androidneuralnetwork.pojo.dao.DaoSession;
+import io.whz.androidneuralnetwork.track.Track;
 
 public class App extends Application {
     public static final String TAG = "Synapse";
@@ -26,7 +27,15 @@ public class App extends Application {
         configEvenBus();
         configPreferences();
         configGreenDao();
+
         createNotificationChannel();
+        initTrackEngines();
+    }
+
+    protected void initTrackEngines() {
+        Track.getInstance()
+                .initialize(getApplicationContext(),
+                        mGlobal.getBus());
     }
 
     private void createNotificationChannel() {

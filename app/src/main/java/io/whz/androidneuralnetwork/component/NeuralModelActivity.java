@@ -26,7 +26,7 @@ import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 
-public class NeuralModelActivity extends BaseActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+public class NeuralModelActivity extends WrapperActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private static final int MAX_HIDDEN_SIZE = 5;
     private static final int MAX_PROGRESS = 100;
     private static final float STEP_NUMBER = MNISTUtil.MAX_TRAINING_SIZE / MNISTUtil.PRE_FILE_SIZE;

@@ -8,9 +8,8 @@ public class DebugApp extends App {
     public void onCreate() {
         super.onCreate();
 
-        if (LeakCanary.isInAnalyzerProcess(this)) {
-            return;
+        if (!LeakCanary.isInAnalyzerProcess(this)) {
+            LeakCanary.install(this);
         }
-        LeakCanary.install(this);
     }
 }

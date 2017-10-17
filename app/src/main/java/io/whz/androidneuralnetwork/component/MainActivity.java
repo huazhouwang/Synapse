@@ -41,6 +41,7 @@ import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.element.VerticalGap;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.pojo.constant.PreferenceKey;
+import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
@@ -54,14 +55,22 @@ import io.whz.androidneuralnetwork.pojo.multiple.item.PlayItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.TrainedModelItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.TrainingModelItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.WelcomeItem;
+import io.whz.androidneuralnetwork.track.Track;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 import io.whz.androidneuralnetwork.util.Precondition;
 import me.drakeet.multitype.MultiTypeAdapter;
 
 import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
 import static io.whz.androidneuralnetwork.R.id.fab;
+import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.CLICK_DOWNLOAD;
+import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.CLICK_FAB;
+import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.CLICK_PLAY;
+import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.CLICK_TRAINED;
+import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.CLICK_TRAINING;
+import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.FAIL_DECOMPRESS;
+import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.FAIL_DOWNLOAD;
 
-public class MainActivity extends BaseActivity implements View.OnClickListener {
+public class MainActivity extends WrapperActivity implements View.OnClickListener {
     private static final int REQUEST_EXTERNAL_STORAGE = 0x01;
     private static final String TAG = App.TAG + "-MainActivity";
 
@@ -82,6 +91,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         mRecyclerView = findViewById(R.id.rv);
         mRecyclerView.setAdapter(mButler.getAdapter());
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.addOnScrollListener(new OnScrollTracker());
         mRecyclerView.addItemDecoration(new VerticalGap(getResources().getDimensionPixelOffset(R.dimen.list_item_vertical_gap)));
         mFab = findViewById(fab);
         mFab.setOnClickListener(this);
@@ -433,6 +443,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         intent.putExtra(ModelDetailActivity.INTENT_TYPE, ModelDetailActivity.IS_TRAINING);
 
         startActivity(intent);
+
+        Track.getInstance()
+                .logEvent(CLICK_TRAINING);
     }
 
     private void handleJump2Trained(MANEvent event) {
@@ -447,12 +460,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         intent.putExtra(ModelDetailActivity.TRAINED_ID, id);
 
         startActivity(intent);
+
+        Track.getInstance()
+                .logEvent(CLICK_TRAINED);
     }
 
     private void handleJump2Play(MANEvent event) {
         final Intent intent = new Intent(this, PlayActivity.class);
 
         startActivity(intent);
+
+        Track.getInstance()
+                .logEvent(CLICK_PLAY);
     }
 
     private void handleRejectMsg(MANEvent event) {
@@ -475,6 +494,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             mButler.setWelcome(getDataSetItem(WelcomeItem.UNREADY))
                     .notifyDataSetChanged();
             res = R.string.text_download_error;
+
+            Track.getInstance()
+                    .logEvent(FAIL_DOWNLOAD);
         }
 
         Snackbar.make(mRecyclerView, res, Snackbar.LENGTH_SHORT)
@@ -503,6 +525,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             mButler.setWelcome(getDataSetItem(WelcomeItem.UNREADY))
                     .notifyDataSetChanged();
             res = R.string.text_decompress_error;
+
+            Track.getInstance()
+                    .logEvent(FAIL_DECOMPRESS);
         }
 
         Snackbar.make(mRecyclerView, res, Snackbar.LENGTH_SHORT)
@@ -517,6 +542,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         intent.putExtra(MainService.ACTION_KEY, MainService.ACTION_DOWNLOAD);
 
         startService(intent);
+
+        Track.getInstance()
+                .logEvent(CLICK_DOWNLOAD);
     }
 
     private void showDownloadRequestDialog(@NonNull final Activity that) {
@@ -583,6 +611,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         switch (id) {
             case fab:
                 startNeuralNetworkConfig(view);
+                Track.getInstance()
+                        .logEvent(CLICK_FAB);
                 break;
 
             default:
@@ -749,6 +779,29 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                         && mFab.isShown()){
                     mFab.hide();
                 }
+            }
+        }
+    }
+
+    private static final class OnScrollTracker extends RecyclerView.OnScrollListener {
+        private final Track mTrack = Track.getInstance();
+
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            if (newState != RecyclerView.SCROLL_STATE_IDLE
+                    || !(recyclerView.getLayoutManager() instanceof LinearLayoutManager)) {
+                return;
+            }
+
+            final LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
+
+            final int totalItemCount = recyclerView.getAdapter().getItemCount();
+            final int lastVisibleItemPosition = manager.findLastVisibleItemPosition();
+            final int visibleItemCount = recyclerView.getChildCount();
+
+            if (visibleItemCount > 0
+                    && lastVisibleItemPosition == totalItemCount - 1) {
+                mTrack.logEvent(TrackCons.Main.SCROLL_BOTTOM);
             }
         }
     }
