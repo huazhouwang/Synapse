@@ -4,6 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/play"
+        android:title="@string/play"
+        android:icon="@drawable/ic_play_24dp"
+        app:showAsAction="ifRoom"
+        android:visible="false"
+        tools:visible="true"
+        />
+
+    <item
         android:id="@+id/interrupt"
         android:title="@string/text_train_interrupt"
         app:showAsAction="never"

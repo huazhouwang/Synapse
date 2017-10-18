@@ -16,7 +16,6 @@
     <color name="transparent">@android:color/transparent</color>
     <color name="translucency$1">#99323232</color>
 
-
     <color name="color_primary">@color/red$1</color>
     <color name="color_primary_dark">@color/red$2</color>
     <color name="color_accent">@color/purple$1</color>
@@ -30,13 +29,14 @@
     <color name="data_waiting_text">@color/white$1</color>
     <color name="data_unready_text">@color/color_accent</color>
     <color name="scrim">@color/translucency$1</color>
+    <color name="default_pole_color">@color/color_accent</color>
 
 
     <color name="window_background">@color/white$2</color>
     <color name="notify_decompress">#BDBDBD</color>
     <color name="normal_link">#4183C4</color>
     <color name="action_add_new_layer">#2196F3</color>
-    <color name="chart_left_axis">#536DFE</color>
+    <color name="chart_left_axis">@color/color_accent</color>
     <color name="chart_highlight">#212121</color>
 
 

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="40dp"
+    android:background="@drawable/marker"
+    android:backgroundTint="@color/text_primary"
+    tools:layout_gravity="center"
+    >
+
+    <TextView
+        android:id="@+id/mark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="@color/text_white"
+        android:maxLines="1"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="7dp"
+        tools:text="18"
+        />
+
+</FrameLayout>

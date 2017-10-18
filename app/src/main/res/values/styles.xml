@@ -58,4 +58,27 @@
         <item name="android:colorBackground">@color/white$2</item>
         <item name="android:textColorPrimary">@color/text_primary</item>
     </style>
+
+    <style name="ModelDetailActivityUpperItemCardStyle">
+        <item name="android:layout_width">150dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="contentPadding">8dp</item>
+    </style>
+
+    <style name="ModelDetailActivityUpperItemKeyStyle">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="ModelDetailActivityUpperItemValueStyle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
 </resources>

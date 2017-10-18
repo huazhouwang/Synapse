@@ -1,6 +1,7 @@
 package io.whz.androidneuralnetwork.component;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -17,11 +18,14 @@ import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.LimitLine;
+import com.github.mikephil.charting.components.MarkerView;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.utils.MPPointF;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -29,6 +33,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.Global;
@@ -37,6 +42,7 @@ import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.ModelDeletedEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
+import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainedModelViewBinder;
 import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.StringFormatUtil;
 
@@ -44,6 +50,9 @@ public class ModelDetailActivity extends WrapperActivity {
     public static final String INTENT_TYPE = "intent_type";
     public static final String TRAINED_ID = "trained_id";
     public static final String INTERRUPT_ACTION = "interrupt_action";
+
+    private static final int[] FG = TrainedModelViewBinder.FG;
+    private static final int[] BG = TrainedModelViewBinder.BG;
 
     public static final int ILLEGAL = 0x00;
     public static final int IS_TRAINING = 0x01;
@@ -58,6 +67,7 @@ public class ModelDetailActivity extends WrapperActivity {
     private LineChart mChart;
 
     private MenuItem mInterruptItem;
+    private MenuItem mPlayItem;
     private MenuItem mDeleteItem;
 
     private int mIntentType;
@@ -98,34 +108,41 @@ public class ModelDetailActivity extends WrapperActivity {
     }
 
     private void prepareChart() {
-        mChart.getDescription().setEnabled(false);
         mChart.setTouchEnabled(true);
         mChart.setDragEnabled(true);
         mChart.setScaleEnabled(true);
-        mChart.setHighlightPerDragEnabled(true);
         mChart.setPinchZoom(true);
+        mChart.setHighlightPerTapEnabled(true);
+        mChart.setDoubleTapToZoomEnabled(false);
+        mChart.setHighlightPerDragEnabled(false);
+
+        mChart.getDescription().setEnabled(false);
         mChart.setDrawGridBackground(false);
         mChart.getLegend().setEnabled(true);
         mChart.getAxisRight().setEnabled(false);
+        mChart.setMarker(new AMarkView(this, R.layout.ac_detail_mark_view));
 
         final YAxis leftAxis = mChart.getAxisLeft();
-        leftAxis.setTextColor(ContextCompat.getColor(this, R.color.chart_left_axis));
-        leftAxis.setAxisMinimum(0F);
+        leftAxis.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
+        leftAxis.setAxisMinimum(0.2F);
         leftAxis.setAxisMaximum(1F);
+        leftAxis.setLabelCount(8, true);
         leftAxis.setDrawGridLines(false);
         leftAxis.setDrawAxisLine(true);
 
         final LimitLine upLine = new LimitLine(0.9F, "Great");
         upLine.setLineWidth(2F);
-        upLine.enableDashedLine(5F, 5F, 5F);
+        upLine.enableDashedLine(10F, 10F, 10F);
         upLine.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
-        upLine.setLineColor(Color.GREEN);
+        upLine.setLineColor(ContextCompat.getColor(this, R.color.divider));
+        upLine.setTextColor(ContextCompat.getColor(this, R.color.green$1));
 
         final LimitLine downLine = new LimitLine(0.5F, "Bad");
         downLine.setLineWidth(2F);
-        downLine.enableDashedLine(5F, 5F, 5F);
+        downLine.enableDashedLine(10F, 10F, 10F);
         downLine.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
-        downLine.setLineColor(Color.RED);
+        downLine.setLineColor(ContextCompat.getColor(this, R.color.divider));
+        downLine.setTextColor(ContextCompat.getColor(this, R.color.pink_$1));
 
         leftAxis.addLimitLine(upLine);
         leftAxis.addLimitLine(downLine);
@@ -263,6 +280,7 @@ public class ModelDetailActivity extends WrapperActivity {
         if (mInterruptItem != null) {
             mInterruptItem.setVisible(false);
             mDeleteItem.setVisible(true);
+            mPlayItem.setVisible(true);
         }
     }
 
@@ -284,10 +302,9 @@ public class ModelDetailActivity extends WrapperActivity {
 
             mAccuracyData.add(new Entry(lastIndex, (float) (double) accuracies.get(lastIndex)));
 
-            mChart.moveViewToAnimated(lastIndex, (float) (double)accuracies.get(lastIndex), YAxis.AxisDependency.LEFT, 100);
-//            mChart.getData().notifyDataChanged();
-//            mChart.notifyDataSetChanged();
-//            mChart.invalidate();
+            mChart.getData().notifyDataChanged();
+            mChart.notifyDataSetChanged();
+            mChart.invalidate();
         }
     }
 
@@ -319,7 +336,7 @@ public class ModelDetailActivity extends WrapperActivity {
 
         final LineDataSet set = new LineDataSet(mAccuracyData, getString(R.string.text_chart_left_axis));
 
-        set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+        set.setMode(LineDataSet.Mode.LINEAR);
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
         set.setColor(ContextCompat.getColor(this, R.color.chart_left_axis));
         set.setCircleColor(ContextCompat.getColor(this, R.color.chart_left_axis));
@@ -329,9 +346,7 @@ public class ModelDetailActivity extends WrapperActivity {
         set.setHighlightEnabled(true);
         set.setLineWidth(2F);
         set.setCircleRadius(3F);
-        set.setFillColor(Color.CYAN);
-        set.setDrawFilled(true);
-        set.setFillDrawable(ContextCompat.getDrawable(this, R.drawable.bg_chart_fill_gradient));
+        set.setDrawFilled(false);
 
         final LineData group = new LineData(set);
         group.setDrawValues(false);
@@ -354,6 +369,7 @@ public class ModelDetailActivity extends WrapperActivity {
         axis.setDrawAxisLine(true);
         axis.setDrawGridLines(false);
         axis.setGranularity(1F);
+        axis.setAvoidFirstLastClipping(true);
 
         mChart.getAxisRight().setDrawAxisLine(true);
     }
@@ -401,6 +417,7 @@ public class ModelDetailActivity extends WrapperActivity {
         if (mInterruptItem != null) {
             mInterruptItem.setVisible(false);
             mDeleteItem.setVisible(true);
+            mPlayItem.setVisible(true);
         }
 
         displayTrainedModel(model);
@@ -483,14 +500,17 @@ public class ModelDetailActivity extends WrapperActivity {
                 .inflate(R.menu.ac_model_detail_menu, menu);
 
         mInterruptItem = menu.findItem(R.id.interrupt);
+        mPlayItem = menu.findItem(R.id.play);
         mDeleteItem = menu.findItem(R.id.delete);
 
         if (mIntentType == IS_TRAINING) {
             mInterruptItem.setVisible(true);
             mDeleteItem.setVisible(false);
+            mPlayItem.setVisible(false);
         } else if (mIntentType == IS_TRAINED) {
             mInterruptItem.setVisible(false);
             mDeleteItem.setVisible(true);
+            mPlayItem.setVisible(true);
         }
 
         return super.onCreateOptionsMenu(menu);
@@ -509,11 +529,28 @@ public class ModelDetailActivity extends WrapperActivity {
                 deleteModel(mModel);
                 return true;
 
+            case R.id.play:
+                playModel(mModel);
+                return true;
+
             default:
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void playModel(@Nullable Model model) {
+        if (model == null
+                || model.getId() == null) {
+            finishAfterTransition();
+            return;
+        }
+
+        final Intent intent = new Intent(this, PlayActivity.class);
+        intent.putExtra(PlayActivity.ID, model.getId());
+
+        startActivity(intent);
     }
 
     private void deleteModel(@Nullable final Model model) {
@@ -552,5 +589,29 @@ public class ModelDetailActivity extends WrapperActivity {
                 })
                 .setNegativeButton(R.string.dialog_negative, null)
                 .show();
+    }
+
+    private static final class AMarkView extends MarkerView {
+        private final TextView mMark;
+        private final Locale mLocale;
+
+        AMarkView(Context context, int layoutResource) {
+            super(context, layoutResource);
+
+            mMark = this.findViewById(R.id.mark);
+            mLocale = Locale.getDefault();
+        }
+
+        @Override
+        public void refreshContent(Entry e, Highlight highlight) {
+            mMark.setText(String.format(mLocale, "%.2f%%", e.getY() * 100));
+
+            super.refreshContent(e, highlight);
+        }
+
+        @Override
+        public MPPointF getOffset() {
+            return new MPPointF(-(getWidth() >> 1), -getHeight());
+        }
     }
 }
