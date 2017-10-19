@@ -21,11 +21,12 @@ android {
                 arguments = [eventBusIndex: 'io.whz.androidneuralnetwork.EventBusIndex']
             }
         }
+
+        buildConfigField "boolean", "TRACK_ENABLE", "$isGoogleServicesEnable"
+        buildConfigField "String", "AMPLITUDE_ID", "\"$gradle.AMPLITUDE_ID\""
     }
     buildTypes {
         debug {
-            buildConfigField "boolean", "TRACK_ENABLE", "$isGoogleServicesEnable"
-            buildConfigField "String", "AMPLITUDE_ID", "\"$gradle.AMPLITUDE_ID\""
         }
 
         release {
