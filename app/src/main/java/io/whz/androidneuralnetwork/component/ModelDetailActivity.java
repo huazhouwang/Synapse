@@ -187,10 +187,11 @@ public class ModelDetailActivity extends WrapperActivity {
     }
 
     private void unregisterEvenBus() {
-        if (mIntentType == IS_TRAINING) {
-            Global.getInstance()
-                    .getBus()
-                    .unregister(this);
+        final EventBus bus = Global.getInstance()
+                .getBus();
+
+        if (bus.isRegistered(this)) {
+            bus.unregister(this);
         }
     }
 

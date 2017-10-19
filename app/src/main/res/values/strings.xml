@@ -83,4 +83,9 @@
     <string name="text_dialog_model_list_title">Chose a model</string>
     <string name="text_menu_jump_to_detail">View Detail</string>
     <string name="play">play</string>
+    <string name="text_about">About</string>
+    <string name="text_dialog_about_positive">Hello World</string>
+    <string name="text_share_chooser_title">Share app to:</string>
+    <string name="text_share_subject">Share Synapse to you</string>
+    <string name="text_share_text">Synapse, training MBGD model recognizes mnist handwritten digits directly on Android device. Download in Google Play:</string>
 </resources>

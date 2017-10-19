@@ -24,6 +24,8 @@ import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
@@ -645,6 +647,27 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
             startActivity(intent, options.toBundle());
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.ac_main_menu, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        final int id = item.getItemId();
+
+        switch (id) {
+            case R.id.about:
+                new AboutDialog().show(getSupportFragmentManager(), "About");
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
