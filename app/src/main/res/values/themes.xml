@@ -36,7 +36,6 @@
 
     <style name="AppTheme.NoActionBar.PlayActivity">
         <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:windowBackground">@color/black$3</item>
     </style>
 
 </resources>

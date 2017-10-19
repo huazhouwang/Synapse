@@ -1,5 +1,6 @@
 package io.whz.androidneuralnetwork.component;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -122,11 +123,17 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
         final File[] files = Global.getInstance().getDirs().test.listFiles();
         mProvider = new FigureProvider(files[ThreadLocalRandom.current().nextInt(files.length)]);
 
+        final long id = getIntent().getLongExtra(ID, -1);
+
+        if (id != -1) {
+            getWindow().setBackgroundDrawableResource(BG[(int) id % BG.length]);
+        }
+
         Scheduler.Secondary.execute(new Runnable() {
             @Override
             public void run() {
+                initNeural(id);
                 mProvider.load();
-                initNeural();
             }
         });
     }
@@ -183,9 +190,7 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
         }
     }
 
-    private void initNeural() {
-        long id = getIntent().getLongExtra(ID, -1);
-
+    private void initNeural(final long id) {
         if (id == -1) {
             try {
                 final List<Model> list = Global.getInstance()
@@ -206,22 +211,38 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
             return;
         }
 
-        showEmptyData();
+        showNoData();
     }
 
-    private void showEmptyData() {
+    private void showNoData() {
+        final Activity that = this;
+
         Scheduler.Main.execute(new Runnable() {
             @Override
             public void run() {
                 hideLoading();
-                // TODO: 15/10/2017
+
+                if (that.isFinishing()) {
+                    return;
+                }
+
+                new AlertDialog.Builder(that)
+                        .setTitle(R.string.text_dialog_no_data_title)
+                        .setMessage(R.string.text_dialog_no_data_msg)
+                        .setCancelable(false)
+                        .setNegativeButton(R.string.text_dialog_no_data_negative, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                finishAfterTransition();
+                            }
+                        }).show();
             }
         });
     }
 
     private void prepareModel(long id) {
         if (id < 0) {
-            showEmptyData();
+            showNoData();
             return;
         }
 
@@ -242,7 +263,7 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
             return;
         }
 
-        showEmptyData();
+        showNoData();
     }
 
     private void refreshPage(@NonNull Model model) {
