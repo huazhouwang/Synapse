@@ -303,7 +303,7 @@ public class MainService extends Service {
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
 
         builder.setContentTitle(getString(R.string.text_notification_decompress))
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.notify_icon)
                 .setColor(ContextCompat.getColor(this, R.color.color_accent))
                 .setWhen(System.currentTimeMillis())
                 .setOngoing(true)
@@ -396,7 +396,7 @@ public class MainService extends Service {
 
         builder.setContentTitle(String.format(getString(R.string.template_train_complete_title), model.getName()))
                 .setContentText(String.format(getString(R.string.template_train_complete_content), time, accuracy))
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.notify_icon)
                 .setColor(ContextCompat.getColor(this, R.color.color_accent))
                 .setVibrate(new long[]{1000, 1000, 1000})
                 .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
@@ -430,7 +430,7 @@ public class MainService extends Service {
         mTrainNotifyBuilder = new NotificationCompat.Builder(this, ChannelCreator.CHANNEL_ID);
 
         mTrainNotifyBuilder.setContentTitle(String.format(getString(R.string.template_train_start_title), model.getName()))
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.notify_icon)
                 .setColor(ContextCompat.getColor(this, R.color.color_accent))
                 .setWhen(System.currentTimeMillis())
                 .setProgress(model.getEpochs(), 0, false)

@@ -124,9 +124,9 @@ public class ModelDetailActivity extends WrapperActivity {
 
         final YAxis leftAxis = mChart.getAxisLeft();
         leftAxis.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
-        leftAxis.setAxisMinimum(0.2F);
+        leftAxis.setAxisMinimum(0F);
         leftAxis.setAxisMaximum(1F);
-        leftAxis.setLabelCount(8, true);
+//        leftAxis.setLabelCount(10, true);
         leftAxis.setDrawGridLines(false);
         leftAxis.setDrawAxisLine(true);
 

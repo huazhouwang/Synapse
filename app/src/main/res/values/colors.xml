@@ -8,18 +8,16 @@
     <color name="white$2">#FAFAFA</color>
     <color name="black$1">#000000</color>
     <color name="black$2">#212121</color>
-    <color name="black$3">#303030</color>
     <color name="gray$1">#757575</color>
     <color name="gray$2">#BDBDBD</color>
-    <color name="blue$1">#536DFE</color>
-    <color name="purple$1">#7C4DFF</color>
+    <color name="blue$1">#6889ff</color>
     <color name="transparent">@android:color/transparent</color>
     <color name="translucency$1">#99323232</color>
 
     <!--Should Be Referent Only-->
     <color name="color_primary">@color/red$1</color>
     <color name="color_primary_dark">@color/red$2</color>
-    <color name="color_accent">@color/purple$1</color>
+    <color name="color_accent">@color/blue$1</color>
     <color name="icon">@color/white$1</color>
     <color name="divider">@color/gray$2</color>
     <color name="text_primary">@color/black$2</color>
