@@ -11,6 +11,10 @@
         <item name="android:windowBackground">@color/window_background</item>
     </style>
 
+    <style name="AppTheme.Main">
+        <item name="android:windowBackground">@drawable/bg_splash</item>
+    </style>
+
     <style name="AppTheme.Translucent">
         <item name="android:windowBackground">@color/scrim</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
@@ -36,6 +40,7 @@
 
     <style name="AppTheme.NoActionBar.PlayActivity">
         <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowBackground">@color/color_primary</item>
     </style>
 
 </resources>

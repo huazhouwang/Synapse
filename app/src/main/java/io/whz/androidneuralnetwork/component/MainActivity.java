@@ -84,6 +84,7 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setBackgroundDrawableResource(R.color.window_background);
         setContentView(R.layout.activity_main);
 
         if (!checkDownloadManager()) {
