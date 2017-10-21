@@ -10,9 +10,9 @@ import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Lifecycle.LEAV
 import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.concat;
 
 class ActivityLifecycleTracker implements Application.ActivityLifecycleCallbacks {
-    private final Track mTrack;
+    private final Tracker mTrack;
 
-    ActivityLifecycleTracker(@NonNull Track track) {
+    ActivityLifecycleTracker(@NonNull Tracker track) {
         mTrack = track;
     }
 
@@ -21,7 +21,7 @@ class ActivityLifecycleTracker implements Application.ActivityLifecycleCallbacks
 
     @Override
     public void onActivityStarted(Activity activity) {
-        mTrack.logEvent(concat(ENTER, activity.getClass().getSimpleName()));
+        mTrack.logEvent(concat(ENTER, activity.getClass().getSimpleName().toLowerCase()));
     }
 
     @Override
@@ -35,7 +35,7 @@ class ActivityLifecycleTracker implements Application.ActivityLifecycleCallbacks
 
     @Override
     public void onActivityStopped(Activity activity) {
-        mTrack.logEvent(concat(LEAVE, activity.getClass().getSimpleName()));
+        mTrack.logEvent(concat(LEAVE, activity.getClass().getSimpleName().toLowerCase()));
     }
 
     @Override

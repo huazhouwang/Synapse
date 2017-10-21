@@ -37,12 +37,14 @@ import java.util.Locale;
 
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.Global;
+import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.ModelDeletedEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainedModelViewBinder;
+import io.whz.androidneuralnetwork.track.Tracker;
 import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.StringFormatUtil;
 
@@ -215,6 +217,9 @@ public class ModelDetailActivity extends WrapperActivity {
                         Global.getInstance()
                                 .getBus()
                                 .post(new MSNEvent<>(MSNEvent.TRAIN_INTERRUPT));
+
+                        Tracker.getInstance()
+                                .logEvent(TrackCons.Detail.CLICK_INTERRUPT);
 
                         if (!that.isFinishing()) {
                             Snackbar.make(mChart, R.string.text_model_detail_interrupt_waiting, Snackbar.LENGTH_INDEFINITE)
@@ -548,6 +553,9 @@ public class ModelDetailActivity extends WrapperActivity {
             return;
         }
 
+        Tracker.getInstance()
+                .logEvent(TrackCons.Detail.CLICK_PLAY);
+
         final Intent intent = new Intent(this, PlayActivity.class);
         intent.putExtra(PlayActivity.ID, model.getId());
 
@@ -579,6 +587,9 @@ public class ModelDetailActivity extends WrapperActivity {
                             Global.getInstance()
                                     .getBus()
                                     .postSticky(new ModelDeletedEvent(model));
+
+                            Tracker.getInstance()
+                                    .logEvent(TrackCons.Detail.CLICK_DELETE);
                         } catch (Exception e) {
                             e.printStackTrace();
                         } finally {

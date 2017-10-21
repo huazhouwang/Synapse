@@ -9,12 +9,12 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import io.whz.androidneuralnetwork.pojo.event.TrackEvent;
 
-public abstract class AbsTrack implements ITrack {
+public abstract class AbsTrackHandler {
     void register(@NonNull EventBus bus) {
         bus.register(this);
     }
 
-    AbsTrack(@NonNull Context context) {}
+    AbsTrackHandler(@NonNull Context context) {}
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public abstract void onTrackEvent(TrackEvent event);

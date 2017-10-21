@@ -43,19 +43,21 @@ import io.whz.androidneuralnetwork.neural.DataSet;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.neural.NeuralNetwork;
 import io.whz.androidneuralnetwork.neural.TrainCallback;
-import io.whz.androidneuralnetwork.pojo.constant.PreferenceKey;
+import io.whz.androidneuralnetwork.pojo.constant.PreferenceCons;
+import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
+import io.whz.androidneuralnetwork.track.ExceptionHelper;
+import io.whz.androidneuralnetwork.track.TimeHelper;
+import io.whz.androidneuralnetwork.track.Tracker;
 import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.FileUtil;
 import io.whz.androidneuralnetwork.util.Precondition;
 import io.whz.androidneuralnetwork.util.StringFormatUtil;
 
 public class MainService extends Service {
-//    private static final int FOREGROUND_SERVER = 0x1111;
-
     private static final int RQC_DECOMPRESS = 0x01;
     private static final int RQC_TRAIN_START = 0x01 << 1;
     private static final int RQC_TRAIN_INTERRUPT = 0x01 << 2;
@@ -63,22 +65,21 @@ public class MainService extends Service {
     private static final String TAG = App.TAG + "-MainService";
 
     public static final String EXTRAS_NEURAL_CONFIG = "extras_neural_config";
-
     public static final String ACTION_KEY = "action_key";
+
     private static final int IDLE = 0x00;
     public static final int ACTION_DOWNLOAD = 0x01;
     public static final int ACTION_TRAIN = 0x01 << 1;
-    public static final int ACTION_TEST = 0x01 << 2;
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({IDLE, ACTION_DOWNLOAD, ACTION_TRAIN, ACTION_TEST})
+    @IntDef({IDLE, ACTION_DOWNLOAD, ACTION_TRAIN})
     private @interface Action {}
 
     @Action
     private int mAction = IDLE;
 
     private BroadcastReceiver mDownloadReceiver;
-    private AtomicBoolean mTrainInterruptSign;// TODO: 28/09/2017 interrupt
+    private AtomicBoolean mTrainInterruptSign;
     private NotificationCompat.Builder mTrainNotifyBuilder;
     private NotificationManager mNotifyManager;
 
@@ -94,9 +95,6 @@ public class MainService extends Service {
 
                 case ACTION_TRAIN:
                     handleTraining(intent);
-                    break;
-
-                case ACTION_TEST:
                     break;
 
                 case IDLE:
@@ -135,10 +133,6 @@ public class MainService extends Service {
                 
             case ACTION_DOWNLOAD:
                 rep = getString(R.string.text_wait_for_download);
-                break;
-
-            case ACTION_TEST:
-                rep = getString(R.string.text_wait_for_test);
                 break;
 
             case ACTION_TRAIN:
@@ -194,6 +188,9 @@ public class MainService extends Service {
 
         mDownloadReceiver = new DownloadReceiver(downloadManager, ids);
         registerReceiver(mDownloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
+        TimeHelper.getInstance()
+                .start(TrackCons.Service.DOWNLOAD);
     }
 
     @Override
@@ -248,6 +245,9 @@ public class MainService extends Service {
 
     private void handleInterruptRequest(@NonNull MSNEvent event) {
         interruptTraining();
+
+        Tracker.getInstance()
+                .logEvent(TrackCons.Service.INTERRUPT_REQ);
     }
 
     private void interruptTraining() {
@@ -269,6 +269,27 @@ public class MainService extends Service {
         } else {
             reset();
         }
+
+        Tracker.getInstance()
+                .event(TrackCons.Service.DOWNLOAD)
+                .put(TrackCons.Key.SUCCESS, success)
+                .put(TrackCons.Key.TIME_USED, TimeHelper.getInstance().stop(TrackCons.Service.DOWNLOAD))
+                .log();
+    }
+
+    private void decompress() {
+        final Dir dir = Global.getInstance().getDirs();
+        FileUtil.makeDirs(dir.decompress, dir.mnist);
+
+        final AtomicInteger sign = new AtomicInteger(2);
+
+        Scheduler.Secondary.execute(new DecompressRunnable(sign, true));
+        Scheduler.Secondary.execute(new DecompressRunnable(sign, false));
+
+        showDecompressNotification();
+
+        TimeHelper.getInstance()
+                .start(TrackCons.Service.DECOMPRESS);
     }
 
     private void handleDecompressComplete(@NonNull MSNEvent event) {
@@ -286,13 +307,19 @@ public class MainService extends Service {
                 .post(new MANEvent<>(MANEvent.DECOMPRESS_COMPLETE, success));
 
         reset();
+
+        Tracker.getInstance()
+                .event(TrackCons.Service.DECOMPRESS)
+                .put(TrackCons.Key.SUCCESS, success)
+                .put(TrackCons.Key.TIME_USED, TimeHelper.getInstance().stop(TrackCons.Service.DECOMPRESS))
+                .log();
     }
 
     private void markDataSetReadyNow() {
         Global.getInstance()
                 .getPreference()
                 .edit()
-                .putBoolean(PreferenceKey.IS_DATA_SET_READY, true)
+                .putBoolean(PreferenceCons.IS_DATA_SET_READY, true)
                 .apply();
     }
 
@@ -313,18 +340,6 @@ public class MainService extends Service {
         startForeground(RQC_DECOMPRESS, builder.build());
     }
 
-    private void decompress() {
-        final Dir dir = Global.getInstance().getDirs();
-        FileUtil.makeDirs(dir.decompress, dir.mnist);
-
-        final AtomicInteger sign = new AtomicInteger(2);
-
-        Scheduler.Secondary.execute(new DecompressRunnable(sign, true));
-        Scheduler.Secondary.execute(new DecompressRunnable(sign, false));
-
-        showDecompressNotification();
-    }
-
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTraining(@NonNull TrainEvent event) {
@@ -339,12 +354,12 @@ public class MainService extends Service {
                 handleTrainUpdateEvent(event);
                 break;
 
-            case TrainEvent.COMPLETE:
-                handleTrainCompleteEvent(event);
-                break;
-
             case TrainEvent.EVALUATE:
                 handleStartEvaluate();
+                break;
+
+            case TrainEvent.COMPLETE:
+                handleTrainCompleteEvent(event);
                 break;
 
             case TrainEvent.ERROR:
@@ -359,6 +374,11 @@ public class MainService extends Service {
 
     private void handleInterrupted(TrainEvent event) {
         reset();
+
+        Tracker.getInstance()
+                .event(TrackCons.Service.INTERRUPT)
+                .put(TrackCons.Key.SUCCESS, true)
+                .log();
     }
 
     private void handleStartEvaluate() {
@@ -371,6 +391,12 @@ public class MainService extends Service {
 
     private void handleTrainError(TrainEvent event) {
         reset();
+
+        Tracker.getInstance()
+                .event(TrackCons.Service.TRAIN)
+                .put(TrackCons.Key.SUCCESS, false)
+                .put(TrackCons.Key.MSG, String.valueOf(event.obj))
+                .log();
     }
 
     private void handleTrainCompleteEvent(TrainEvent event) {
@@ -407,6 +433,13 @@ public class MainService extends Service {
 
         mNotifyManager.notify((int) id, builder.build());
         reset();
+
+        Tracker.getInstance()
+                .event(TrackCons.Service.TRAIN)
+                .put(TrackCons.Key.SUCCESS, true)
+                .put(TrackCons.Key.TIME_USED, time)
+                .put(TrackCons.Key.MSG, "Accuracy: " + accuracy)
+                .log();
     }
 
     private void handleTrainStartEvent(@NonNull TrainEvent event) {
@@ -512,6 +545,10 @@ public class MainService extends Service {
                 }
             } else if (mSign.get() != QUIT_SIGN) {
                 mSign.set(QUIT_SIGN);
+                return;
+            }
+
+            if (mSign.get() == QUIT_SIGN) {
                 Global.getInstance().getBus()
                         .post(new MSNEvent<>(MSNEvent.DECOMPRESS_COMPLETE, false));
             }
@@ -608,7 +645,7 @@ public class MainService extends Service {
         }
 
         @Override
-        public void onTrainComplete() {
+        public void onEvaluate() {
             if (mInterruptSign.get()) {
                 mEventBus.postSticky(new TrainEvent<>(TrainEvent.INTERRUPTED));
             } else {
@@ -620,7 +657,7 @@ public class MainService extends Service {
         }
 
         @Override
-        public void onEvaluateComplete(double evaluate) {
+        public void onComplete(double evaluate) {
             mModel.setEvaluate(evaluate);
             mModel.setCreatedTime(System.currentTimeMillis());
             mModel.setWeights(mNeural.getWeights());
@@ -632,32 +669,33 @@ public class MainService extends Service {
 
                 mEventBus.postSticky(new TrainEvent<>(TrainEvent.COMPLETE, mModel));
             } catch (Exception e) {
-                e.printStackTrace();
-
                 mEventBus.postSticky(new TrainEvent<>(TrainEvent.ERROR, R.string.text_error_fail_to_save_model));
+
+                ExceptionHelper.getInstance()
+                        .caught(e);
             }
         }
 
         private long saveModel(@NonNull Model model) {
-            final Model model2Saved = new Model();
+            final Model copy = new Model();
 
-            model2Saved.setName(model.getName());
-            model2Saved.setLearningRate(model.getLearningRate());
-            model2Saved.setEpochs(model.getEpochs());
-            model2Saved.setDataSize(model.getDataSize());
-            model2Saved.setTimeUsed(model.getTimeUsed());
-            model2Saved.setEvaluate(model.getEvaluate());
-            model2Saved.setCreatedTime(model.getCreatedTime());
+            copy.setName(model.getName());
+            copy.setLearningRate(model.getLearningRate());
+            copy.setEpochs(model.getEpochs());
+            copy.setDataSize(model.getDataSize());
+            copy.setTimeUsed(model.getTimeUsed());
+            copy.setEvaluate(model.getEvaluate());
+            copy.setCreatedTime(model.getCreatedTime());
 
-            model2Saved.setHiddenSizeBytes(DbHelper.convert2ByteArray(model.getHiddenSizes()));
-            model2Saved.setAccuracyBytes(DbHelper.convert2ByteArray(model.getAccuracies()));
-            model2Saved.setWeightBytes(DbHelper.convert2ByteArray(model.getWeights()));
-            model2Saved.setBiasBytes(DbHelper.convert2ByteArray(model.getBiases()));
+            copy.setHiddenSizeBytes(DbHelper.convert2ByteArray(model.getHiddenSizes()));
+            copy.setAccuracyBytes(DbHelper.convert2ByteArray(model.getAccuracies()));
+            copy.setWeightBytes(DbHelper.convert2ByteArray(model.getWeights()));
+            copy.setBiasBytes(DbHelper.convert2ByteArray(model.getBiases()));
 
             return Global.getInstance()
                     .getSession()
                     .getModelDao()
-                    .insert(model2Saved);
+                    .insert(copy);
         }
     }
 

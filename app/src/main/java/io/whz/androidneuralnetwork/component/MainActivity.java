@@ -42,7 +42,7 @@ import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.element.VerticalGap;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
-import io.whz.androidneuralnetwork.pojo.constant.PreferenceKey;
+import io.whz.androidneuralnetwork.pojo.constant.PreferenceCons;
 import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
@@ -57,7 +57,8 @@ import io.whz.androidneuralnetwork.pojo.multiple.item.PlayItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.TrainedModelItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.TrainingModelItem;
 import io.whz.androidneuralnetwork.pojo.multiple.item.WelcomeItem;
-import io.whz.androidneuralnetwork.track.Track;
+import io.whz.androidneuralnetwork.track.ExceptionHelper;
+import io.whz.androidneuralnetwork.track.Tracker;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 import io.whz.androidneuralnetwork.util.Precondition;
 import me.drakeet.multitype.MultiTypeAdapter;
@@ -69,8 +70,6 @@ import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.CLICK_FAB
 import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.CLICK_PLAY;
 import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.CLICK_TRAINED;
 import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.CLICK_TRAINING;
-import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.FAIL_DECOMPRESS;
-import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Main.FAIL_DOWNLOAD;
 
 public class MainActivity extends WrapperActivity implements View.OnClickListener {
     private static final int REQUEST_EXTERNAL_STORAGE = 0x01;
@@ -212,7 +211,7 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
     private boolean checkDataReadyRoughly() {
         return Global.getInstance()
                 .getPreference()
-                .getBoolean(PreferenceKey.IS_DATA_SET_READY, false);
+                .getBoolean(PreferenceCons.IS_DATA_SET_READY, false);
     }
 
     public boolean isDataSetReady() {
@@ -229,7 +228,7 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
             Global.getInstance()
                     .getPreference()
                     .edit()
-                    .putBoolean(PreferenceKey.IS_DATA_SET_READY, false)
+                    .putBoolean(PreferenceCons.IS_DATA_SET_READY, false)
                     .apply();
 
             return false;
@@ -285,7 +284,8 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
                     .orderDesc(ModelDao.Properties.CreatedTime)
                     .list();
         } catch (Exception e) {
-            e.printStackTrace();
+            ExceptionHelper.getInstance()
+                    .caught(e);
         }
 
         if (models == null
@@ -391,15 +391,8 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
     @CheckResult
     @Nullable
     private TrainingModelItem getTrainingModelItem(@Nullable Model model) {
-        final TrainingModelItem item;
-
-        if (model == null) {
-            item = null;
-        } else {
-            item = new TrainingModelItem(model);
-        }
-
-        return item;
+        return model == null ?
+                null : new TrainingModelItem(model);
     }
 
     @SuppressWarnings("unused")
@@ -447,7 +440,7 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
 
         startActivity(intent);
 
-        Track.getInstance()
+        Tracker.getInstance()
                 .logEvent(CLICK_TRAINING);
     }
 
@@ -464,7 +457,7 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
 
         startActivity(intent);
 
-        Track.getInstance()
+        Tracker.getInstance()
                 .logEvent(CLICK_TRAINED);
     }
 
@@ -473,7 +466,7 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
 
         startActivity(intent);
 
-        Track.getInstance()
+        Tracker.getInstance()
                 .logEvent(CLICK_PLAY);
     }
 
@@ -497,9 +490,6 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
             mButler.setWelcome(getDataSetItem(WelcomeItem.UNREADY))
                     .notifyDataSetChanged();
             res = R.string.text_download_error;
-
-            Track.getInstance()
-                    .logEvent(FAIL_DOWNLOAD);
         }
 
         Snackbar.make(mRecyclerView, res, Snackbar.LENGTH_SHORT)
@@ -528,9 +518,6 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
             mButler.setWelcome(getDataSetItem(WelcomeItem.UNREADY))
                     .notifyDataSetChanged();
             res = R.string.text_decompress_error;
-
-            Track.getInstance()
-                    .logEvent(FAIL_DECOMPRESS);
         }
 
         Snackbar.make(mRecyclerView, res, Snackbar.LENGTH_SHORT)
@@ -546,7 +533,7 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
 
         startService(intent);
 
-        Track.getInstance()
+        Tracker.getInstance()
                 .logEvent(CLICK_DOWNLOAD);
     }
 
@@ -594,17 +581,9 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
             final Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
             startActivity(intent);
         } catch (Exception e) {
-            e.printStackTrace();
+            ExceptionHelper.getInstance()
+                    .caught(e);
         }
-    }
-
-    private boolean isWifi() {
-        final ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo network = manager.getActiveNetworkInfo();
-
-        return network != null
-                && network.getType() == ConnectivityManager.TYPE_WIFI
-                && network.isAvailable();
     }
 
     @Override
@@ -614,7 +593,7 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
         switch (id) {
             case fab:
                 startNeuralNetworkConfig(view);
-                Track.getInstance()
+                Tracker.getInstance()
                         .logEvent(CLICK_FAB);
                 break;
 
@@ -647,7 +626,8 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
 
             startActivity(intent, options.toBundle());
         } catch (Exception e) {
-            e.printStackTrace();
+            ExceptionHelper.getInstance()
+                    .caught(e);
         }
     }
 
@@ -664,7 +644,12 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
 
         switch (id) {
             case R.id.about:
-                new AboutDialog().show(getSupportFragmentManager(), "About");
+                new AboutDialog()
+                        .show(getSupportFragmentManager(), getString(R.string.text_about));
+
+                Tracker.getInstance()
+                        .logEvent(TrackCons.Main.CLICK_ABOUT);
+
                 return true;
 
             default:
@@ -808,12 +793,14 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
     }
 
     private static final class OnScrollTracker extends RecyclerView.OnScrollListener {
-        private final Track mTrack = Track.getInstance();
+        private static final int AVAILABLE = 5;
+        private final Tracker mTrack = Tracker.getInstance();
 
         @Override
         public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
             if (newState != RecyclerView.SCROLL_STATE_IDLE
-                    || !(recyclerView.getLayoutManager() instanceof LinearLayoutManager)) {
+                    || !(recyclerView.getLayoutManager() instanceof LinearLayoutManager)
+                    || recyclerView.getChildCount() < AVAILABLE) {
                 return;
             }
 
@@ -821,10 +808,8 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
 
             final int totalItemCount = recyclerView.getAdapter().getItemCount();
             final int lastVisibleItemPosition = manager.findLastVisibleItemPosition();
-            final int visibleItemCount = recyclerView.getChildCount();
 
-            if (visibleItemCount > 0
-                    && lastVisibleItemPosition == totalItemCount - 1) {
+            if (lastVisibleItemPosition == totalItemCount - 1) {
                 mTrack.logEvent(TrackCons.Main.SCROLL_BOTTOM);
             }
         }

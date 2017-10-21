@@ -15,8 +15,7 @@ public class TrainEvent<T> extends TypeEvent<T> {
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({START, UPDATE, EVALUATE, COMPLETE, ERROR, INTERRUPTED})
-    public @interface Type {
-    }
+    public @interface Type {}
 
     public TrainEvent(@Type int what, T obj) {
         super(what, obj);

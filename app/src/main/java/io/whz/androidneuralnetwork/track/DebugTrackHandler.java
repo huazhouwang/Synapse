@@ -6,15 +6,16 @@ import android.util.Log;
 
 import io.whz.androidneuralnetwork.pojo.event.TrackEvent;
 
-class DebugTrack extends AbsTrack {
-    private static final String TAG = "DebugTrack";
+class DebugTrackHandler extends AbsTrackHandler {
+    private static final String TAG = "DebugTrackHandler";
 
-    DebugTrack(@NonNull Context context) {
+    DebugTrackHandler(@NonNull Context context) {
         super(context);
     }
 
     @Override
     public void onTrackEvent(TrackEvent event) {
-        Log.i(TAG, String.format("ID: %s, Event %s", event.id, event.bundle));
+        Log.i(TAG, "ID: " + event.id +
+                (event.bundle == null ? "" : "Event: " + event.bundle));
     }
 }

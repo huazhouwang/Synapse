@@ -7,11 +7,11 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 
 import io.whz.androidneuralnetwork.pojo.event.TrackEvent;
 
-class FirebaseTrack extends AbsTrack {
+class FirebaseTrackHandler extends AbsTrackHandler {
 
     private final FirebaseAnalytics mAnalyties;
 
-    FirebaseTrack(@NonNull Context context) {
+    FirebaseTrackHandler(@NonNull Context context) {
         super(context);
 
         mAnalyties = FirebaseAnalytics.getInstance(context);

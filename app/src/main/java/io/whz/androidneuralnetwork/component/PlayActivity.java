@@ -33,7 +33,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 import io.whz.androidneuralnetwork.R;
@@ -48,7 +47,8 @@ import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainedModelViewBinder;
 import io.whz.androidneuralnetwork.pojo.neural.Figure;
-import io.whz.androidneuralnetwork.track.Track;
+import io.whz.androidneuralnetwork.track.ExceptionHelper;
+import io.whz.androidneuralnetwork.track.Tracker;
 import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.Precondition;
 
@@ -72,10 +72,10 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
 
     private BlockTouchListener mBlockListener;
     private NeuralNetwork mNetwork;
-    private Model mModel;
     private LineDataSet mLineData;
     private View mLowerBg;
     private FigureProvider mProvider;
+    private long mCurId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,8 +103,8 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
             public void onBlock() {
                 startPredicting();
 
-                Track.getInstance()
-                        .logEvent(TrackCons.Play.PREDICT_HAND_WRITE);
+                Tracker.getInstance()
+                        .logEvent(TrackCons.Play.PLAY_HAND_WRITE);
             }
         }, 500);
 
@@ -132,7 +132,7 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
         Scheduler.Secondary.execute(new Runnable() {
             @Override
             public void run() {
-                initNeural(id);
+                renderNeural(id);
                 mProvider.load();
             }
         });
@@ -190,28 +190,31 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
         }
     }
 
-    private void initNeural(final long id) {
-        if (id == -1) {
-            try {
-                final List<Model> list = Global.getInstance()
-                        .getSession().getModelDao()
-                        .queryBuilder().orderDesc(ModelDao.Properties.CreatedTime)
-                        .listLazy();
+    private void renderNeural(final long id) {
+        if (!((id < 0 && renderLatest()) || renderModel(id))) {
+            showNoData();
+        }
+    }
 
-                if (!list.isEmpty()) {
-                    final Model model = list.get(0);
-                    refreshPage(model);
-                    return;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+    private boolean renderLatest() {
+        try {
+            final List<Model> list = Global.getInstance()
+                    .getSession().getModelDao()
+                    .queryBuilder().orderDesc(ModelDao.Properties.CreatedTime)
+                    .listLazy();
+
+            if (!list.isEmpty()) {
+                final Model model = list.get(0);
+                refreshPage(model);
+                return true;
             }
-        } else {
-            prepareModel(id);
-            return;
+        } catch (Exception e) {
+            ExceptionHelper.getInstance()
+                    .caught(e);
+
         }
 
-        showNoData();
+        return false;
     }
 
     private void showNoData() {
@@ -240,10 +243,9 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
         });
     }
 
-    private void prepareModel(long id) {
+    private boolean renderModel(long id) {
         if (id < 0) {
-            showNoData();
-            return;
+            return false;
         }
 
         Model model = null;
@@ -254,16 +256,18 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
                     .getModelDao()
                     .loadByRowId(id);
         } catch (Exception e) {
-            e.printStackTrace();
             model = null;
+
+            ExceptionHelper.getInstance()
+                    .caught(e);
         }
 
         if (model != null) {
             refreshPage(model);
-            return;
+            return true;
         }
 
-        showNoData();
+        return false;
     }
 
     private void refreshPage(@NonNull Model model) {
@@ -299,7 +303,7 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
 
     @MainThread
     private void refreshNeural(@NonNull Model model) {
-        mModel = model;
+        mCurId = model.getId();
         mNetwork = new NeuralNetwork(model.getWeights(), model.getBiases());
     }
 
@@ -383,13 +387,13 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
         switch (id) {
             case R.id.select_model:
                 showModelListDialog();
-                Track.getInstance()
+                Tracker.getInstance()
                         .logEvent(TrackCons.Play.CLICK_MODEL_SELECTION);
                 return true;
 
             case R.id.jump_to_detail:
                 jumpToDetail();
-                Track.getInstance()
+                Tracker.getInstance()
                         .logEvent(TrackCons.Play.CLICK_VIEW_DETAIL);
                 return true;
 
@@ -399,13 +403,13 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
     }
 
     private void jumpToDetail() {
-        if (mModel == null) {
+        if (mCurId == -1) {
             return;
         }
 
         final Intent intent = new Intent(this, ModelDetailActivity.class);
         intent.putExtra(ModelDetailActivity.INTENT_TYPE, ModelDetailActivity.IS_TRAINED);
-        intent.putExtra(ModelDetailActivity.TRAINED_ID, mModel.getId());
+        intent.putExtra(ModelDetailActivity.TRAINED_ID, mCurId);
         startActivity(intent);
     }
 
@@ -442,21 +446,20 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
                 .show();
     }
 
-    private void newModelChosen(@NonNull List<Model> models, int i) {
+    private void newModelChosen(@NonNull final List<Model> models, int i) {
         final Model newOne = models.get(i);
 
-        if (mModel != null
-                && Objects.equals(mModel.getId(), newOne.getId())) {
+        if (mCurId == newOne.getId()) {
             return;
         }
 
-        mModel = newOne;
+        mCurId = newOne.getId();
         showLoading();
 
         Scheduler.Secondary.execute(new Runnable() {
             @Override
             public void run() {
-                refreshPage(mModel);
+                renderNeural(mCurId);
             }
         });
     }
@@ -468,8 +471,8 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
         switch (id) {
             case R.id.refresh:
                 refreshDigit();
-                Track.getInstance()
-                        .logEvent(TrackCons.Play.PREDICT_MNIST);
+                Tracker.getInstance()
+                        .logEvent(TrackCons.Play.PLAY_MNIST);
                 break;
 
             default:

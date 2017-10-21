@@ -5,7 +5,7 @@ public interface TrainCallback {
 
     boolean onUpdate(int progress, double accurate);
 
-    void onTrainComplete();
+    void onEvaluate();
 
-    void onEvaluateComplete(double evaluate);
+    void onComplete(double evaluate);
 }

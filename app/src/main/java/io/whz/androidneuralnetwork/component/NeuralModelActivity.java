@@ -16,14 +16,20 @@ import android.view.animation.AnticipateInterpolator;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import org.greenrobot.greendao.annotation.NotNull;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
+import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
+import io.whz.androidneuralnetwork.track.ExceptionHelper;
+import io.whz.androidneuralnetwork.track.Tracker;
 import io.whz.androidneuralnetwork.transition.FabTransform;
 
 public class NeuralModelActivity extends WrapperActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
@@ -136,6 +142,9 @@ public class NeuralModelActivity extends WrapperActivity implements View.OnClick
         mHiddenGroup.removeView(layout);
 
         checkHiddenSize();
+
+        Tracker.getInstance()
+                .logEvent(TrackCons.Model.CLICK_LAYER_DELETE);
     }
 
     private void checkHiddenSize() {
@@ -155,6 +164,9 @@ public class NeuralModelActivity extends WrapperActivity implements View.OnClick
         }
 
         checkHiddenSize();
+
+        Tracker.getInstance()
+                .logEvent(TrackCons.Model.CLICK_ADD_NEW_LAYER);
     }
 
     @Override
@@ -214,6 +226,30 @@ public class NeuralModelActivity extends WrapperActivity implements View.OnClick
                         }
                     }
                 }).start();
+
+        Tracker.getInstance()
+                .event(TrackCons.Model.CLICK_TRAIN)
+                .put(TrackCons.Key.MSG, snapshot(model))
+                .log();
+    }
+
+    private String snapshot(@NotNull Model model) {
+        final String split = "; ";
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append("HiddenSizes: ")
+                .append(Arrays.toString(model.getHiddenSizes()))
+                .append(split)
+                .append("LearningRate: ")
+                .append(model.getLearningRate())
+                .append(split)
+                .append("Epochs: ")
+                .append(model.getEpochs())
+                .append(split)
+                .append("Data Sizes: ")
+                .append(model.getDataSize());
+
+        return builder.toString();
     }
 
     private Model checkInputs() {
@@ -234,7 +270,8 @@ public class NeuralModelActivity extends WrapperActivity implements View.OnClick
                         .where(ModelDao.Properties.Name.eq(name))
                         .count() > 0;
             } catch (Exception e) {
-                e.printStackTrace();
+                ExceptionHelper.getInstance()
+                        .caught(e);
             }
 
             if (hasAlready) {
@@ -292,6 +329,8 @@ public class NeuralModelActivity extends WrapperActivity implements View.OnClick
             res =  Integer.valueOf(input);
         } catch (NumberFormatException e) {
             res = 0;
+            ExceptionHelper.getInstance()
+                    .caught(e);
         }
 
         return res;
@@ -304,6 +343,8 @@ public class NeuralModelActivity extends WrapperActivity implements View.OnClick
             res = Double.valueOf(input);
         } catch (NumberFormatException e) {
             res = 0D;
+            ExceptionHelper.getInstance()
+                    .caught(e);
         }
 
         return res;
@@ -330,6 +371,5 @@ public class NeuralModelActivity extends WrapperActivity implements View.OnClick
                     'M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'
             };
         }
-
     }
 }

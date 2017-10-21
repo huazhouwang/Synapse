@@ -15,8 +15,8 @@ import io.whz.androidneuralnetwork.BuildConfig;
 import io.whz.androidneuralnetwork.pojo.event.TrackEvent;
 import io.whz.androidneuralnetwork.util.Precondition;
 
-public class Track {
-    private final Set<AbsTrack> mTracks = new HashSet<>();
+public class Tracker implements ITracker {
+    private final Set<AbsTrackHandler> mTracks = new HashSet<>();
 
     private EventBus mBus;
 
@@ -24,13 +24,13 @@ public class Track {
         mBus = Precondition.checkNotNull(bus);
 
         if (BuildConfig.TRACK_ENABLE) {
-            mTracks.add(new FirebaseTrack(context));
-            mTracks.add(new AmplitudeTrack(context));
+            mTracks.add(new FirebaseTrackHandler(context));
+            mTracks.add(new AmplitudeTrackHandler(context));
         } else {
-            mTracks.add(new DebugTrack(context));
+            mTracks.add(new DebugTrackHandler(context));
         }
 
-        for (AbsTrack track : mTracks) {
+        for (AbsTrackHandler track : mTracks) {
             track.register(bus);
         }
 
@@ -39,6 +39,7 @@ public class Track {
         }
     }
 
+    @Override
     public void logEvent(@NonNull TrackEvent event) {
         if (mBus == null) {
             new NullPointerException("EvenBus is null, please initialize first")
@@ -61,12 +62,12 @@ public class Track {
         return new EventBuilder(id);
     }
 
-    public static Track getInstance() {
+    public static Tracker getInstance() {
         return Holder.sInstance;
     }
 
     private interface Holder {
-        Track sInstance = new Track();
+        Tracker sInstance = new Tracker();
     }
 
     public static class EventBuilder{

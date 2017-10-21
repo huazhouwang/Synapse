@@ -123,15 +123,15 @@ public class NeuralNetwork {
                 final double rate = evaluate(mValidation);
 
                 if (!mCallback.onUpdate(i, rate)) {
-                    mCallback.onTrainComplete();
+                    mCallback.onEvaluate();
                     return;
                 }
             }
 
-            mCallback.onTrainComplete();
+            mCallback.onEvaluate();
 
             final double rate = evaluate(mTest);
-            mCallback.onEvaluateComplete(rate);
+            mCallback.onComplete(rate);
         }
 
         private void sgd() {

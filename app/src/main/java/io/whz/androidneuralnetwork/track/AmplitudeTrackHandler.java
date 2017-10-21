@@ -14,12 +14,12 @@ import org.json.JSONObject;
 import io.whz.androidneuralnetwork.BuildConfig;
 import io.whz.androidneuralnetwork.pojo.event.TrackEvent;
 
-class AmplitudeTrack extends AbsTrack {
-    private static final String ORIGINAL_OBJECT = "AmplitudeTrack:OriginalObject";
+class AmplitudeTrackHandler extends AbsTrackHandler {
+    private static final String ORIGINAL_OBJECT = "AmplitudeTrackHandler:OriginalObject";
 
     private final AmplitudeClient mClient;
 
-    AmplitudeTrack(@NonNull Context context) {
+    AmplitudeTrackHandler(@NonNull Context context) {
         super(context);
 
         mClient = Amplitude.getInstance();

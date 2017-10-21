@@ -9,9 +9,11 @@ import org.greenrobot.eventbus.EventBus;
 import io.whz.androidneuralnetwork.EventBusIndex;
 import io.whz.androidneuralnetwork.element.ChannelCreator;
 import io.whz.androidneuralnetwork.element.Global;
+import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
 import io.whz.androidneuralnetwork.pojo.dao.DaoMaster;
 import io.whz.androidneuralnetwork.pojo.dao.DaoSession;
-import io.whz.androidneuralnetwork.track.Track;
+import io.whz.androidneuralnetwork.track.TimeHelper;
+import io.whz.androidneuralnetwork.track.Tracker;
 
 public class App extends Application {
     public static final String TAG = "Synapse";
@@ -24,16 +26,24 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
+        TimeHelper.getInstance()
+                .start(TrackCons.APP.INITIALIZE);
+
         configEvenBus();
         configPreferences();
         configGreenDao();
 
         createNotificationChannel();
         initTrackEngines();
+
+        Tracker.getInstance()
+                .event(TrackCons.APP.INITIALIZE)
+                .put(TrackCons.Key.TIME_USED, TimeHelper.getInstance().stop(TrackCons.APP.INITIALIZE))
+                .log();
     }
 
     protected void initTrackEngines() {
-        Track.getInstance()
+        Tracker.getInstance()
                 .initialize(getApplicationContext(),
                         mGlobal.getBus());
     }
