@@ -15,7 +15,6 @@
     <string name="text_neural_config_bt_positive">Run</string>
     <string name="text_neural_config_bt_negative">Cancel</string>
     <string name="transition_neural_config" translatable="false">transition_neural_config</string>
-    <string name="text_data_set">58000 rows training, 2000 rows validation, \nand 10000 rows testing</string>
     <string name="text_data_set_training">TRAINING (60000 rows)</string>
     <string name="text_data_set_testing">TESTING (10000 rows)</string>
     <string name="text_download_error">Something wrong, please try again</string>
@@ -77,15 +76,21 @@
     <string name="text_dialog_download_direct">Download</string>
     <string name="text_dialog_download_setting_network">Setting</string>
     <string name="text_dialog_network_unavailable">Unavailable Network</string>
-    <string name="text_item_training_tip">TRAINING...</string>
     <string name="text_predict_init">--</string>
     <string name="text_menu_renew">Renew</string>
     <string name="text_dialog_model_list_title">Chose a model</string>
     <string name="text_menu_jump_to_detail">View Detail</string>
     <string name="play">play</string>
     <string name="text_about">About</string>
-    <string name="text_dialog_about_positive">Hello World</string>
     <string name="text_share_chooser_title">Share app to:</string>
     <string name="text_share_subject">Share Synapse to you</string>
     <string name="text_share_text">Synapse, training MBGD model recognizes mnist handwritten digits directly on Android device. Download in Google Play:</string>
+    <string name="text_item_play_title">Play Time</string>
+    <string name="text_item_play_msg">Here now you can play with trained models, enjoy yourself.</string>
+    <string name="text_play_tip_msg">The SGD model is different from the CNN model and its correctness is affected by the image size and position. \n\nSo please make sure the handwritten number is in the middle of the panel.</string>
+    <string name="text_great">Great</string>
+    <string name="text_play_tip_title">Enjoy Yourself</string>
+    <string name="text_dialog_about_msg"><b>Synapse</b> is a beauty, funny application which allows you train the <b>SDG</b>  model to recognize <b>MNIST</b> handwritten digits on local device directly. It does not depend on any deep learning library, just a <b>pure</b> Java implementation, for learning purposes only.</string>
+    <string name="text_dialog_about_positive">Have a great time</string>
+    <string name="text_author">by <b>Huazhou</b></string>
 </resources>

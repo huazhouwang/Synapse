@@ -26,14 +26,14 @@
             style="@style/MainItemTitleStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Play Time" />
+            android:text="@string/text_item_play_title" />
 
         <TextView
             style="@style/MainItemSmallTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Here now you can play with trained models, enjoy yourself." />
+            android:text="@string/text_item_play_msg" />
 
     </LinearLayout>
 

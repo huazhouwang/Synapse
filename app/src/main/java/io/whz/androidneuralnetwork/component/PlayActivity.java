@@ -42,6 +42,7 @@ import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.element.Scheduler;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.neural.NeuralNetwork;
+import io.whz.androidneuralnetwork.pojo.constant.PreferenceCons;
 import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
 import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
@@ -297,8 +298,30 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
                 refreshNeural(pair.first);
                 renderChart(pair.first, pair.second);
                 hideLoading();
+                checkAndShowTip();
             }
         });
+    }
+
+    private void checkAndShowTip() {
+        final boolean isFirst = Global.getInstance()
+                .getPreference()
+                .getBoolean(PreferenceCons.IS_FIST_PLAY, true);
+
+        if (isFirst) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.text_play_tip_title)
+                    .setMessage(R.string.text_play_tip_msg)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.text_great, null)
+                    .show();
+
+            Global.getInstance()
+                    .getPreference()
+                    .edit()
+                    .putBoolean(PreferenceCons.IS_FIST_PLAY, false)
+                    .apply();
+        }
     }
 
     @MainThread
