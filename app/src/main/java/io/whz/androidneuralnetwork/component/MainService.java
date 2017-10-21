@@ -45,7 +45,7 @@ import io.whz.androidneuralnetwork.neural.NeuralNetwork;
 import io.whz.androidneuralnetwork.neural.TrainCallback;
 import io.whz.androidneuralnetwork.pojo.constant.PreferenceCons;
 import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
-import io.whz.androidneuralnetwork.pojo.dao.Model;
+import io.whz.androidneuralnetwork.pojo.neural.Model;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
@@ -56,6 +56,7 @@ import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.FileUtil;
 import io.whz.androidneuralnetwork.util.Precondition;
 import io.whz.androidneuralnetwork.util.StringFormatUtil;
+import io.whz.androidneuralnetwork.util.Versatile;
 
 public class MainService extends Service {
     private static final int RQC_DECOMPRESS = 0x01;
@@ -91,6 +92,7 @@ public class MainService extends Service {
             switch (action) {
                 case ACTION_DOWNLOAD:
                     downloadFiles();
+                    checkAndAddDemoModel();
                     break;
 
                 case ACTION_TRAIN:
@@ -106,6 +108,35 @@ public class MainService extends Service {
         }
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void checkAndAddDemoModel() {
+        final boolean shouldAdd = Global.getInstance()
+                .getPreference().getBoolean(PreferenceCons.SHOULD_ADD_DEMO_MODEL, true);
+
+        if (shouldAdd) {
+            Scheduler.Secondary.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        final Model model = Versatile.readModelFromAssert(MainService.this);
+
+                        if (model != null) {
+                            saveModel(model);
+                        }
+                    } catch (Exception e) {
+                        ExceptionHelper.getInstance()
+                                .caught(e);
+                    }
+                }
+            });
+
+            Global.getInstance()
+                    .getPreference()
+                    .edit()
+                    .putBoolean(PreferenceCons.SHOULD_ADD_DEMO_MODEL, false)
+                    .apply();
+        }
     }
 
     private void handleTraining(@NonNull Intent intent) {
@@ -440,6 +471,12 @@ public class MainService extends Service {
                 .put(TrackCons.Key.TIME_USED, time)
                 .put(TrackCons.Key.MSG, "Accuracy: " + accuracy)
                 .log();
+
+        writeDisk(model);
+    }
+
+    private void writeDisk(@NonNull Model model) {
+        Versatile.writeModel2File(model);
     }
 
     private void handleTrainStartEvent(@NonNull TrainEvent event) {
@@ -466,7 +503,7 @@ public class MainService extends Service {
                 .setSmallIcon(R.drawable.notify_icon)
                 .setColor(ContextCompat.getColor(this, R.color.color_accent))
                 .setWhen(System.currentTimeMillis())
-                .setProgress(model.getEpochs(), 0, false)
+                .setProgress(0, 0, true)
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setContentIntent(pending)
@@ -482,10 +519,13 @@ public class MainService extends Service {
             return;
         }
 
+        final int step = model.getStepEpoch();
+        final double[] accuracies = model.getAccuracies();
+
         mTrainNotifyBuilder.setContentText(String.format(
                 Locale.getDefault(), getString(R.string.template_train_update_content),
-                String.valueOf(model.getStepEpoch()), StringFormatUtil.formatPercent(model.getLastAccuracy())))
-                .setProgress(model.getEpochs(), model.getStepEpoch(), false);
+                String.valueOf(step), StringFormatUtil.formatPercent(accuracies[step - 1])))
+                .setProgress(model.getEpochs(), step, false);
 
         mNotifyManager.notify(RQC_TRAIN_START, mTrainNotifyBuilder.build());
     }
@@ -597,12 +637,15 @@ public class MainService extends Service {
         private final Model mModel;
         private final AtomicBoolean mInterruptSign;
         private final EventBus mEventBus;
+        private final double[] mAccuracies;
+
         private long mStartTime;
         private NeuralNetwork mNeural;
 
         private TrainRunnable(@NonNull Model model, @NonNull AtomicBoolean breakSign) {
             mModel = model;
             mInterruptSign = breakSign;
+            mAccuracies = new double[mModel.getEpochs()];
             mEventBus = Global.getInstance().getBus();
         }
 
@@ -636,7 +679,9 @@ public class MainService extends Service {
                 return false;
             }
 
-            mModel.addAccuracy(accuracy);
+            mAccuracies[epoch - 1] = accuracy;
+
+            mModel.setAccuracies(mAccuracies);
             mModel.setStepEpoch(epoch);
 
             mEventBus.postSticky(new TrainEvent<>(TrainEvent.UPDATE, mModel));
@@ -676,27 +721,13 @@ public class MainService extends Service {
             }
         }
 
-        private long saveModel(@NonNull Model model) {
-            final Model copy = new Model();
+    }
 
-            copy.setName(model.getName());
-            copy.setLearningRate(model.getLearningRate());
-            copy.setEpochs(model.getEpochs());
-            copy.setDataSize(model.getDataSize());
-            copy.setTimeUsed(model.getTimeUsed());
-            copy.setEvaluate(model.getEvaluate());
-            copy.setCreatedTime(model.getCreatedTime());
-
-            copy.setHiddenSizeBytes(DbHelper.convert2ByteArray(model.getHiddenSizes()));
-            copy.setAccuracyBytes(DbHelper.convert2ByteArray(model.getAccuracies()));
-            copy.setWeightBytes(DbHelper.convert2ByteArray(model.getWeights()));
-            copy.setBiasBytes(DbHelper.convert2ByteArray(model.getBiases()));
-
-            return Global.getInstance()
-                    .getSession()
-                    .getModelDao()
-                    .insert(copy);
-        }
+    private static long saveModel(@NonNull Model model) {
+        return Global.getInstance()
+                .getSession()
+                .getDBModelDao()
+                .insert(DbHelper.model2DBModel(model));
     }
 
     private static File[] allotFiles(int trainingSize) {

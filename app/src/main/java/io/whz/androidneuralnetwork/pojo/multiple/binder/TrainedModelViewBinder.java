@@ -20,7 +20,7 @@ import java.util.List;
 
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.Global;
-import io.whz.androidneuralnetwork.pojo.dao.Model;
+import io.whz.androidneuralnetwork.pojo.neural.Model;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.multiple.item.TrainedModelItem;
 import io.whz.androidneuralnetwork.util.StringFormatUtil;
@@ -88,7 +88,6 @@ public class TrainedModelViewBinder extends ItemViewBinder<TrainedModelItem, Tra
         chart.setDrawGridBackground(true);
         chart.getLegend().setEnabled(false);
         chart.getAxisRight().setEnabled(false);
-        chart.getXAxis().setEnabled(false);
         chart.getAxisLeft().setEnabled(false);
         chart.getXAxis().setEnabled(false);
         chart.setViewPortOffsets(0, 0, 0, 0);

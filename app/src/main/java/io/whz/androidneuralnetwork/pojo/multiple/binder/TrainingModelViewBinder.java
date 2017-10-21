@@ -8,13 +8,11 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.util.List;
-
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.Global;
-import io.whz.androidneuralnetwork.pojo.dao.Model;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.multiple.item.TrainingModelItem;
+import io.whz.androidneuralnetwork.pojo.neural.Model;
 import io.whz.androidneuralnetwork.util.StringFormatUtil;
 import me.drakeet.multitype.ItemViewBinder;
 
@@ -37,20 +35,28 @@ public class TrainingModelViewBinder extends ItemViewBinder<TrainingModelItem, T
     }
 
     private void renderModel(TrainingModelViewHolder holder, Model model) {
+        final int step = model.getStepEpoch();
+
         holder.name.setText(model.getName());
-        holder.step.setText(String.format("S: %s", model.getStepEpoch()));
+        holder.step.setText(String.format("S: %s", step));
         holder.layers.setText(StringFormatUtil.formatLayerSizes(model.getHiddenSizes()));
         holder.epochs.setText(String.format("E: %s", model.getEpochs()));
         holder.learningRate.setText(String.format("R: %s", model.getLearningRate()));
         holder.dataSize.setText(String.format("D: %s", model.getDataSize()));
-        holder.progress.setProgress(model.getStepEpoch() * 100 / model.getEpochs());
 
-        final List<Double> accuracies = model.getAccuracies();
+        if (step == 0 || step == model.getEpochs()) {
+            holder.progress.setIndeterminate(true);
+        } else {
+            holder.progress.setIndeterminate(false);
+            holder.progress.setProgress(step * 100 / model.getEpochs());
+        }
 
-        if (accuracies.isEmpty()) {
+        final double[] accuracies = model.getAccuracies();
+
+        if (accuracies == null || accuracies.length == 0) {
             holder.accuracy.setText("--%");
         } else {
-            holder.accuracy.setText(String.format("%s%%", (int)(accuracies.get(accuracies.size() - 1) * 100)));
+            holder.accuracy.setText(String.format("%s%%", (int)(accuracies[step - 1] * 100)));
         }
     }
 

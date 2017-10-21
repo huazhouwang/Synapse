@@ -2,7 +2,7 @@ package io.whz.androidneuralnetwork.pojo.multiple.item;
 
 import android.support.annotation.NonNull;
 
-import io.whz.androidneuralnetwork.pojo.dao.Model;
+import io.whz.androidneuralnetwork.pojo.neural.Model;
 
 public class TrainingModelItem {
     private final Model mModel;

@@ -6,15 +6,57 @@ import android.support.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 import io.whz.androidneuralnetwork.matrix.Matrix;
+import io.whz.androidneuralnetwork.pojo.dao.DBModel;
+import io.whz.androidneuralnetwork.pojo.neural.Model;
 
 public class DbHelper {
+    public static Model dbModel2Model(@NonNull DBModel dbModel) {
+        Precondition.checkNotNull(dbModel);
+
+        final Model model = new Model();
+
+        model.setId(dbModel.getId());
+        model.setName(dbModel.getName());
+        model.setCreatedTime(dbModel.getCreatedTime());
+        model.setLearningRate(dbModel.getLearningRate());
+        model.setEpochs(dbModel.getEpochs());
+        model.setStepEpoch(dbModel.getEpochs());
+        model.setDataSize(dbModel.getDataSize());
+        model.setTimeUsed(dbModel.getTimeUsed());
+        model.setEvaluate(dbModel.getEvaluate());
+        model.setHiddenSizes(byteArray2IntArray(dbModel.getHiddenSizeBytes()));
+        model.setAccuracies(byteArray2DoubleArray(dbModel.getAccuracyBytes()));
+        model.setBiases(byteArray2MatrixArray(dbModel.getBiasBytes()));
+        model.setWeights(byteArray2MatrixArray(dbModel.getWeightBytes()));
+
+        return model;
+    }
+
+    public static DBModel model2DBModel(@NonNull Model model) {
+        Precondition.checkNotNull(model);
+
+        final DBModel dbModel = new DBModel();
+
+        dbModel.setId(model.getId());
+        dbModel.setName(model.getName());
+        dbModel.setCreatedTime(model.getCreatedTime());
+        dbModel.setLearningRate(model.getLearningRate());
+        dbModel.setEpochs(model.getEpochs());
+        dbModel.setDataSize(model.getDataSize());
+        dbModel.setTimeUsed(model.getTimeUsed());
+        dbModel.setEvaluate(model.getEvaluate());
+        dbModel.setHiddenSizeBytes(convert2ByteArray(model.getHiddenSizes()));
+        dbModel.setAccuracyBytes(convert2ByteArray(model.getAccuracies()));
+        dbModel.setBiasBytes(convert2ByteArray(model.getBiases()));
+        dbModel.setWeightBytes(convert2ByteArray(model.getWeights()));
+
+        return dbModel;
+    }
 
     @Nullable
-    public static byte[] convert2ByteArray(int... array) {
+    private static byte[] convert2ByteArray(int... array) {
         if (array == null) {
             return null;
         }
@@ -36,17 +78,17 @@ public class DbHelper {
     }
 
     @Nullable
-    public static byte[] convert2ByteArray(List<Double> list) {
-        if (list == null) {
+    private static byte[] convert2ByteArray(double... array) {
+        if (array == null) {
             return  null;
         }
 
         ByteBuffer buffer = null;
 
         try {
-            buffer = ByteBuffer.allocate(list.size() << 3);
+            buffer = ByteBuffer.allocate(array.length << 3);
 
-            for (double i : list) {
+            for (double i : array) {
                 buffer.putDouble(i);
             }
         } catch (Exception e) {
@@ -59,7 +101,7 @@ public class DbHelper {
     }
 
     @Nullable
-    public static byte[] convert2ByteArray(Matrix... matrices) {
+    private static byte[] convert2ByteArray(Matrix... matrices) {
         if (matrices == null) {
             return null;
         }
@@ -105,7 +147,7 @@ public class DbHelper {
     }
 
     @Nullable
-    public static Matrix[] byteArray2MatrixArray(byte... array) {
+    private static Matrix[] byteArray2MatrixArray(byte... array) {
         if (array == null) {
             return null;
         }
@@ -139,7 +181,7 @@ public class DbHelper {
     }
 
     @Nullable
-    public static int[] byteArray2IntArray(byte... array) {
+    private static int[] byteArray2IntArray(byte... array) {
         if (array == null) {
             return null;
         }
@@ -160,19 +202,19 @@ public class DbHelper {
     }
 
     @Nullable
-    public static List<Double> byteArray2DoubleList(byte... array) {
+    private static double[] byteArray2DoubleArray(byte... array) {
         if (array == null) {
             return null;
         }
 
         final int len = array.length;
-        final List<Double> res = new ArrayList<>(len >> 3);
+        final double[] res = new double[len >> 3];
 
         try {
             final DoubleBuffer buffer = ByteBuffer.wrap(array).asDoubleBuffer();
 
             for (int i = 0, iLen = len >> 3; i < iLen; ++i) {
-                res.add(buffer.get());
+                res[i] = buffer.get();
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -2,6 +2,7 @@ package io.whz.androidneuralnetwork.matrix;
 
 import android.support.annotation.NonNull;
 
+import java.io.Serializable;
 import java.util.Random;
 
 import static io.whz.androidneuralnetwork.matrix.MatrixChecker.checkDimensions;
@@ -10,7 +11,7 @@ import static io.whz.androidneuralnetwork.matrix.MatrixChecker.checkInnerDimensi
 import static io.whz.androidneuralnetwork.matrix.MatrixChecker.checkNotNull;
 import static io.whz.androidneuralnetwork.matrix.MatrixChecker.verifyArrays;
 
-public class Matrix {
+public class Matrix implements Serializable {
     private final int mRow;
     private final int mCol;
     private final double[] mArray;

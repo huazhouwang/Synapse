@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import io.whz.androidneuralnetwork.pojo.dao.Model;
-import io.whz.androidneuralnetwork.util.DbHelper;
+import io.whz.androidneuralnetwork.pojo.neural.Model;
 import io.whz.androidneuralnetwork.util.Precondition;
 
 public class TrainedModelItem {
@@ -21,25 +20,17 @@ public class TrainedModelItem {
     }
 
     private List<Entry> format() {
-        final List<Double> doubles = getModel().getAccuracies();
+        final double[] doubles = getModel().getAccuracies();
         final List<Entry> list = new ArrayList<>();
 
-        for (int i = 0, len = doubles.size(); i < len; ++i) {
-            list.add(new Entry(i, (float) (double)doubles.get(i)));
+        for (int i = 0, len = doubles.length; i < len; ++i) {
+            list.add(new Entry(i, (float) doubles[i]));
         }
 
         return list;
     }
 
     public Model getModel() {
-        if (mModel.getHiddenSizes() == null) {
-            final int[] hiddenSizes = DbHelper.byteArray2IntArray(mModel.getHiddenSizeBytes());
-            final List<Double> accuracies = DbHelper.byteArray2DoubleList(mModel.getAccuracyBytes());
-
-            mModel.setHiddenSizes(hiddenSizes == null ? new int[0] : hiddenSizes);
-            mModel.addAllAccuracy(accuracies == null ? new ArrayList<Double>() : accuracies);
-        }
-
         return mModel;
     }
 

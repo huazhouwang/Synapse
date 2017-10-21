@@ -44,8 +44,9 @@ import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.neural.NeuralNetwork;
 import io.whz.androidneuralnetwork.pojo.constant.PreferenceCons;
 import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
-import io.whz.androidneuralnetwork.pojo.dao.Model;
-import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
+import io.whz.androidneuralnetwork.pojo.dao.DBModel;
+import io.whz.androidneuralnetwork.pojo.dao.DBModelDao;
+import io.whz.androidneuralnetwork.pojo.neural.Model;
 import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainedModelViewBinder;
 import io.whz.androidneuralnetwork.pojo.neural.Figure;
 import io.whz.androidneuralnetwork.track.ExceptionHelper;
@@ -199,13 +200,14 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
 
     private boolean renderLatest() {
         try {
-            final List<Model> list = Global.getInstance()
-                    .getSession().getModelDao()
-                    .queryBuilder().orderDesc(ModelDao.Properties.CreatedTime)
+            final List<DBModel> list = Global.getInstance()
+                    .getSession().getDBModelDao()
+                    .queryBuilder().orderDesc(DBModelDao.Properties.CreatedTime)
                     .listLazy();
 
             if (!list.isEmpty()) {
-                final Model model = list.get(0);
+                final DBModel model = list.get(0);
+
                 refreshPage(model);
                 return true;
             }
@@ -249,12 +251,12 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
             return false;
         }
 
-        Model model = null;
+        DBModel model = null;
 
         try {
             model = Global.getInstance()
                     .getSession()
-                    .getModelDao()
+                    .getDBModelDao()
                     .loadByRowId(id);
         } catch (Exception e) {
             model = null;
@@ -271,23 +273,14 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
         return false;
     }
 
-    private void refreshPage(@NonNull Model model) {
-        final int[] hiddenSizes = DbHelper.byteArray2IntArray(model.getHiddenSizeBytes());
-        List<Double> accuracies = DbHelper.byteArray2DoubleList(model.getAccuracyBytes());
-
-        model.setWeights(DbHelper.byteArray2MatrixArray(model.getWeightBytes()));
-        model.setBiases(DbHelper.byteArray2MatrixArray(model.getBiasBytes()));
-        model.setHiddenSizes(hiddenSizes == null ? new int[0] : hiddenSizes);
-        model.addAllAccuracy(accuracies == null ? new ArrayList<Double>() : accuracies);
-
+    private void refreshPage(@NonNull DBModel dbModel) {
+        final Model model = DbHelper.dbModel2Model(dbModel);
+        final double[] accuracies = model.getAccuracies();
         final List<Entry> entries = new ArrayList<>();
 
-        if (accuracies == null) {
-            accuracies = new ArrayList<>();
-        }
 
-        for (int i = 0, len = accuracies.size(); i < len; ++i) {
-            entries.add(new Entry(i, (float) (double) accuracies.get(i)));
+        for (int i = 0, len = accuracies.length; i < len; ++i) {
+            entries.add(new Entry(i, (float) accuracies[i]));
         }
 
         final Pair<Model, List<Entry>> pair = new Pair<>(model, entries);
@@ -352,7 +345,7 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
     }
 
     private void renderModelInfo(@NonNull Model model) {
-        mToolbar.setTitle(String.format("Play %s Model", model.getName()));
+        mToolbar.setTitle(String.format("Play %s", model.getName()));
     }
 
     private void refreshData(@NonNull List<Entry> entries) {
@@ -437,19 +430,19 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
     }
 
     private void showModelListDialog() {
-        final List<Model> models = Global.getInstance()
-                .getSession().getModelDao()
-                .queryBuilder().orderDesc(ModelDao.Properties.CreatedTime).list();
+        final List<DBModel> models = Global.getInstance()
+                .getSession().getDBModelDao()
+                .queryBuilder().orderDesc(DBModelDao.Properties.CreatedTime).list();
 
         final List<Map<String, Object>> list = new ArrayList<>();
         final String nameKey = "name";
         final String evaluateKey = "evaluate";
 
-        for (Model model : models) {
+        for (DBModel dbModel : models) {
             final Map<String, Object> map = new ArrayMap<>();
 
-            map.put(nameKey, model.getName());
-            map.put(evaluateKey, String.format("%s%%", (int) (model.getEvaluate() * 100)));
+            map.put(nameKey, dbModel.getName());
+            map.put(evaluateKey, String.format("%s%%", (int) (dbModel.getEvaluate() * 100)));
 
             list.add(map);
         }
@@ -469,8 +462,8 @@ public class PlayActivity extends WrapperActivity implements View.OnClickListene
                 .show();
     }
 
-    private void newModelChosen(@NonNull final List<Model> models, int i) {
-        final Model newOne = models.get(i);
+    private void newModelChosen(@NonNull final List<DBModel> dbModels, int i) {
+        final DBModel newOne = dbModels.get(i);
 
         if (mCurId == newOne.getId()) {
             return;

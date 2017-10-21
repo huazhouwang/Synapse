@@ -44,8 +44,9 @@ import io.whz.androidneuralnetwork.element.VerticalGap;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.pojo.constant.PreferenceCons;
 import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
-import io.whz.androidneuralnetwork.pojo.dao.Model;
-import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
+import io.whz.androidneuralnetwork.pojo.dao.DBModel;
+import io.whz.androidneuralnetwork.pojo.dao.DBModelDao;
+import io.whz.androidneuralnetwork.pojo.neural.Model;
 import io.whz.androidneuralnetwork.pojo.event.MANEvent;
 import io.whz.androidneuralnetwork.pojo.event.ModelDeletedEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
@@ -60,6 +61,7 @@ import io.whz.androidneuralnetwork.pojo.multiple.item.WelcomeItem;
 import io.whz.androidneuralnetwork.track.ExceptionHelper;
 import io.whz.androidneuralnetwork.track.Tracker;
 import io.whz.androidneuralnetwork.transition.FabTransform;
+import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.Precondition;
 import me.drakeet.multitype.MultiTypeAdapter;
 
@@ -274,22 +276,26 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
     @CheckResult
     @Nullable
     private List<TrainedModelItem> getAllTrainedModelItems() {
-        List<Model> models = null;
+        final List<Model> models = new ArrayList<>();
 
         try {
-            models = Global.getInstance()
+            final List<DBModel> dbModels = Global.getInstance()
                     .getSession()
-                    .getModelDao()
+                    .getDBModelDao()
                     .queryBuilder()
-                    .orderDesc(ModelDao.Properties.CreatedTime)
+                    .orderDesc(DBModelDao.Properties.CreatedTime)
                     .list();
+
+            for (int i = 0, len = dbModels.size(); i < len; ++i) {
+                models.add(DbHelper.dbModel2Model(dbModels.get(i)));
+            }
+
         } catch (Exception e) {
             ExceptionHelper.getInstance()
                     .caught(e);
         }
 
-        if (models == null
-                || models.isEmpty()) {
+        if (models.isEmpty()) {
             return null;
         }
 
@@ -326,12 +332,6 @@ public class MainActivity extends WrapperActivity implements View.OnClickListene
     @SuppressWarnings("unused")
     @Subscribe(sticky = true, priority = -1, threadMode = ThreadMode.MAIN)
     public void onModelDeleted(@NonNull ModelDeletedEvent event) {
-        final Model model = event.obj;
-
-        if (model == null) {
-            return;
-        }
-
         Global.getInstance()
                 .getBus()
                 .removeStickyEvent(event);

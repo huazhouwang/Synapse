@@ -26,8 +26,8 @@ import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.neural.MNISTUtil;
 import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
-import io.whz.androidneuralnetwork.pojo.dao.Model;
-import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
+import io.whz.androidneuralnetwork.pojo.dao.DBModelDao;
+import io.whz.androidneuralnetwork.pojo.neural.Model;
 import io.whz.androidneuralnetwork.track.ExceptionHelper;
 import io.whz.androidneuralnetwork.track.Tracker;
 import io.whz.androidneuralnetwork.transition.FabTransform;
@@ -265,9 +265,9 @@ public class NeuralModelActivity extends WrapperActivity implements View.OnClick
             try {
                 hasAlready = Global.getInstance()
                         .getSession()
-                        .getModelDao()
+                        .getDBModelDao()
                         .queryBuilder()
-                        .where(ModelDao.Properties.Name.eq(name))
+                        .where(DBModelDao.Properties.Name.eq(name))
                         .count() > 0;
             } catch (Exception e) {
                 ExceptionHelper.getInstance()

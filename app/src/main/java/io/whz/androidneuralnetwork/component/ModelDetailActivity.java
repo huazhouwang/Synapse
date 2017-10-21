@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
@@ -38,12 +37,12 @@ import java.util.Locale;
 import io.whz.androidneuralnetwork.R;
 import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
-import io.whz.androidneuralnetwork.pojo.dao.Model;
-import io.whz.androidneuralnetwork.pojo.dao.ModelDao;
+import io.whz.androidneuralnetwork.pojo.dao.DBModel;
+import io.whz.androidneuralnetwork.pojo.dao.DBModelDao;
 import io.whz.androidneuralnetwork.pojo.event.MSNEvent;
 import io.whz.androidneuralnetwork.pojo.event.ModelDeletedEvent;
 import io.whz.androidneuralnetwork.pojo.event.TrainEvent;
-import io.whz.androidneuralnetwork.pojo.multiple.binder.TrainedModelViewBinder;
+import io.whz.androidneuralnetwork.pojo.neural.Model;
 import io.whz.androidneuralnetwork.track.Tracker;
 import io.whz.androidneuralnetwork.util.DbHelper;
 import io.whz.androidneuralnetwork.util.StringFormatUtil;
@@ -52,9 +51,6 @@ public class ModelDetailActivity extends WrapperActivity {
     public static final String INTENT_TYPE = "intent_type";
     public static final String TRAINED_ID = "trained_id";
     public static final String INTERRUPT_ACTION = "interrupt_action";
-
-    private static final int[] FG = TrainedModelViewBinder.FG;
-    private static final int[] BG = TrainedModelViewBinder.BG;
 
     public static final int ILLEGAL = 0x00;
     public static final int IS_TRAINING = 0x01;
@@ -75,7 +71,7 @@ public class ModelDetailActivity extends WrapperActivity {
     private int mIntentType;
     private boolean mIsFirst = true;
     private final List<Entry> mAccuracyData = new ArrayList<>();
-    @Nullable private Model mModel;
+    private long mCurId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +124,6 @@ public class ModelDetailActivity extends WrapperActivity {
         leftAxis.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
         leftAxis.setAxisMinimum(0F);
         leftAxis.setAxisMaximum(1F);
-//        leftAxis.setLabelCount(10, true);
         leftAxis.setDrawGridLines(false);
         leftAxis.setDrawAxisLine(true);
 
@@ -238,6 +233,7 @@ public class ModelDetailActivity extends WrapperActivity {
         switch (what) {
             case TrainEvent.START:
             case TrainEvent.UPDATE:
+                mCurId = -1;
                 handleTrainingEvent(event);
                 break;
 
@@ -280,7 +276,7 @@ public class ModelDetailActivity extends WrapperActivity {
             return;
         }
 
-        mModel = model;
+        mCurId = model.getId();
         setUpTrainCompleteValues(model);
 
         if (mInterruptItem != null) {
@@ -297,16 +293,14 @@ public class ModelDetailActivity extends WrapperActivity {
             return;
         }
 
-        mModel = model;
-
         if (mIsFirst) {
             setUpNormalValues(model);
             mIsFirst = !setUpChart(model);
         } else {
-            final List<Double> accuracies = model.getAccuracies();
-            final int lastIndex = accuracies.size() - 1;
+            final int step = model.getStepEpoch();
+            final double[] accuracies = model.getAccuracies();
 
-            mAccuracyData.add(new Entry(lastIndex, (float) (double) accuracies.get(lastIndex)));
+            mAccuracyData.add(new Entry(step, (float) (double) accuracies[step - 1]));
 
             mChart.getData().notifyDataChanged();
             mChart.notifyDataSetChanged();
@@ -328,16 +322,18 @@ public class ModelDetailActivity extends WrapperActivity {
     }
 
     private boolean setUpChart(@NonNull Model model) {
-        final List<Double> accuracies = model.getAccuracies();
+        final double[] accuracies = model.getAccuracies();
 
-        if (accuracies.isEmpty()) {
+        if (accuracies == null
+                || accuracies.length == 0
+                || model.getStepEpoch() < 1) {
             return false;
         }
 
         mAccuracyData.clear();
 
-        for (int i = 0, len = accuracies.size(); i < len; ++i) {
-            mAccuracyData.add(new Entry(i, (float) (double) accuracies.get(i)));
+        for (int i = 0, len = model.getStepEpoch(); i < len; ++i) {
+            mAccuracyData.add(new Entry(i + 1, (float) accuracies[i]));
         }
 
         final LineDataSet set = new LineDataSet(mAccuracyData, getString(R.string.text_chart_left_axis));
@@ -369,8 +365,8 @@ public class ModelDetailActivity extends WrapperActivity {
     private void setXAxis(int epochs) {
         final XAxis axis = mChart.getXAxis();
         axis.setEnabled(true);
-        axis.setAxisMinimum(0F);
-        axis.setAxisMaximum(epochs - 1);
+        axis.setAxisMinimum(1F);
+        axis.setAxisMaximum(epochs);
         axis.setPosition(XAxis.XAxisPosition.BOTTOM);
         axis.setDrawAxisLine(true);
         axis.setDrawGridLines(false);
@@ -383,42 +379,42 @@ public class ModelDetailActivity extends WrapperActivity {
     private void handleTrainedIntent(@NonNull Intent intent) {
         mIsFirst = false;
         final long id = intent.getLongExtra(TRAINED_ID, -1);
-        final ModelDao dao = Global.getInstance().getSession().getModelDao();
-        Model model = null;
+        final DBModelDao dao = Global.getInstance().getSession().getDBModelDao();
+        DBModel dbModel = null;
 
         if (id < 0) {
-            List<Model> list = null;
+            List<DBModel> list = null;
 
             try {
                 list = dao.queryBuilder()
-                        .orderDesc(ModelDao.Properties.CreatedTime)
+                        .orderDesc(DBModelDao.Properties.CreatedTime)
                         .listLazy();
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             if (list != null && !list.isEmpty()) {
-                model = list.get(list.size() - 1);
+                dbModel = list.get(list.size() - 1);
             } else {
                 showNoData();
                 return;
             }
         } else {
             try {
-                model = dao.queryBuilder()
-                        .where(ModelDao.Properties.Id.eq(id))
+                dbModel = dao.queryBuilder()
+                        .where(DBModelDao.Properties.Id.eq(id))
                         .unique();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
-        if (model == null) {
+        if (dbModel == null) {
             showNoData();
             return;
         }
 
-        mModel = model;
+        mCurId = dbModel.getId();
 
         if (mInterruptItem != null) {
             mInterruptItem.setVisible(false);
@@ -426,7 +422,7 @@ public class ModelDetailActivity extends WrapperActivity {
             mPlayItem.setVisible(true);
         }
 
-        displayTrainedModel(model);
+        displayTrainedModel(dbModel);
     }
 
     private void showNoData() {
@@ -442,12 +438,8 @@ public class ModelDetailActivity extends WrapperActivity {
                 }).show();
     }
 
-    private void displayTrainedModel(@NonNull Model model) {
-        final int[] hiddenSizes = DbHelper.byteArray2IntArray(model.getHiddenSizeBytes());
-        final List<Double> accuracies = DbHelper.byteArray2DoubleList(model.getAccuracyBytes());
-
-        model.setHiddenSizes(hiddenSizes == null ? new int[0] : hiddenSizes);
-        model.addAllAccuracy(accuracies == null ? new ArrayList<Double>() : accuracies);
+    private void displayTrainedModel(@NonNull DBModel dbModel) {
+        final Model model = DbHelper.dbModel2Model(dbModel);
 
         setUpNormalValues(model);
         setUpTrainCompleteValues(model);
@@ -532,11 +524,11 @@ public class ModelDetailActivity extends WrapperActivity {
                 return true;
 
             case R.id.delete:
-                deleteModel(mModel);
+                deleteModel(mCurId);
                 return true;
 
             case R.id.play:
-                playModel(mModel);
+                playModel(mCurId);
                 return true;
 
             default:
@@ -546,9 +538,8 @@ public class ModelDetailActivity extends WrapperActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void playModel(@Nullable Model model) {
-        if (model == null
-                || model.getId() == null) {
+    private void playModel(long id) {
+        if (id < 0) {
             finishAfterTransition();
             return;
         }
@@ -557,36 +548,34 @@ public class ModelDetailActivity extends WrapperActivity {
                 .logEvent(TrackCons.Detail.CLICK_PLAY);
 
         final Intent intent = new Intent(this, PlayActivity.class);
-        intent.putExtra(PlayActivity.ID, model.getId());
+        intent.putExtra(PlayActivity.ID, id);
 
         startActivity(intent);
     }
 
-    private void deleteModel(@Nullable final Model model) {
-        if (model == null
-                || model.getId() == null) {
+    private void deleteModel(final long id) {
+        if (id < 0) {
             finishAfterTransition();
             return;
         }
 
-        final long id = model.getId();
         final Activity that = this;
 
         new AlertDialog.Builder(this)
                 .setTitle(R.string.text_dialog_delete_model_title)
-                .setMessage(String.format(getString(R.string.text_dialog_delete_model_msg), model.getName()))
+                .setMessage(R.string.text_dialog_delete_model_msg)
                 .setPositiveButton(R.string.dialog_positive, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         try {
                             Global.getInstance()
                                     .getSession()
-                                    .getModelDao()
+                                    .getDBModelDao()
                                     .deleteByKey(id);
 
                             Global.getInstance()
                                     .getBus()
-                                    .postSticky(new ModelDeletedEvent(model));
+                                    .postSticky(new ModelDeletedEvent());
 
                             Tracker.getInstance()
                                     .logEvent(TrackCons.Detail.CLICK_DELETE);
