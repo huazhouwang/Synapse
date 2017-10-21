@@ -8,24 +8,24 @@ import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.APP.CAUGHT;
 import static io.whz.androidneuralnetwork.pojo.constant.TrackCons.Key.MSG;
 
 public class ExceptionHelper {
-    private static final boolean sIsDebug = BuildConfig.DEBUG;
+    private static final boolean sEnable = BuildConfig.TRACK_ENABLE;
     private final Tracker mTracker;
 
     private ExceptionHelper() {
         mTracker = Tracker.getInstance();
     }
 
-    public void caught(@NotNull Exception e) {
-        if (sIsDebug) {
-            e.printStackTrace();
-        } else {
+    public void caught(@NotNull Throwable e) {
+        if (sEnable) {
             mTracker.event(CAUGHT)
                     .put(MSG, toString(e))
                     .log();
+        } else {
+            e.printStackTrace();
         }
     }
 
-    private String toString(@NotNull Exception e) {
+    private String toString(@NotNull Throwable e) {
         final StackTraceElement[] elements = e.getStackTrace();
 
         if (elements == null

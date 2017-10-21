@@ -3,6 +3,7 @@ package io.whz.androidneuralnetwork.component;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.support.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -12,6 +13,7 @@ import io.whz.androidneuralnetwork.element.Global;
 import io.whz.androidneuralnetwork.pojo.constant.TrackCons;
 import io.whz.androidneuralnetwork.pojo.dao.DaoMaster;
 import io.whz.androidneuralnetwork.pojo.dao.DaoSession;
+import io.whz.androidneuralnetwork.track.ExceptionHelper;
 import io.whz.androidneuralnetwork.track.TimeHelper;
 import io.whz.androidneuralnetwork.track.Tracker;
 
@@ -32,9 +34,10 @@ public class App extends Application {
         configEvenBus();
         configPreferences();
         configGreenDao();
+        initTrackEngines();
 
         createNotificationChannel();
-        initTrackEngines();
+        hookUncaughtExceptionHandler();
 
         Tracker.getInstance()
                 .event(TrackCons.APP.INITIALIZE)
@@ -42,7 +45,14 @@ public class App extends Application {
                 .log();
     }
 
-    protected void initTrackEngines() {
+    private void hookUncaughtExceptionHandler() {
+        final Thread.UncaughtExceptionHandler handler = new GlobalExceptionHandler(
+                Thread.getDefaultUncaughtExceptionHandler());
+
+        Thread.setDefaultUncaughtExceptionHandler(handler);
+    }
+
+    private void initTrackEngines() {
         Tracker.getInstance()
                 .initialize(getApplicationContext(),
                         mGlobal.getBus());
@@ -73,5 +83,24 @@ public class App extends Application {
                 .installDefaultEventBus();
 
         mGlobal.setBus(bus);
+    }
+
+    private static class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
+        @Nullable
+        private final Thread.UncaughtExceptionHandler mDefault;
+
+        GlobalExceptionHandler(@Nullable Thread.UncaughtExceptionHandler handler) {
+            mDefault = handler;
+        }
+
+        @Override
+        public void uncaughtException(Thread thread, Throwable throwable) {
+            ExceptionHelper.getInstance()
+                    .caught(throwable);
+
+            if (mDefault != null) {
+                mDefault.uncaughtException(thread, throwable);
+            }
+        }
     }
 }
