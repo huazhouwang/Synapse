@@ -1,5 +1,5 @@
 # Synapse
-Synapse is a beauty, funny application which allows you train the SDG model to recognize MNIST handwritten digits on the local device directly. It does not depend on any deep learning library, just a pure Java implementation, for learning purposes only. 
+Synapse is a beauty, funny application which allows you train the SGD model to recognize MNIST handwritten digits on the local device directly. It does not depend on any deep learning library, just a pure Java implementation, for learning purposes only. 
 
 ## Enjoy Yourself
 
