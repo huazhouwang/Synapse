@@ -83,7 +83,7 @@
     <string name="text_play_tip_msg">The SGD model is different from the CNN model and its correctness is affected by the image size and position. \n\nSo please make sure the handwritten number is in the middle of the panel.</string>
     <string name="text_great">Great</string>
     <string name="text_play_tip_title">Enjoy Yourself</string>
-    <string name="text_dialog_about_msg"><b>Synapse</b> is a beauty, funny application which allows you train the <b>SDG</b>  model to recognize <b>MNIST</b> handwritten digits on local device directly. It does not depend on any deep learning library, just a <b>pure</b> Java implementation, for learning purposes only.</string>
+    <string name="text_dialog_about_msg"><b>Synapse</b> is a beauty, funny application which allows you train the <b>SGD</b>  model to recognize <b>MNIST</b> handwritten digits on local device directly. It does not depend on any deep learning library, just a <b>pure</b> Java implementation, for learning purposes only.</string>
     <string name="text_dialog_about_positive">Have a great time</string>
     <string name="text_author">by <b>Huazhou</b></string>
 </resources>
