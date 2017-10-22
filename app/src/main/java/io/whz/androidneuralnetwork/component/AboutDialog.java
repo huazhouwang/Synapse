@@ -77,7 +77,7 @@ public class AboutDialog extends DialogFragment implements View.OnClickListener 
             return;
         }
 
-        final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/huazhouwang"));// TODO: 19/10/2017
+        final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/huazhouwang/Synapse"));
         final PackageManager manager = activity.getPackageManager();
 
         if (intent.resolveActivity(manager) != null) {

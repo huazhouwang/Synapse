@@ -84,11 +84,14 @@ public class TrackCons {
     }
 
     public static String concat(@NonNull String... array) {
-        final StringBuilder builder = new StringBuilder(array[0]);
+        final StringBuilder builder = new StringBuilder();
 
-        for (int i = 1, len = array.length; i < len; ++i) {
-            builder.append(SPLIT)
-                    .append(array[i]);
+        for (int i = 0, len = array.length; i < len; ++i) {
+            if (builder.length() != 0) {
+                builder.append(SPLIT);
+            }
+
+            builder.append(array[i]);
         }
 
         return builder.toString();

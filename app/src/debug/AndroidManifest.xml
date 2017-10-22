@@ -5,6 +5,7 @@
 
     <application
         android:name=".component.DebugApp"
-        tools:replace="android:name">
+        android:label="Debug"
+        tools:replace="android:name, android:label">
     </application>
 </manifest>

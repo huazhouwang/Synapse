@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao'
 
-final boolean isGoogleServicesEnable = hasGoogleServicesJson()
+final boolean isGoogleServicesEnable = false//hasGoogleServicesJson()
 
 loadExtProperties(isGoogleServicesEnable)
 
@@ -25,8 +25,12 @@ android {
         buildConfigField "boolean", "TRACK_ENABLE", "$isGoogleServicesEnable"
         buildConfigField "String", "AMPLITUDE_ID", "\"$gradle.AMPLITUDE_ID\""
     }
+
     buildTypes {
         debug {
+            if (!isGoogleServicesEnable) {
+                applicationIdSuffix ".debug"
+            }
         }
 
         release {
