@@ -3,6 +3,7 @@ package io.whz.synapse.pojo.constant;
 import android.support.annotation.NonNull;
 
 import io.whz.synapse.BuildConfig;
+import io.whz.synapse.component.AboutDialog;
 import io.whz.synapse.component.App;
 import io.whz.synapse.component.MainActivity;
 import io.whz.synapse.component.MainService;
@@ -51,6 +52,14 @@ public class TrackCons {
         String CLICK_INTERRUPT = concat(INDEX, "click_interrupt");
         String CLICK_DELETE = concat(INDEX, "click_delete");
         String CLICK_PLAY = concat(INDEX, "click_play");
+    }
+
+    public interface About {
+        String INDEX = concat(TrackCons.INDEX, AboutDialog.class.getSimpleName().toLowerCase());
+
+        String CLICK_GITHUB = concat(INDEX, "click_github");
+        String CLICK_RATE = concat(INDEX, "click_rate");
+        String CLICK_SHARE = concat(INDEX, "click_share");
     }
 
     public interface Service {

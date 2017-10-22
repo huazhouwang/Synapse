@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 
 import io.whz.synapse.BuildConfig;
 import io.whz.synapse.R;
+import io.whz.synapse.pojo.constant.TrackCons;
+import io.whz.synapse.track.Tracker;
 
 public class AboutDialog extends DialogFragment implements View.OnClickListener {
     private static final String APP_IN_GOOGLE_PLAY =
@@ -83,6 +85,9 @@ public class AboutDialog extends DialogFragment implements View.OnClickListener 
         if (intent.resolveActivity(manager) != null) {
             activity.startActivity(intent);
         }
+
+        Tracker.getInstance()
+                .logEvent(TrackCons.About.CLICK_GITHUB);
     }
 
     private void handleRateAction() {
@@ -98,6 +103,9 @@ public class AboutDialog extends DialogFragment implements View.OnClickListener 
         if (intent.resolveActivity(manager) != null) {
             activity.startActivity(intent);
         }
+
+        Tracker.getInstance()
+                .logEvent(TrackCons.About.CLICK_RATE);
     }
 
     private void handleShareAction() {
@@ -107,5 +115,8 @@ public class AboutDialog extends DialogFragment implements View.OnClickListener 
                 .setText(getString(R.string.text_share_text) + " " + APP_IN_GOOGLE_PLAY)
                 .setType("text/plain")
                 .startChooser();
+
+        Tracker.getInstance()
+                .logEvent(TrackCons.About.CLICK_SHARE);
     }
 }
