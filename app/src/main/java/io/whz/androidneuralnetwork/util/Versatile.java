@@ -64,6 +64,7 @@ public class Versatile {
         }
     }
 
+    @SuppressWarnings("unused")
     public static void writeModel2File(@NonNull Model model) {
         ObjectOutputStream objectOutputStream = null;
 
@@ -92,7 +93,7 @@ public class Versatile {
     }
 
     @Nullable
-    public static Model readModelFromAssert(@NonNull Context context) {
+    public static Model readModelFromAssert(@NonNull Context context) throws IOException, ClassNotFoundException {
         Precondition.checkNotNull(context);
 
         final AssetManager manager = context.getAssets();
@@ -108,18 +109,16 @@ public class Versatile {
             objectInputStream = new ObjectInputStream(inputStream);
 
             return (Model) objectInputStream.readObject();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException | ClassNotFoundException e) {
+            throw e;
         } finally {
             if (objectInputStream != null) {
                 try {
                     objectInputStream.close();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
-
-        return null;
     }
 }

@@ -471,12 +471,6 @@ public class MainService extends Service {
                 .put(TrackCons.Key.TIME_USED, time)
                 .put(TrackCons.Key.MSG, "Accuracy: " + accuracy)
                 .log();
-
-        writeDisk(model);
-    }
-
-    private void writeDisk(@NonNull Model model) {
-        Versatile.writeModel2File(model);
     }
 
     private void handleTrainStartEvent(@NonNull TrainEvent event) {

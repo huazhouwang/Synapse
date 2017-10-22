@@ -64,13 +64,8 @@ public class ModelDetailActivity extends WrapperActivity {
     private TextView mEvaluateText;
     private LineChart mChart;
 
-    private MenuItem mInterruptItem;
-    private MenuItem mPlayItem;
-    private MenuItem mDeleteItem;
-
-    private int mIntentType;
-    private boolean mIsFirst = true;
     private final List<Entry> mAccuracyData = new ArrayList<>();
+    private int mIntentType;
     private long mCurId;
 
     @Override
@@ -86,9 +81,9 @@ public class ModelDetailActivity extends WrapperActivity {
         mEvaluateText = findViewById(R.id.item6_text);
         mChart = findViewById(R.id.line_chart);
 
+        setUpActionBar();
         prepareChart();
         handleIntent();
-        setUpActionBar();
     }
 
     private void setUpActionBar() {
@@ -122,7 +117,6 @@ public class ModelDetailActivity extends WrapperActivity {
 
         final YAxis leftAxis = mChart.getAxisLeft();
         leftAxis.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
-        leftAxis.setAxisMinimum(0F);
         leftAxis.setAxisMaximum(1F);
         leftAxis.setDrawGridLines(false);
         leftAxis.setDrawAxisLine(true);
@@ -277,13 +271,10 @@ public class ModelDetailActivity extends WrapperActivity {
         }
 
         mCurId = model.getId();
+        mIntentType = IS_TRAINED;
         setUpTrainCompleteValues(model);
 
-        if (mInterruptItem != null) {
-            mInterruptItem.setVisible(false);
-            mDeleteItem.setVisible(true);
-            mPlayItem.setVisible(true);
-        }
+        supportInvalidateOptionsMenu();
     }
 
     private void handleTrainingEvent(@NonNull TrainEvent event) {
@@ -293,9 +284,9 @@ public class ModelDetailActivity extends WrapperActivity {
             return;
         }
 
-        if (mIsFirst) {
+        if (mChart.isEmpty()) {
             setUpNormalValues(model);
-            mIsFirst = !setUpChart(model);
+            setUpChart(model);
         } else {
             final int step = model.getStepEpoch();
             final double[] accuracies = model.getAccuracies();
@@ -377,7 +368,6 @@ public class ModelDetailActivity extends WrapperActivity {
     }
 
     private void handleTrainedIntent(@NonNull Intent intent) {
-        mIsFirst = false;
         final long id = intent.getLongExtra(TRAINED_ID, -1);
         final DBModelDao dao = Global.getInstance().getSession().getDBModelDao();
         DBModel dbModel = null;
@@ -416,12 +406,7 @@ public class ModelDetailActivity extends WrapperActivity {
 
         mCurId = dbModel.getId();
 
-        if (mInterruptItem != null) {
-            mInterruptItem.setVisible(false);
-            mDeleteItem.setVisible(true);
-            mPlayItem.setVisible(true);
-        }
-
+        supportInvalidateOptionsMenu();
         displayTrainedModel(dbModel);
     }
 
@@ -467,7 +452,6 @@ public class ModelDetailActivity extends WrapperActivity {
 
         if (reset) {
             mAccuracyData.clear();
-            mIsFirst = true;
             resetAllText();
         }
 
@@ -494,12 +478,19 @@ public class ModelDetailActivity extends WrapperActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        menu.clear();
+
         getMenuInflater()
                 .inflate(R.menu.ac_model_detail_menu, menu);
 
-        mInterruptItem = menu.findItem(R.id.interrupt);
-        mPlayItem = menu.findItem(R.id.play);
-        mDeleteItem = menu.findItem(R.id.delete);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        final MenuItem mInterruptItem = menu.findItem(R.id.interrupt);
+        final MenuItem mPlayItem = menu.findItem(R.id.play);
+        final MenuItem mDeleteItem = menu.findItem(R.id.delete);
 
         if (mIntentType == IS_TRAINING) {
             mInterruptItem.setVisible(true);
@@ -511,7 +502,7 @@ public class ModelDetailActivity extends WrapperActivity {
             mPlayItem.setVisible(true);
         }
 
-        return super.onCreateOptionsMenu(menu);
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
