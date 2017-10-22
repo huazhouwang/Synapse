@@ -1,10 +1,8 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao'
 
-final boolean isDebug = true;
-final boolean isGoogleServicesEnable = !isDebug && hasGoogleServicesJson()
-
-loadExtProperties(isGoogleServicesEnable)
+final boolean isRelease = false;
+loadExtProperties(isRelease)
 
 android {
     compileSdkVersion 26
@@ -23,15 +21,13 @@ android {
             }
         }
 
-        buildConfigField "boolean", "TRACK_ENABLE", "$isGoogleServicesEnable"
+        buildConfigField "boolean", "TRACK_ENABLE", "$isRelease"
         buildConfigField "String", "AMPLITUDE_ID", "\"$gradle.AMPLITUDE_ID\""
     }
 
     buildTypes {
         debug {
-            if (!isGoogleServicesEnable) {
-                applicationIdSuffix ".debug"
-            }
+            applicationIdSuffix ".debug"
         }
 
         release {
@@ -69,19 +65,14 @@ dependencies {
     annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.0.1'
 }
 
-if (isGoogleServicesEnable) {
+if (isRelease) {
     println("Import google services plugin")
     apply plugin: 'com.google.gms.google-services'
 }
 
-def hasGoogleServicesJson() {
-    final File file = new File(projectDir.absolutePath, "google-services.json");
-    return file.exists();
-}
-
-def loadExtProperties(hasToken) {
+def loadExtProperties(isRelease) {
     final File file = new File(projectDir.absolutePath,
-            hasToken ? "release.properties" : "debug.properties");
+            isRelease ? "release.properties" : "debug.properties");
 
     if (!file.exists()) {
         return;
