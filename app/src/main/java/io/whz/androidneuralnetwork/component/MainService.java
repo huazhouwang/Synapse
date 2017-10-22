@@ -460,6 +460,7 @@ public class MainService extends Service {
                 .setLights(Color.CYAN, 1000, 500)
                 .setWhen(System.currentTimeMillis())
                 .setAutoCancel(true)
+                .setContentIntent(pending)
                 .setFullScreenIntent(pending, true);
 
         mNotifyManager.notify((int) id, builder.build());

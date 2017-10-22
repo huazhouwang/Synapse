@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao'
 
-final boolean isGoogleServicesEnable = false//hasGoogleServicesJson()
+final boolean isGoogleServicesEnable = hasGoogleServicesJson()
 
 loadExtProperties(isGoogleServicesEnable)
 
