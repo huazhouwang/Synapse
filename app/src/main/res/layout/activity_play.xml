@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:background="@color/item_chart_bg$1"
-    tools:context="io.whz.androidneuralnetwork.component.PlayActivity">
+    tools:context="io.whz.synapse.component.PlayActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1">
-            <io.whz.androidneuralnetwork.element.AutoFitWidthLineChart
+            <io.whz.synapse.element.AutoFitWidthLineChart
                 android:id="@+id/chart"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -64,7 +64,7 @@
             app:cardBackgroundColor="@color/transparent"
             app:cardElevation="5dp"
             app:cardCornerRadius="15dp">
-            <io.whz.androidneuralnetwork.element.DigitView
+            <io.whz.synapse.element.DigitView
                 android:id="@+id/digit_view"
                 android:layout_width="310dp"
                 android:layout_height="310dp"

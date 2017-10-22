@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao'
 
-final boolean isGoogleServicesEnable = false//hasGoogleServicesJson()
+final boolean isGoogleServicesEnable = hasGoogleServicesJson()
 
 loadExtProperties(isGoogleServicesEnable)
 
@@ -9,7 +9,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion "26.0.0"
     defaultConfig {
-        applicationId "io.whz.androidneuralnetwork"
+        applicationId "io.whz.synapse"
         minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
@@ -18,7 +18,7 @@ android {
 
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [eventBusIndex: 'io.whz.androidneuralnetwork.EventBusIndex']
+                arguments = [eventBusIndex: 'io.whz.synapse.EventBusIndex']
             }
         }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<io.whz.androidneuralnetwork.element.AutoFitWidthCardView
+<io.whz.synapse.element.AutoFitWidthCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -51,4 +51,4 @@
         app:tint="@color/icon"
         />
 
-</io.whz.androidneuralnetwork.element.AutoFitWidthCardView>
+</io.whz.synapse.element.AutoFitWidthCardView>

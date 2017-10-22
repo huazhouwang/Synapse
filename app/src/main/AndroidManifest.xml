@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="io.whz.androidneuralnetwork">
+    package="io.whz.synapse">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.FLASHLIGHT" />
 
     <application
-        android:name=".component.App"
+        android:name="io.whz.synapse.component.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -21,7 +21,7 @@
         tools:ignore="GoogleAppIndexingWarning">
 
         <activity
-            android:name=".component.MainActivity"
+            android:name="io.whz.synapse.component.MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Main"
             >
@@ -33,28 +33,28 @@
         </activity>
 
         <activity
-            android:name=".component.NeuralModelActivity"
+            android:name="io.whz.synapse.component.NeuralModelActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Translucent.NeuralNetworkConfigActivity"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
-            android:name=".component.ModelDetailActivity"
+            android:name="io.whz.synapse.component.ModelDetailActivity"
             android:exported="false"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             />
 
         <activity
-            android:name=".component.PlayActivity"
+            android:name="io.whz.synapse.component.PlayActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar.PlayActivity"
             />
 
         <service
-            android:name=".component.MainService"
+            android:name="io.whz.synapse.component.MainService"
             android:enabled="true"
             android:exported="false" />
     </application>
