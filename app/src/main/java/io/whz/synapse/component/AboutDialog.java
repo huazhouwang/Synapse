@@ -13,12 +13,12 @@ import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.view.ViewGroup;
 
+import io.whz.synapse.BuildConfig;
 import io.whz.synapse.R;
 
 public class AboutDialog extends DialogFragment implements View.OnClickListener {
-    // TODO: 19/10/2017
     private static final String APP_IN_GOOGLE_PLAY =
-            "https://play.google.com/store/apps/details?id=io.whz.androidneuralnetwork";
+            "https://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID;
 
     @NonNull
     @Override
