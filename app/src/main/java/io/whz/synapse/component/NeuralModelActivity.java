@@ -50,15 +50,12 @@ public class NeuralModelActivity extends WrapperActivity implements View.OnClick
     private SeekBar mTrainingSize;
     private TextView mNameInput;
 
-    private String mDataSizeTemplate;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_neural_model);
 
         mInflater = LayoutInflater.from(this);
-        mDataSizeTemplate = getString(R.string.template_data_size);
 
         mPage = findViewById(R.id.page);
         mContainer = findViewById(R.id.container);
@@ -183,7 +180,7 @@ public class NeuralModelActivity extends WrapperActivity implements View.OnClick
     private String formatDataSize(float progress) {
         final int size = calculateDataSize(progress);
 
-        return String.format(mDataSizeTemplate, size, MNISTUtil.MAX_TRAINING_SIZE);
+        return String.format("%s/%s", size, MNISTUtil.MAX_TRAINING_SIZE);
     }
 
     @Override
