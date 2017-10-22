@@ -5,6 +5,7 @@ Synapse is a beauty, funny application which allows you train the SDG model to r
 
 ![](publicity/ad.png)
 
+If your device doesn't have Google Play, you can download it from [this site](http://fir.im/6vta).
 
 ## License
 
