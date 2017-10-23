@@ -10,7 +10,7 @@ stages:
 test:
   stage: test
   script:
-    - ./gradlew test
+    - ./gradlew testDebug
   artifacts:
     paths:
     - app/build/reports

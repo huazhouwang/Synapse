@@ -1,7 +1,8 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao'
 
-final boolean hasGSJson = false;//hasGoogleServicesJson();
+// make it is false always only exclude when you ready to build release
+final boolean hasGSJson = false && hasGoogleServicesJson();
 loadExtProperties(hasGSJson)
 
 android {
@@ -42,6 +43,16 @@ android {
 
 greendao {
     schemaVersion 1
+}
+
+android.applicationVariants.all {  v ->
+    if (v.buildType.name == "release"){
+        v.assemble.doFirst {
+            if (!hasGSJson) {
+                throw new IllegalArgumentException("Please enable Google Service Json!")
+            }
+        }
+    }
 }
 
 dependencies {
