@@ -1,8 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao'
 
-// make it is false always only exclude when you ready to build release
-final boolean hasGSJson = false && hasGoogleServicesJson();
+final boolean hasGSJson = false// hasGoogleServicesJson()
 loadExtProperties(hasGSJson)
 
 android {
